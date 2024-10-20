@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.util.Property;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -7,7 +9,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import org.jetbrains.annotations.Unmodifiable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -404,7 +409,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             String val = p.value.get(i);
             int finalI = i;
             p.instances.set(i, db.getInstance(p.meta.getLoadsCollection(properties), val, (instance, success) -> {
-                if(!success)this.<List<String>>getPropertyValueI(p.meta.propertyNameID).set(finalI,""); //TODO on error
+                if(!success)p.iA().value.set(finalI,""); //TODO on error
             }));
         }
         oldInstances.forEach(DatabaseInstance::dissolve);
@@ -435,6 +440,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             }else{
                 prop.setValue(ent.getValue());
             }
+
         }
         return diff;
     }
@@ -466,27 +472,69 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         return true;
     }
 
-
     /**
-     * Gets the value of a property. In the case of instance properties, this returns the id
+     * Gets the value of a single property. In the case of instance properties, this returns the id
      * @param resID The res id of the property name
      * @return The value of the property as an Object
-     * @throws IllegalArgumentException if the property does not exist
+     * @throws IllegalArgumentException if the property does not exist or is an array
      * @throws ClassCastException if the generic is incorrect
      */
-    @SuppressWarnings("unchecked")
-    public final <V> V getPropertyValueI(int resID) throws IllegalArgumentException, ClassCastException{
+    public final Object getPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
         String name = db.constants.getString(resID);
-        PropertyWrapper<V,?> prop = (PropertyWrapper<V, ?>) properties.get(name);
-        if(prop==null) throw new IllegalArgumentException("Invalid property: " + name);
+        PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
+        if(prop==null || prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
         return prop.value;
     }
 
     /**
-     * Gets the instance of an instance property
+     * Gets the value of an array property. In the case of instances properties, this returns the ids
+     * @param resID The res id of the property name
+     * @return The unmodifiable list value of the property as an unmodifiable List&lt;?>
+     * @throws IllegalArgumentException if the property does not exist or is not an array
+     * @throws ClassCastException if the generic is incorrect
+     */
+    @Unmodifiable
+    @SuppressWarnings("unchecked")
+    public final List<?> getArrayPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
+        String name = db.constants.getString(resID);
+        PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
+        if(prop==null || !prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
+        PropertyWrapper<List<?>,?> aprop = (PropertyWrapper<List<?>,?>)prop;
+        return Collections.unmodifiableList(aprop.value);
+    }
+
+    /**
+     * Gets the value of a single property. In the case of instance properties, this returns the id
      * @param resID The res id of the property name
      * @return The value of the property as an Object
-     * @throws IllegalArgumentException if the property does not exist or does not have instances
+     * @param <V> The type of the property
+     * @throws IllegalArgumentException if the property does not exist or is an array
+     * @throws ClassCastException if the generic is incorrect
+     */
+    @SuppressWarnings("unchecked")
+    public final <V> V getPropertyValueI(int resID) throws IllegalArgumentException, ClassCastException{
+        return (V) getPropertyValue(resID);
+    }
+
+    /**
+     * Gets the value of an array property. In the case of instances properties, this returns the ids
+     * @param resID The res id of the property name
+     * @return The unmodifiable list value of the property as an unmodifiable {@code List<V>}
+     * @param <V> The type of the property
+     * @throws IllegalArgumentException if the property does not exist or is not an array
+     * @throws ClassCastException if the generic is incorrect
+     */
+    @Unmodifiable
+    @SuppressWarnings("unchecked")
+    public final <V> List<V> getArrayPropertyValueI(int resID) throws IllegalArgumentException, ClassCastException{
+        return (List<V>)getArrayPropertyValue(resID);
+    }
+
+    /**
+     * Gets the instance of an single instance property
+     * @param resID The res id of the property name
+     * @return The value of the property as an Object
+     * @throws IllegalArgumentException if the property does not exist or does not have instances or is an array
      */
     public final Object getPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
@@ -496,46 +544,102 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
-     * Gets the instance of an instance property
+     * Gets the instance of an single instance property
      * @param resID The res id of the property name
      * @return The value of the property as an Object
-     * @throws IllegalArgumentException if the property does not exist or does not have instances
+     * @throws IllegalArgumentException if the property does not exist or does not have instances or is an array
      * @throws ClassCastException if the generic is incorrect
      */
     @SuppressWarnings("unchecked")
     public final <W extends DatabaseInstance<W>> W getPropertyInstanceI(int resID) throws IllegalArgumentException, ClassCastException{
-        String name = db.constants.getString(resID);
-        PropertyWrapper<?,W> prop = (PropertyWrapper<?, W>) properties.get(name);
-        if(prop==null || prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
-        return prop.iS().instance;
+        return (W) getPropertyInstance(resID);
     }
 
     /**
      * Gets the instances of an instances property
      * @param resID The res id of the property name
-     * @return The value of the property as an Object
+     * @return The value of the property as an Object as an unmodifiable {@code List<DatabaseInstance<?>>}
      * @throws IllegalArgumentException if the property does not exist or does not have instances
      */
-    public final List<?> getPropertyInstances(int resID) throws IllegalArgumentException{
+    @Unmodifiable
+    public final List<DatabaseInstance<?>> getArrayPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
         if(prop==null || !prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
-        return prop.iA().instances;
+        return Collections.unmodifiableList(prop.iA().instances);
     }
 
     /**
      * Gets the instances of an instances property
      * @param resID The res id of the property name
-     * @return The value of the property as an Object
+     * @return The value of the property as an Object as an unmodifiable {@code List<W>}
+     * @param <W> the type of the instance
      * @throws IllegalArgumentException if the property does not exist or does not have instances
      * @throws ClassCastException if the generic is incorrect
      */
+    @Unmodifiable
     @SuppressWarnings("unchecked")
-    public final <W extends DatabaseInstance<W>> List<W> getPropertyInstancesI(int resID) throws IllegalArgumentException, ClassCastException{
+    public final <W extends DatabaseInstance<W>> List<W> getArrayPropertyInstanceI(int resID) throws IllegalArgumentException, ClassCastException{
+        return (List<W>) getArrayPropertyInstance(resID);
+    }
+
+    /**
+     * Adds/Removes a item to an array property
+     * @param resID The res id of the property name
+     * @param val The value to add/remove
+     * @param remove {@code true} if the value should be removed otherwise the value is added to the end
+     * @return The new value list as an unmodifiable list
+     * @param <V> the type of the value
+     * @throws IllegalArgumentException if the property does not exist or has instances or is not an array or is not editable
+     * @throws ClassCastException if the generic is incorrect
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     */
+    @SuppressWarnings("unchecked")
+    public final <V> List<V> addToArrayPropertyI(int resID, V val, boolean remove) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         String name = db.constants.getString(resID);
-        PropertyWrapper<?,W> prop = (PropertyWrapper<?, W>) properties.get(name);
-        if(prop==null || !prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
-        return prop.iA().instances;
+        PropertyWrapper<?,?> prop = properties.get(name);
+        if(prop==null || !prop.meta.isArray || prop.meta.loads) throw new IllegalArgumentException("Invalid property: " + name);
+        this.addToArrayInstancePropertyIgnoreThrow((PropertyWrapper<List<V>, ?>) prop, val, remove);
+        return getArrayPropertyValueI(resID);
+    }
+
+    /**
+     * Adds/Removes a instance to an instance array property
+     * @param resID The res id of the property name
+     * @param instanceID The id of the instance to add/remove
+     * @param remove {@code true} if the value should be removed otherwise the value is added to the end
+     * @return The new instance list as an unmodifiable list
+     * @param <W> the type of the instance
+     * @throws IllegalArgumentException if the property does not exist or does not have instances or is not an array or is not editable
+     * @throws ClassCastException if the generic is incorrect
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     */
+    public final <W extends DatabaseInstance<W>> List<W> addToArrayInstancePropertyI(int resID, String instanceID, boolean remove) throws IllegalArgumentException, ClassCastException, IllegalStateException{
+        String name = db.constants.getString(resID);
+        PropertyWrapper<?,?> prop = properties.get(name);
+        if(prop==null || !prop.meta.isArray || !prop.meta.loads) throw new IllegalArgumentException("Invalid property: " + name);
+        this.addToArrayInstancePropertyIgnoreThrow(prop.iA(), instanceID, remove);
+        return getArrayPropertyInstanceI(resID);
+    }
+
+    /**
+     * Adds/Removes a instance to an instance array property
+     * @param prop The property
+     * @param val The value
+     * @param remove {@code true} if the value should be removed otherwise the value is added to the end
+     * @param <V> the type of the instance
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     */
+    private final <V> void addToArrayInstancePropertyIgnoreThrow(PropertyWrapper<List<V>,?> prop, V val, boolean remove) throws IllegalStateException{
+        List<V> newVals = new ArrayList<>(prop.value);
+        if(!remove){
+            newVals.add(val);
+            setPropertyValue(prop.meta.propertyNameID, newVals);
+        }else{
+            if(newVals.remove(val)){
+                setPropertyValue(prop.meta.propertyNameID, newVals);
+            }
+        }
     }
 
     /**
