@@ -277,6 +277,9 @@ public class Database implements EventListener<DocumentSnapshot>{
     }
 
 
+    void throwE(Exception ex){
+        //TODO
+    }
 
 
     /**
@@ -383,14 +386,14 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @author Gareth Kmet
      * @version 1.0
      * @since 19oct24
-     * @param <T> The class of the instance
      */
-    public interface UpdateListener<T extends DatabaseInstance<T>> {
+    public interface UpdateListener {
         public enum Type {
             /**
              * A property of the instance has been modified
              */
             UPDATE,
+            SUBUPDATE,
             /**
              * The instance was deleted
              */
@@ -398,13 +401,13 @@ public class Database implements EventListener<DocumentSnapshot>{
             /**
              * The instance was created
              */
-            ADD,
+            INIT,
             /**
              * The instance was deallocated from the cache
              */
             DEREFERENCED
         };
-        public void onUpdate(T instance, Type type);
+        public <T extends DatabaseInstance <T>> void onUpdate(DatabaseInstance<T> instance, Type type);
     }
 
     /**

@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  * @param <T> The class of the instance.
  * @since 19oct24
  */
-public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
+public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
      * The number of references to this Instance
      */
@@ -38,7 +38,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
     private boolean isDereferenced = false;
 
     /**
-     * If the instance has been initalized with data
+     * If the instance has been initialized with data
      */
     private boolean isInitialized = false;
 
@@ -78,7 +78,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
      * Whenever the data of this instance changes, each listener is notified
      * @see Database.UpdateListener
      */
-    private final Set<Database.UpdateListener<T>> updateListeners = new HashSet<>();
+    private final Set<Database.UpdateListener> updateListeners = new HashSet<>();
 
     /**
      * A set of listeners which are called when the instance is initialized
@@ -132,7 +132,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
      * @see Database.UpdateListener
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
-    public final void addListener(@Nullable Database.UpdateListener<T> listener) throws IllegalStateException{
+    public final void addListener(@Nullable Database.UpdateListener listener) throws IllegalStateException{
         assertNotIllegalState();
         if(listener == null) return;
         updateListeners.add(listener);
@@ -272,6 +272,59 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
     }
 
     @Override
+    public <S extends DatabaseInstance<S>> void onUpdate(DatabaseInstance<S> instance, Type type) {
+        if(!isLegalState()) return;
+        switch (type){
+            case UPDATE:
+            case SUBUPDATE:
+                notifyUpdate(Type.SUBUPDATE);
+                break;
+            case DEREFERENCED:
+            case INIT:
+                break;
+            case DELETE:
+                deleteSubInstance(instance);
+                break;
+        }
+    }
+
+    //TODO docs
+    private <S extends DatabaseInstance<S>> void deleteSubInstance(DatabaseInstance<S> instance){
+        for(Map.Entry<String,PropertyWrapper<?,?>> ent : properties.entrySet()){
+            PropertyWrapper<?,?> prop = ent.getValue();
+            if(!prop.meta.loads || prop.meta.loadsCollection != instance.collection) continue;
+            if(prop.meta.isArray){
+                ArrayInstancePropertyWrapper<?> iprop = prop.iA();
+                int index = iprop.value.indexOf(instance.getDocumentID());
+                if(index < 0) continue;
+                // Delete
+                iprop.value.remove(index);
+                iprop.instances.remove(index);
+                if(iprop.value.isEmpty()){
+                    if(!prop.meta.emptyable) {
+                        deleteInstance();
+                        return;
+                    }
+                }
+                notifyUpdate(Type.UPDATE);
+            }else{
+                InstancePropertyWrapper<?> iprop = prop.iS();
+                if(!Objects.equals(iprop.value, instance.getDocumentID())){
+                    continue;
+                }
+                //Delete
+                iprop.value = "";
+                iprop.instance = null;
+                if(!prop.meta.loadsNullable){
+                    deleteInstance();
+                }else{
+                    notifyUpdate(Type.UPDATE);
+                }
+            }
+        }
+    }
+
+    @Override
     public String toString() throws IllegalStateException{
         assertNotIllegalState();
         return collection.toString() + " Instance";
@@ -335,10 +388,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
 
     private <W extends DatabaseInstance<W>> void exchangeArrayInstance(ArrayInstancePropertyWrapper<W> p, List<String> newIds){
         if(!p.meta.emptyable && newIds.isEmpty()) throw new IllegalArgumentException("Array is empty and cannot be : " + p.meta.propertyNameID);
+        List<DatabaseInstance<?>> oldInstances = new ArrayList<>();
         for(int i = 0; i < p.value.size(); i++){
             W in = p.instances.get(i);
             if(in != null){
-                if(in.isLegalState()) in.dissolve();
+                if(in.isLegalState()) oldInstances.add(in);
             }
             p.instances.set(i,null);
             p.value.set(i,"");
@@ -353,6 +407,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
                 if(!success)this.<List<String>>getPropertyValueI(p.meta.propertyNameID).set(finalI,""); //TODO on error
             }));
         }
+        oldInstances.forEach(DatabaseInstance::dissolve);
     }
 
     /**
@@ -569,8 +624,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
         return prop.meta.loads;
     }
 
-
-
     /**
      * Initializes the instance with data.
      * <p>
@@ -592,7 +645,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> {
                 isInitialized = success;
                 initializationListeners.forEach(l -> l.onInitialization(cast(), exists && success));
                 initializationListeners.clear();
-                notifyUpdate(Database.UpdateListener.Type.UPDATE);
+                notifyUpdate(Database.UpdateListener.Type.INIT);
                 if(!(exists && success)){
                     fullDissolve();
                 }else{

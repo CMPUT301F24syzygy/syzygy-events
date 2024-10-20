@@ -98,7 +98,7 @@ public class Image extends DatabaseInstance<Image> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String) 
+     * @see #createDataMap(String, String, String, String)
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
