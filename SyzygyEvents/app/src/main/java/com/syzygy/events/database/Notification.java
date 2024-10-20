@@ -1,14 +1,10 @@
 package com.syzygy.events.database;
 
-import androidx.annotation.NonNull;
-
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An instance of a notification database item
@@ -42,9 +38,9 @@ public class Notification extends DatabaseInstance<Notification> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_body, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_not_time, o -> o instanceof Timestamp, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, null, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, null, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, null, false)
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false)
     };
 
 

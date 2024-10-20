@@ -37,8 +37,8 @@ public class Facility extends DatabaseInstance<Facility> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_fac_location, o -> o instanceof GeoPoint, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_description, o -> o instanceof String, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_organizer, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, null, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_imageID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, null, true)
+            new PropertyField<String, User>(R.string.database_fac_organizer, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false),
+            new PropertyField<String, Image>(R.string.database_fac_imageID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, true)
     };
 
 

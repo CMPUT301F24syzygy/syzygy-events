@@ -35,7 +35,8 @@ public class User extends DatabaseInstance<User> {
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_description, o -> o instanceof String, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_profileID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, null, true),
+            new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true),
+            new PropertyField<String, Facility>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),
@@ -57,6 +58,7 @@ public class User extends DatabaseInstance<User> {
      * @param name The name of the user
      * @param description The description of the user
      * @param profileImageID The ID of the profile image
+     * @param facilityID The ID of the user's facility
      * @param email The email of the user
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
@@ -70,13 +72,14 @@ public class User extends DatabaseInstance<User> {
                                    String name,
                                    String description,
                                    String profileImageID,
+                                   String facilityID,
                                    String email,
                                    String phoneNumber,
                                    Boolean organizerNotifications,
                                    Boolean adminNotifications,
                                    Database.InitializationListener<User> listener
     ){
-        Map<Integer,Object> map = createDataMap(name, description, profileImageID, email, phoneNumber, organizerNotifications, adminNotifications);
+        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications);
 
         if(!(validateDeviceID(deviceID) && validateDataMap(map))){
             return null;
@@ -94,6 +97,7 @@ public class User extends DatabaseInstance<User> {
      * @param name The name of the user
      * @param description The description of the user
      * @param profileImageID The ID of the profile image
+     * @param facilityID The ID of the user's facility
      * @param email The email of the user
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
@@ -103,6 +107,7 @@ public class User extends DatabaseInstance<User> {
     public static Map<Integer, Object> createDataMap(String name,
                                                      String description,
                                                      String profileImageID,
+                                                     String facilityID,
                                                      String email,
                                                      String phoneNumber,
                                                      Boolean organizerNotifications,
@@ -113,6 +118,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_name, name);
         map.put(R.string.database_user_description, description);
         map.put(R.string.database_user_profileID, profileImageID);
+        map.put(R.string.database_user_facilityID, profileImageID);
         map.put(R.string.database_user_email, email);
         map.put(R.string.database_user_phoneNumber, phoneNumber);
         map.put(R.string.database_user_adminNotifications, adminNotifications);
