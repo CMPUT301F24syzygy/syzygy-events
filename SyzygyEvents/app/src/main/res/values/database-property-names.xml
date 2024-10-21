@@ -27,9 +27,6 @@
     <string name="database_event_title">Title</string>
     <string name="database_event_posterID">PosterID</string>
     <string name="database_event_facilityID">FacilityID</string>
-    <string name="database_event_users_ids">UserIDs</string>
-    <string name="database_event_users_statuses">Statuses</string>
-    <string name="database_event_users_geos">GeoLocations</string>
     <string name="database_event_geo">RequiresGeoLocation</string>
     <string name="database_event_description">Description</string>
     <string name="database_event_capacity">Capacity</string>
@@ -37,4 +34,8 @@
     <string name="database_event_qrHash">QRHash</string>
     <string name="database_event_price">Price</string>
     <string name="database_event_date">Date</string>
+    <string name="database_assoc_user">UserID</string>
+    <string name="database_assoc_event">EventID</string>
+    <string name="database_assoc_geo">GeoLocation</string>
+    <string name="database_assoc_status">Status</string>
 </resources>

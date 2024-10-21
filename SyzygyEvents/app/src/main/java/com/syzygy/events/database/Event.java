@@ -14,8 +14,6 @@ import java.util.Map;
  * @author Gareth Kmet
  * @version 1.0
  * @since 19oct24
- *
- * TODO - remove array of associations
  */
 public class Event extends DatabaseInstance<Event> {
 
@@ -26,7 +24,7 @@ public class Event extends DatabaseInstance<Event> {
      * @param eventID The id of the event
      */
     protected Event(Database db, String eventID) throws ClassCastException {
-        super(db, eventID, Database.Collections.FACILITIES, fields);
+        super(db, eventID, Database.Collections.EVENTS, fields);
     }
 
     @Override
@@ -41,9 +39,6 @@ public class Event extends DatabaseInstance<Event> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_title, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, Image>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, false),
             new PropertyField<String, Facility>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true),
-            new PropertyField<List<String>, User>(R.string.database_event_users_ids, o -> o instanceof List && !((List)o).stream().anyMatch(v -> !(v instanceof String) || ((String)v).isBlank()), true, true, Database.Collections.USERS, false, true, true),
-            new PropertyField<List<String>, PropertyField.NullInstance>(R.string.database_event_users_statuses, o -> o instanceof List && !((List)o).stream().anyMatch(v -> !(v instanceof String) || ((String)v).isBlank()), true, true, true),
-            new PropertyField<List<GeoPoint>, PropertyField.NullInstance>(R.string.database_event_users_geos, o -> o instanceof List && !((List)o).stream().anyMatch(v -> !(v instanceof GeoPoint)), true, true, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, true),
@@ -73,9 +68,6 @@ public class Event extends DatabaseInstance<Event> {
      * @param qrHash the cashed qr code data for the event
      * @param price the price of the event
      * @param date the date of the event
-     * @param userIds the userids associated with the event
-     * @param userLocations the respective locations where the users signed up to the event
-     * @param userStatuses the respective statuses of the users associated with the event
      * @return The user instance in an illegal state
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
@@ -90,12 +82,9 @@ public class Event extends DatabaseInstance<Event> {
                                        String qrHash,
                                        Double price,
                                        Timestamp date,
-                                       List<String> userIds,
-                                       List<GeoPoint> userLocations,
-                                       List<String> userStatuses,
                                        Database.InitializationListener<Event> listener
     ){
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, date, userIds, userLocations, userStatuses);
+        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, date);
 
         if(!validateDataMap(map)){
             return null;
@@ -116,9 +105,6 @@ public class Event extends DatabaseInstance<Event> {
      * @param qrHash the cashed qr code data for the event
      * @param price the price of the event
      * @param date the date of the event
-     * @param userIds the userids associated with the event
-     * @param userLocations the respective locations where the users signed up to the event
-     * @param userStatuses the respective statuses of the users associated with the event
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String title,
@@ -130,19 +116,13 @@ public class Event extends DatabaseInstance<Event> {
                                                      Integer waitlistCapacity,
                                                      String qrHash,
                                                      Double price,
-                                                     Timestamp date,
-                                                     List<String> userIds,
-                                                     List<GeoPoint> userLocations,
-                                                     List<String> userStatuses
+                                                     Timestamp date
 
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_event_title, title);
         map.put(R.string.database_event_posterID, posterID);
         map.put(R.string.database_event_facilityID, facilityID);
-        map.put(R.string.database_event_users_ids, userIds);
-        map.put(R.string.database_event_users_statuses, userStatuses);
-        map.put(R.string.database_event_users_geos, userLocations);
         map.put(R.string.database_event_geo, requiresLocation);
         map.put(R.string.database_event_description, description);
         map.put(R.string.database_event_capacity, capacity);
@@ -158,7 +138,7 @@ public class Event extends DatabaseInstance<Event> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, List, List, List) 
+     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp)  
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

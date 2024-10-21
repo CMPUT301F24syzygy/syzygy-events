@@ -130,7 +130,7 @@ public class User extends DatabaseInstance<User> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String, String, Boolean, Boolean)
+     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean)
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

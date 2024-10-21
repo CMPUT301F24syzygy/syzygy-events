@@ -18,6 +18,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
+/**
+ * Stores a query that is executed on a collection within the database. Loads instances returned from this query
+ * @author Gareth Kmet
+ * @version 1.0
+ * @since 20oct24
+ */
 public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
      * The database
@@ -217,8 +224,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         void onSuccess(DatabaseQuery<T> query);
     }
 
-    public static DatabaseQuery<Event> getMyEventsFilter(Database db, User u){
-        return new DatabaseQuery<>(db, Filter.arrayContains(db.constants.getString(R.string.database_event_users_ids), u.getDocumentID()), Database.Collections.EVENTS);
+    public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, User u){
+        return new DatabaseQuery<>(db, Filter.arrayContains(db.constants.getString(R.string.database_assoc_user), u.getDocumentID()), Database.Collections.EVENT_ASSOCIATIONS);
     }
 
     public static DatabaseQuery<Event> getFacilityEvents(Database db, Facility facility){

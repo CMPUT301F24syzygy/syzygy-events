@@ -363,7 +363,8 @@ public class Database implements EventListener<DocumentSnapshot>{
         EVENTS,
         FACILITIES,
         NOTIFICATIONS,
-        IMAGES;
+        IMAGES,
+        EVENT_ASSOCIATIONS;
 
         /**
          * The Firestore identifier for the collection
