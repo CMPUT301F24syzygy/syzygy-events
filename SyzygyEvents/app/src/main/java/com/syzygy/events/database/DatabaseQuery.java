@@ -430,36 +430,59 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     }
 
     public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, User u){
-        Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_user), u.getDocumentID());
+        Filter f1 = Filter.equalTo(db.constants.getString(R.string.database_assoc_user), u.getDocumentID());
+        Filter f2 = Filter.notEqualTo(db.constants.getString(R.string.database_assoc_status), db.constants.getString(R.string.event_assoc_status_cancelled));
         Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
-        Query q = c.getCollection(db).where(f);
+        Query q = c.getCollection(db).where(Filter.and(f1,f2)).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, 10);
     }
 
     public static DatabaseQuery<Event> getFacilityEvents(Database db, Facility facility){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_event_facilityID), facility.getDocumentID());
         Database.Collections c = Database.Collections.EVENTS;
-        Query q = c.getCollection(db).where(f);
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_event_createdTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, 10);
     }
 
     public static DatabaseQuery<Notification> getMyNotifications(Database db, User u){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID());
         Database.Collections c = Database.Collections.NOTIFICATIONS;
-        Query q = c.getCollection(db).where(f);
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_not_time), Query.Direction.DESCENDING);
+        return new DatabaseQuery<>(db, q, c, 25);
+    }
+
+    /**
+     * @param status iF null or blank, returns all
+     */
+    public static DatabaseQuery<User> getAttachedUsers(Database db, Event e, String status){
+        Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
+        if(status != null && !status.isBlank()){
+            f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
+        }
+        Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, 25);
     }
 
     public static DatabaseQuery<User> getUsers(Database db){
-        return null; //TODO
+        Filter f = Filter.and(); //TODO - does this work
+        Database.Collections c = Database.Collections.USERS;
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_user_createdTime), Query.Direction.DESCENDING);
+        return new DatabaseQuery<>(db, q, c, 25);
     }
 
     public static DatabaseQuery<Event> getEvents(Database db){
-        return null; //TODO
+        Filter f = Filter.and(); //TODO - does this work
+        Database.Collections c = Database.Collections.EVENTS;
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_event_createdTime), Query.Direction.DESCENDING);
+        return new DatabaseQuery<>(db, q, c, 10);
     }
 
     public static DatabaseQuery<Image> getImages(Database db){
-        return null; //TODO
+        Filter f = Filter.and(); //TODO - does this work
+        Database.Collections c = Database.Collections.IMAGES;
+        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_img_uploadTime), Query.Direction.DESCENDING);
+        return new DatabaseQuery<>(db, q, c, 25);
     }
 
     public enum Page{

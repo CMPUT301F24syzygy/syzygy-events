@@ -2,6 +2,7 @@ package com.syzygy.events.database;
 
 import androidx.annotation.Nullable;
 
+import com.google.firebase.Timestamp;
 import com.syzygy.events.R;
 
 import java.util.HashMap;
@@ -96,6 +97,10 @@ public class User extends DatabaseInstance<User> {
         return setPropertyValue(R.string.database_user_orgNotifications, val);
     }
 
+    public Timestamp getCreatedTime(){
+        return getPropertyValueI(R.string.database_user_createdTime);
+    }
+
     public Image getProfileImage(){
         return getPropertyInstanceI(R.string.database_user_profileID);
     }
@@ -166,6 +171,7 @@ public class User extends DatabaseInstance<User> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_orgNotifications, o -> o instanceof Boolean, true),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_user_createdTime, o -> o instanceof Timestamp, false),
 
     };
 
@@ -204,7 +210,7 @@ public class User extends DatabaseInstance<User> {
                                    Boolean adminNotifications,
                                    Database.InitializationListener<User> listener
     ){
-        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications);
+        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, Timestamp.now());
 
         if(!(validateDeviceID(deviceID) && validateDataMap(map))){
             return null;
@@ -227,16 +233,17 @@ public class User extends DatabaseInstance<User> {
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
+     * @param createdTime The time when the account was created
      * @return The map
      */
-    public static Map<Integer, Object> createDataMap(String name,
-                                                     String description,
-                                                     String profileImageID,
-                                                     String facilityID,
-                                                     String email,
-                                                     String phoneNumber,
-                                                     Boolean organizerNotifications,
-                                                     Boolean adminNotifications
+    public static Map<Integer, Object> createDataMap(String name,String description,
+                                                      String profileImageID,
+                                                      String facilityID,
+                                                      String email,
+                                                      String phoneNumber,
+                                                      Boolean organizerNotifications,
+                                                      Boolean adminNotifications,
+                                                      Timestamp createdTime
 
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -248,6 +255,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_phoneNumber, phoneNumber);
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
+        map.put(R.string.database_user_createdTime, createdTime);
         return map;
     }
 
@@ -255,7 +263,7 @@ public class User extends DatabaseInstance<User> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean)
+     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Timestamp)
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

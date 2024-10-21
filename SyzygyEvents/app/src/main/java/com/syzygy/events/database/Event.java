@@ -109,6 +109,10 @@ public class Event extends DatabaseInstance<Event> {
     public boolean setPrice(Timestamp val){
         return setPropertyValue(R.string.database_event_price, val);
     }
+    
+    public Timestamp getCreatedDate(){
+        return getPropertyValueI(R.string.database_event_createdTime);
+    }
 
     public Image getPoster(){
         return getPropertyInstanceI(R.string.database_event_posterID);
@@ -176,7 +180,8 @@ public class Event extends DatabaseInstance<Event> {
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Integer && ((Integer)o > 0 || (Integer)o == -1), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double)o)>=0, true),
-            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_date, o -> o instanceof Timestamp, true)
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_date, o -> o instanceof Timestamp, true),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false)
     };
 
 
@@ -215,13 +220,14 @@ public class Event extends DatabaseInstance<Event> {
                                        Timestamp date,
                                        Database.InitializationListener<Event> listener
     ){
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, date);
+        Timestamp now = Timestamp.now();
+        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, date, now);
 
         if(!validateDataMap(map)){
             return null;
         }
 
-        return db.createNewInstance(Database.Collections.EVENTS, facilityID + "-" +Timestamp.now().toString(), db.convertIDMapToNames(map), listener);
+        return db.createNewInstance(Database.Collections.EVENTS, facilityID + "-" + now.toString(), db.convertIDMapToNames(map), listener);
     }
 
     /**
@@ -236,6 +242,7 @@ public class Event extends DatabaseInstance<Event> {
      * @param qrHash the cashed qr code data for the event
      * @param price the price of the event
      * @param date the date of the event
+     * @param createdTime The time when the event was created
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String title,
@@ -247,7 +254,8 @@ public class Event extends DatabaseInstance<Event> {
                                                      Integer waitlistCapacity,
                                                      String qrHash,
                                                      Double price,
-                                                     Timestamp date
+                                                     Timestamp date,
+                                                     Timestamp createdTime
 
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -261,6 +269,7 @@ public class Event extends DatabaseInstance<Event> {
         map.put(R.string.database_event_qrHash, qrHash);
         map.put(R.string.database_event_date, date);
         map.put(R.string.database_event_price, price);
+        map.put(R.string.database_event_createdTime, createdTime);
 
         return map;
     }
@@ -269,7 +278,7 @@ public class Event extends DatabaseInstance<Event> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp)  
+     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp)
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

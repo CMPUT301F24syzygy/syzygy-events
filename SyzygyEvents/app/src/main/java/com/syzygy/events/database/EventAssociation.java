@@ -2,6 +2,7 @@ package com.syzygy.events.database;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 
@@ -56,8 +57,13 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     public User getUser(){
         return getPropertyInstanceI(R.string.database_assoc_user);
     }
+
     public Event getEvent(){
         return getPropertyInstanceI(R.string.database_assoc_event);
+    }
+
+    public Timestamp getJoinTime(){
+        return getPropertyValueI(R.string.database_assoc_time);
     }
 
     /**
@@ -80,7 +86,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_status, o -> o instanceof String && !((String) o).isBlank(), true)
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_status, o -> o instanceof String && !((String) o).isBlank(), true),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_assoc_time, o -> o instanceof Timestamp, false)
     };
 
 
@@ -108,7 +115,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                                     String userID,
                                     Database.InitializationListener<Image> listener
     ){
-        Map<Integer,Object> map = createDataMap(eventID, location, status, userID);
+        Map<Integer,Object> map = createDataMap(eventID, location, status, userID, Timestamp.now());
 
         if(!validateDataMap(map)){
             return null;
@@ -123,12 +130,14 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * @param location The location where the user signed into the event
      * @param status The status of the association
      * @param userID The id of the user
+     * @param time When the user first became associated to the event
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String eventID,
                                                      GeoPoint location,
                                                      String status,
-                                                     String userID
+                                                     String userID,
+                                                     Timestamp time
 
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -136,6 +145,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         map.put(R.string.database_assoc_event, eventID);
         map.put(R.string.database_assoc_status, status);
         map.put(R.string.database_assoc_user, userID);
+        map.put(R.string.database_assoc_time, time);
         return map;
     }
 
@@ -143,7 +153,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, GeoPoint, String, String) 
+     * @see #createDataMap(String, GeoPoint, String, String, Timestamp)  
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

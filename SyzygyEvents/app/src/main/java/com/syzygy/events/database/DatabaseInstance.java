@@ -24,14 +24,13 @@ import java.util.function.Predicate;
  * @since 19oct24
  *
  * TODO - Add error handling on instance exchanges
- * TODO - remove arrays
+ * TODO - change on instance load, if null, update subdelete
  */
 public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
      * The number of references to this Instance
      */
     private int referenceCount = 0;
-
     /**
      * If this instance is dereferenced.
      * <p>

@@ -8,10 +8,12 @@
     <string name="database_user_facilityID">FacilityID</string>
     <string name="database_user_orgNotifications">OrganizationNotifications</string>
     <string name="database_user_adminNotifications">AdminNotifications</string>
+    <string name="database_user_createdTime">CreatedTime</string>
     <string name="database_img_locName">LocationName</string>
     <string name="database_img_locType">LocationType</string>
     <string name="database_img_locID">LocationID</string>
     <string name="database_img_address">Address</string>
+    <string name="database_img_uploadTime">UploadTime</string>
     <string name="database_fac_location">Location</string>
     <string name="database_fac_description">Description</string>
     <string name="database_fac_organizer">OrganizerID</string>
@@ -34,8 +36,10 @@
     <string name="database_event_qrHash">QRHash</string>
     <string name="database_event_price">Price</string>
     <string name="database_event_date">Date</string>
+    <string name="database_event_createdTime">CreatedTime</string>
     <string name="database_assoc_user">UserID</string>
     <string name="database_assoc_event">EventID</string>
     <string name="database_assoc_geo">GeoLocation</string>
     <string name="database_assoc_status">Status</string>
+    <string name="database_assoc_time">FirstJoinTime</string>
 </resources>

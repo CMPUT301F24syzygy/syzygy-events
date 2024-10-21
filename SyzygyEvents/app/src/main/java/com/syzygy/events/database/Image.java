@@ -1,5 +1,6 @@
 package com.syzygy.events.database;
 
+import com.google.firebase.Timestamp;
 import com.syzygy.events.R;
 
 import java.util.HashMap;
@@ -45,6 +46,10 @@ public class Image extends DatabaseInstance<Image> {
         return getPropertyValueI(R.string.database_img_address);
     }
 
+    public Timestamp getUploadTime(){
+        return getPropertyValueI(R.string.database_img_uploadTime);
+    }
+
 
     /**
      * The list of the fields defined for a User
@@ -53,7 +58,8 @@ public class Image extends DatabaseInstance<Image> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locType, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String && !((String) o).isBlank(), false)
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_img_uploadTime, o -> o instanceof Timestamp, false)
     };
 
 
@@ -80,7 +86,7 @@ public class Image extends DatabaseInstance<Image> {
                                    String address,
                                    Database.InitializationListener<Image> listener
     ){
-        Map<Integer,Object> map = createDataMap(locName, locType, locID, address);
+        Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
 
         if(!validateDataMap(map)){
             return null;
@@ -95,12 +101,14 @@ public class Image extends DatabaseInstance<Image> {
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
      * @param address The address of the ID
+     * @param uploadTime The time when the image was uploaded
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String locName,
                                                      String locType,
                                                      String locID,
-                                                     String address
+                                                     String address,
+                                                     Timestamp uploadTime
 
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -108,6 +116,7 @@ public class Image extends DatabaseInstance<Image> {
         map.put(R.string.database_img_locName, locName);
         map.put(R.string.database_img_locID, locID);
         map.put(R.string.database_img_address, address);
+        map.put(R.string.database_img_uploadTime, uploadTime);
         return map;
     }
 
@@ -115,7 +124,7 @@ public class Image extends DatabaseInstance<Image> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String)
+     * @see #createDataMap(String, String, String, String, Timestamp) 
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
