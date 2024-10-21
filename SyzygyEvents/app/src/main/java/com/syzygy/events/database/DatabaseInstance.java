@@ -27,6 +27,9 @@ import java.util.function.Predicate;
  * @version 1.0
  * @param <T> The class of the instance.
  * @since 19oct24
+ *
+ * TODO - Add error handling on instance exchanges
+ * TODO - remove arrays
  */
 public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
@@ -108,7 +111,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @SuppressWarnings("unchecked")
     protected DatabaseInstance(Database db, String documentID, Database.Collections collection, @NonNull PropertyField<?,?>[] properties) throws ClassCastException, IllegalArgumentException{
         T t = (T)this;
-        if(properties.length == 0) throw new IllegalArgumentException("Properties is empty: " + collection);
+        if(properties.length == 0) db.throwE(new IllegalArgumentException("Properties is empty: " + collection));
         this.db = db;
         this.documentID = documentID;
         this.collection = collection;
@@ -141,6 +144,15 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         assertNotIllegalState();
         if(listener == null) return;
         updateListeners.add(listener);
+    }
+
+    /**
+     * Removes a listener
+     * @param listener The listener
+     * @return If the set of listeners changed as a result
+     */
+    public final boolean removeListener(@NonNull Database.UpdateListener listener){
+        return updateListeners.remove(listener);
     }
 
     /**
@@ -188,12 +200,19 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
     /**
      * Decreases the reference count of this instance
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
-    public void dissolve() throws IllegalStateException{
-        assertNotIllegalState();
-        referenceCount --;
+    public void dissolve(){
+        referenceCount = Math.min(referenceCount - 1, 0);
         dereferenceInstance();
+    }
+
+    /**
+     * Removes the listener from the instance and decreases the reference
+     * @param listener The listener
+     */
+    public void dissolve(Database.UpdateListener listener){
+        removeListener(listener);
+        dissolve();
     }
 
     /**
@@ -238,8 +257,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see #isLegalState()
      */
     protected final void assertNotIllegalState() throws IllegalStateException{
-        if(isDereferenced) throw new IllegalStateException("This instance is unreferenced and not maintained. No methods should be called. Instance: " + toString());
-        if(!isInitialized) throw new IllegalStateException("This instance has not been initialized with data. No methods should be called. Instance: " + toString());
+        if(isDereferenced) db.throwE(new IllegalStateException("This instance is unreferenced and not maintained. No methods should be called. Instance: " + toString()));
+        if(!isInitialized) db.throwE(new IllegalStateException("This instance has not been initialized with data. No methods should be called. Instance: " + toString()));
     }
 
     /**
@@ -276,6 +295,14 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
+    /**
+     * Called whenever any subinstance is updated.
+     * Notifies the listeners that a subupdate occurred unless an instance was deleted, then an actual update is notified
+     * @param instance The subinstance
+     * @param type The type of the update
+     * @param <S> The type of the subinstance
+     * @see #deleteSubInstance(DatabaseInstance)
+     */
     @Override
     public <S extends DatabaseInstance<S>> void onUpdate(DatabaseInstance<S> instance, Type type) {
         if(!isLegalState()) return;
@@ -293,7 +320,15 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
-    //TODO docs
+    /**
+     * Updates this instance appropriately when the subinstance is deleted
+     *<p>
+     *     Removes the instance. If the property cannot be null/empty and is now null/empty, this instance is deleted.
+     *     Otherwise, notifies the listeners that an update occurred
+     *</p>
+     * @param instance The subinstance
+     * @param <S> The type of the subinstance
+     */
     private <S extends DatabaseInstance<S>> void deleteSubInstance(DatabaseInstance<S> instance){
         for(Map.Entry<String,PropertyWrapper<?,?>> ent : properties.entrySet()){
             PropertyWrapper<?,?> prop = ent.getValue();
@@ -329,6 +364,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
+    @NonNull
     @Override
     public String toString() throws IllegalStateException{
         assertNotIllegalState();
@@ -366,10 +402,17 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         return collection.getDatabaseID(this);
     }
 
-    //TODO javadocs
+    /**
+     * Exchanges a instance property's value with the given id(s). Loads the new ID(s).
+     * @param p The property to edit
+     * @param newID The ID(s) of the new instance(s)
+     * @param <W> The type of the instance
+     * @throws IllegalArgumentException If the property is not an instance property
+     * @throws ClassCastException If the type does not match the properties type
+     */
     @SuppressWarnings("unchecked")
     private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, Object newID) throws IllegalArgumentException, ClassCastException{
-        if(!p.meta.loads) throw new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID);
+        if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
         if(p.meta.isArray){
             exchangeArrayInstance((ArrayInstancePropertyWrapper<W>) p, (List<String>) newID);
         }else{
@@ -377,6 +420,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
+    /**
+     * Exchanges a single instance property's value with the given id. Loads the new ID.
+     * @param prop The single instance property
+     * @param newID The ID of the new instance
+     * @param <W> The type of the instance
+     */
     private <W extends DatabaseInstance<W>> void exchangeSingleInstance(InstancePropertyWrapper<W> prop, String newID){
         if(Objects.equals(newID, prop.value)) return;
         if(prop.instance != null){
@@ -385,14 +434,24 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         prop.value = newID;
         prop.instance = null;
         if(!newID.isBlank()){
-            prop.instance = db.getInstance(prop.meta.getLoadsCollection(properties), newID, (i, s) -> {if(!s)setPropertyValue(prop.meta.propertyNameID, "");}); //TODO on error
+            prop.instance = db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {if(!s)setPropertyValue(prop.meta.propertyNameID, "");}); //TODO on error
         }else{
-            if(!prop.meta.loadsNullable) throw new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID + " - " + newID);
+            if(!prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID + " - " + newID));
         }
     }
 
-    private <W extends DatabaseInstance<W>> void exchangeArrayInstance(ArrayInstancePropertyWrapper<W> p, List<String> newIds){
-        if(!p.meta.emptyable && newIds.isEmpty()) throw new IllegalArgumentException("Array is empty and cannot be : " + p.meta.propertyNameID);
+    /**
+     * Exchanges an array instance property's value with the given ids. Loads the new IDs.
+     * <p>
+     *     Does not dereference the old instances until after the new instances have been referenced
+     * </p>
+     * @param p The array instance property
+     * @param newIds The IDs of the new instances
+     * @param <W> The type of the instances
+     * @throws IllegalArgumentException if the new array is empty and the property cannot be empty
+     */
+    private <W extends DatabaseInstance<W>> void exchangeArrayInstance(ArrayInstancePropertyWrapper<W> p, List<String> newIds) throws IllegalArgumentException{
+        if(!p.meta.emptyable && newIds.isEmpty()) db.throwE(new IllegalArgumentException("Array is empty and cannot be : " + p.meta.propertyNameID));
         List<DatabaseInstance<?>> oldInstances = new ArrayList<>();
         for(int i = 0; i < p.value.size(); i++){
             W in = p.instances.get(i);
@@ -408,7 +467,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         for(int i=0; i<p.value.size(); i++){
             String val = p.value.get(i);
             int finalI = i;
-            p.instances.set(i, db.getInstance(p.meta.getLoadsCollection(properties), val, (instance, success) -> {
+            p.instances.set(i, db.getInstance(p.meta.loadsCollection, val, (instance, success) -> {
                 if(!success)p.iA().value.set(finalI,""); //TODO on error
             }));
         }
@@ -431,10 +490,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         boolean diff = false;
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
-            if(prop == null) throw new IllegalArgumentException();
+            if(prop == null) db.throwE(new IllegalArgumentException());
             if(Objects.equals(prop.value, ent.getValue())) continue;
             diff = true;
-            if(!isPropertyValid(prop, ent.getValue())) throw new IllegalArgumentException();
+            if(!isPropertyValid(prop, ent.getValue())) db.throwE(new IllegalArgumentException());
             if(prop.meta.loads){
                 exchangeInstance(prop, ent.getValue());
             }else{
@@ -459,9 +518,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null) throw new IllegalArgumentException("Invalid property: " + name);
-        if(!prop.meta.canEdit) throw new IllegalArgumentException("Invalid property - cannot edit: " + name);
-        if(!isPropertyValid(prop, newValue)) throw new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString());
+        if(prop==null) db.throwE(new IllegalArgumentException("Invalid property: " + name));
+        if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
+        if(!isPropertyValid(prop, newValue)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString()));
         if(Objects.equals(prop.value, newValue)) return false;
         if(prop.meta.loads){
             exchangeInstance(prop, newValue);
@@ -482,7 +541,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final Object getPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
-        if(prop==null || prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || prop.meta.isArray) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         return prop.value;
     }
 
@@ -498,7 +557,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final List<?> getArrayPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
-        if(prop==null || !prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || !prop.meta.isArray) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         PropertyWrapper<List<?>,?> aprop = (PropertyWrapper<List<?>,?>)prop;
         return Collections.unmodifiableList(aprop.value);
     }
@@ -539,7 +598,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final Object getPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null || prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || prop.meta.isArray) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         return prop.iS().instance;
     }
 
@@ -565,7 +624,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final List<DatabaseInstance<?>> getArrayPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null || !prop.meta.isArray) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || !prop.meta.isArray) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         return Collections.unmodifiableList(prop.iA().instances);
     }
 
@@ -598,7 +657,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final <V> List<V> addToArrayPropertyI(int resID, V val, boolean remove) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null || !prop.meta.isArray || prop.meta.loads) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || !prop.meta.isArray || prop.meta.loads) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         this.addToArrayInstancePropertyIgnoreThrow((PropertyWrapper<List<V>, ?>) prop, val, remove);
         return getArrayPropertyValueI(resID);
     }
@@ -617,7 +676,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final <W extends DatabaseInstance<W>> List<W> addToArrayInstancePropertyI(int resID, String instanceID, boolean remove) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null || !prop.meta.isArray || !prop.meta.loads) throw new IllegalArgumentException("Invalid property: " + name);
+        if(prop==null || !prop.meta.isArray || !prop.meta.loads) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         this.addToArrayInstancePropertyIgnoreThrow(prop.iA(), instanceID, remove);
         return getArrayPropertyInstanceI(resID);
     }
@@ -741,7 +800,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance has already been initialized
      */
     final void initializeData(Map<String, Object> data, boolean exists) throws IllegalStateException{
-        if(isInitialized) throw new IllegalStateException("This instance has already been initialized: " + toString());
+        if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
         modifyData(data);
         subInitialize(new Database.InitializationListener<T>() {
             @Override
@@ -779,17 +838,17 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         assert prop != null;
         if(prop.meta.isArray){
             ArrayInstancePropertyWrapper<?> iprop = prop.iA();
-            if(iprop.value.isEmpty() && !prop.meta.emptyable) throw new IllegalArgumentException("The value is empty but the property is not emptyable" + prop.meta.propertyNameID);
+            if(iprop.value.isEmpty() && !prop.meta.emptyable) db.throwE(new IllegalArgumentException("The value is empty but the property is not emptyable" + prop.meta.propertyNameID));
             if(subCount >= iprop.value.size()){
                 subInitialize(listener, count + 1, 0);
                 return;
             }
             if(iprop.value.get(subCount).isBlank()){
-                if(!prop.meta.loadsNullable) throw new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID);
+                if(!prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID));
                 subInitialize(listener, count, subCount + 1);
                 return;
             }
-            Database.Collections collections = iprop.meta.getLoadsCollection(properties);
+            Database.Collections collections = iprop.meta.loadsCollection;
             iprop.instances.set(subCount, db.getInstance(collection, iprop.value.get(subCount), (instance, success) -> {
                 if(!success){
                     iprop.value.set(subCount,"");
@@ -802,11 +861,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }else{
             InstancePropertyWrapper<?> iprop = prop.iS();
             if(iprop.value.isBlank()){
-                if(!prop.meta.loadsNullable) throw new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID);
+                if(!prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID));
                 subInitialize(listener, count+1, 0);
                 return;
             }
-            Database.Collections collection = prop.meta.getLoadsCollection(properties);
+            Database.Collections collection = prop.meta.loadsCollection;
             iprop.instance = db.getInstance(collection, iprop.value, (instance, success) -> {
                 if(!success){
                     iprop.value = "";
@@ -909,18 +968,57 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         return collection.getCollection(db);
     }
 
-    //TODO javadocs
+    /**
+     * Designates a property that is maintained by a Database instance
+     * @param <V> The type of the value that the property stores
+     * @param <W> The type of the instance that the property stores if applicable
+     */
     //Abuse of generics
     public static class PropertyField<V,W extends DatabaseInstance<W>> {
+        /**
+         * The ID of the res string that defines the string used for the property key in the database
+         */
         public final int propertyNameID;
+        /**
+         * The function to test if a given value is valid for this property
+         */
         public final Predicate<Object> isValid;
+        /**
+         * If the property can be edited
+         */
         public final boolean canEdit;
+        /**
+         * If the property loads an instance
+         */
         public final boolean loads;
+        /**
+         * The collection that the instance is apart of if applicable
+         */
         public final Database.Collections loadsCollection;
+        /**
+         * If the instance can be null
+         */
         public final boolean loadsNullable;
+        /**
+         * If the value is an array of values
+         */
         public final boolean isArray;
+        /**
+         * If the array of values can be empty
+         */
         public final boolean emptyable;
 
+        /**
+         * Array instance constructor
+         * @param propertyNameID The ID of the res string that defines the string used for the property key in the database
+         * @param isValid The function to test if a given value is valid for this property
+         * @param canEdit If the property can be edited
+         * @param loads If the property loads an instance
+         * @param loadsCollection The collection that the instance is apart of if applicable
+         * @param nullable If the instance can be null
+         * @param isArray If the value is an array of values
+         * @param emptyable If the array of values can be empty
+         */
         public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit, boolean loads, Database.Collections loadsCollection, boolean nullable, boolean isArray, boolean emptyable) {
             this.propertyNameID = propertyNameID;
             this.isValid = isValid;
@@ -932,18 +1030,53 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             this.emptyable = emptyable;
         }
 
+        /**
+         * Single instance constructor
+         * <p>
+         * Sets {@link #isArray} to {@code false}
+         * @param propertyNameID The ID of the res string that defines the string used for the property key in the database
+         * @param isValid The function to test if a given value is valid for this property
+         * @param canEdit If the property can be edited
+         * @param loads If the property loads an instance
+         * @param loadsCollection The collection that the instance is apart of if applicable
+         * @param nullable If the instance can be null
+         */
         public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit, boolean loads, Database.Collections loadsCollection, boolean nullable) {
             this(propertyNameID, isValid, canEdit, loads, loadsCollection, nullable, false, true);
         }
 
+        /**
+         * Array value constructor
+         * <p>
+         * Sets {@link #loads} to {@code false}
+         * @param propertyNameID The ID of the res string that defines the string used for the property key in the database
+         * @param isValid The function to test if a given value is valid for this property
+         * @param canEdit If the property can be edited
+         * @param isArray If the value is an array of values
+         * @param emptyable If the array of values can be empty
+         */
         public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit, boolean isArray, boolean emptyable){
             this(propertyNameID, isValid, canEdit, false, null, true, isArray, emptyable);
         }
 
+        /**
+         * Single value constructor
+         * <p>
+         * Sets {@link #loads} and {@link #isArray} to {@code false}
+         * @param propertyNameID The ID of the res string that defines the string used for the property key in the database
+         * @param isValid The function to test if a given value is valid for this property
+         * @param canEdit If the property can be edited
+         */
         public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit){
             this(propertyNameID, isValid, canEdit, false, null, true, false, true);
         }
 
+        /**
+         * Gets the associated wrapper object
+         * @return If the property is an array and loads {@link ArrayInstancePropertyWrapper};
+         *          if the property is a single instance {@link InstancePropertyWrapper};
+         *          if the property is an array of values or single value {@link PropertyWrapper}
+         */
         @SuppressWarnings("unchecked")
         PropertyWrapper<?,?> getWrapper(){
             if(loads){
@@ -953,12 +1086,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                     return new InstancePropertyWrapper<>((PropertyField<String,W>)this);
                 }
             }else{
-                return new PropertyWrapper<V,NullInstance>(this);
+                return new PropertyWrapper<>((PropertyField<V,NullInstance>)this);
             }
-        }
-
-        public Database.Collections getLoadsCollection(Map<String, PropertyWrapper<?, ?>> properties) {
-            return loadsCollection;
         }
 
         /**
@@ -978,34 +1107,63 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
+    /**
+     * Designates a property and its current value for a database instance
+     * @param <V> The type of the value
+     * @param <W> The type of the instance if applicable
+     */
     public static class PropertyWrapper<V,W extends DatabaseInstance<W>>{
-        public final PropertyField<V,?> meta;
+        /**
+         * The property meta data
+         */
+        public final PropertyField<V,W> meta;
+        /**
+         * The current value
+         */
         public V value;
 
-        PropertyWrapper(PropertyField<V,?> meta) {
+        PropertyWrapper(PropertyField<V,W> meta) {
             this.meta = meta;
         }
 
+        /**
+         * Sets the value from an Object value
+         * @param value The value
+         * @throws ClassCastException if the value is not the correct type
+         */
         @SuppressWarnings("unchecked")
-        public void setValue(Object value) {
+        public void setValue(Object value) throws ClassCastException{
             this.value = (V) value;
         }
 
+        /**
+         * Returns the instance property wrapper of this wrapper
+         * @return The casted property wrapper
+         * @throws ClassCastException If this property does not load an instance or is an array
+         */
         @SuppressWarnings("unchecked")
-        public InstancePropertyWrapper<W> iS() {
+        public InstancePropertyWrapper<W> iS() throws ClassCastException{
             return (InstancePropertyWrapper<W>)this;
         }
+        /**
+         * Returns the array instance property wrapper of this wrapper
+         * @return The casted property wrapper
+         * @throws ClassCastException If this property does not load an instance or is not an array
+         */
         @SuppressWarnings("unchecked")
-        public ArrayInstancePropertyWrapper<W> iA() {
+        public ArrayInstancePropertyWrapper<W> iA() throws ClassCastException{
             return (ArrayInstancePropertyWrapper<W>)this;
         }
     }
 
     /**
-     *
-     * @param <W>
+     * A property wrapper for Single instance properties
+     * @param <W> The type of the property
      */
     public static class InstancePropertyWrapper<W extends DatabaseInstance<W>> extends PropertyWrapper<String,W>{
+        /**
+         * The current instance
+         */
         public W instance;
 
         InstancePropertyWrapper(PropertyField<String,W> meta) {
@@ -1013,10 +1171,17 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
     }
 
+    /**
+     * A property wrapper for array instance properties
+     * @param <W> The type of the property
+     */
     public static class ArrayInstancePropertyWrapper<W extends DatabaseInstance<W>> extends PropertyWrapper<List<String>,W>{
+        /**
+         * The current set of instances
+         */
         public List<W> instances;
 
-        ArrayInstancePropertyWrapper(PropertyField<List<String>, ?> meta) {
+        ArrayInstancePropertyWrapper(PropertyField<List<String>, W> meta) {
             super(meta);
         }
     }

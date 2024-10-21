@@ -8,7 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//TODO
+/**
+ * An instance of a event database item
+ * - An event can be edited
+ * @author Gareth Kmet
+ * @version 1.0
+ * @since 19oct24
+ *
+ * TODO - remove array of associations
+ */
 public class Event extends DatabaseInstance<Event> {
 
     /**

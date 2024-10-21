@@ -9,11 +9,16 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * The handler for the Firestore database
@@ -29,6 +34,10 @@ import java.util.Map;
  */
 public class Database implements EventListener<DocumentSnapshot>{
 
+    /**
+     * Set of listeners which are called whenever an error occurs
+     */
+    private final List<Consumer<RuntimeException>> errorListeners = new ArrayList<>();
 
     /**
      * The currently retrieved instances
@@ -142,6 +151,20 @@ public class Database implements EventListener<DocumentSnapshot>{
     }
 
     /**
+     * Initializes and instance using the data in the given snapshot
+     * @param instance The instance
+     * @param snapshot The document snapshot
+     * @param <T> The instance type
+     * @throws IllegalStateException If the instance is already initialized
+     * @throws IllegalArgumentException If the document does not match the instance
+     * @see DatabaseInstance#initializeData(Map, boolean)
+     */
+    <T extends DatabaseInstance<T>> void initializeFromDatabase(DatabaseInstance<T> instance, DocumentSnapshot snapshot) throws IllegalStateException, IllegalArgumentException{
+        if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
+        instance.initializeData(snapshot.getData(), snapshot.exists());
+    }
+
+    /**
      * Returns the {@link DatabaseInstance} of the document within the collection.
      * <p>
      *     If the {@code DatabaseInstance} already exists in the cache, the cache object reference
@@ -169,10 +192,46 @@ public class Database implements EventListener<DocumentSnapshot>{
      */
     @SuppressWarnings("unchecked")
     public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener){
+        return getInstance(collection, documentID, null);
+    };
+
+    /**
+     * Returns the {@link DatabaseInstance} of the document within the collection given the document snapshot.
+     * <p>
+     *     If the {@code DatabaseInstance} already exists in the cache, the cache object reference
+     *     count is increased, and the object is returned
+     * </p>
+     * <p>
+     *     If the {@code DatabaseInstance} does not exists in the cache, a new instance is created using the given document.
+     *     The instance is added to the database
+     * </p>
+     * If provided, the {@code }initializeListener} will be triggered once the instance has been
+     * populated.
+     * <p>
+     *     <b>Important</b>: The returned instance should not be used until the {@code InitializationListener} is called
+     * </p>
+     * <p>
+     *     If the id does not exists, the listener will be called with {@code success = false} and in
+     *     an illegal state
+     * </p>
+     * @param collection The collection that this instance resides in
+     * @param documentID The id of the instance within the collection
+     * @return The instance in an illegal state
+     * @param <T> The type of instance
+     * @throws IllegalArgumentException if the instance must be created and the document does not match the instance
+     * @see InitializationListener
+     * @see Collections#newInstance(Database, String)
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener, @Nullable DocumentSnapshot document) throws IllegalArgumentException{
         //TODO deal with no exists
         DatabaseInstance<T> instance = (DatabaseInstance<T>)(cache.computeIfAbsent(collection.getDatabaseID(documentID), k->{
             DatabaseInstance<T> i = collection.newInstance(this, documentID);
-            initializeFromDatabase(i);
+            if (document != null) {
+                initializeFromDatabase(i,document);
+            }else{
+                initializeFromDatabase(i);
+            }
             return i;
         }));
         instance.addInitializationListener(listener);
@@ -276,9 +335,23 @@ public class Database implements EventListener<DocumentSnapshot>{
         instance.updateDataFromDatabase(value.getData());
     }
 
+    /**
+     * Handles an error caused by the database
+     * @param ex the exception
+     */
+    void throwE(RuntimeException ex){
+        for(Consumer<RuntimeException> l : errorListeners){
+            l.accept(ex);
+        }
+        throw ex;
+    }
 
-    void throwE(Exception ex){
-        //TODO
+    /**
+     * Adds an error listener. This listener is called whenever an error occurs
+     * @param listener The listener
+     */
+    public void addErrorListener(Consumer<RuntimeException> listener){
+        this.errorListeners.add(listener);
     }
 
 
