@@ -3,6 +3,7 @@ package com.syzygy.events.database;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Filter;
@@ -13,6 +14,7 @@ import com.syzygy.events.R;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -42,10 +44,20 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * The current document snapshot
      */
     private @Nullable QuerySnapshot snapshot;
+
+    /**
+     * The number of results returned per page
+     */
+    private final int resultsPerPage;
     /**
      * The current list of loaded instances
      */
     private List<T> currentInstances = new ArrayList<>();
+
+    /**
+     * The current query used to get the page
+     */
+    private Query currentPage;
 
     /**
      * If an update has occurred since the last refresh
@@ -59,18 +71,20 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     /**
      * Creates a database query which can be refreshed to load the set of instances which are returned by the query
      * @param db The database
-     * @param filter The filter which is used to filter the collection
+     * @param query The query
      * @param collection The collection which this queries
      */
-    public DatabaseQuery(@NonNull Database db, @NonNull Filter filter, @NonNull Database.Collections collection){
+    public DatabaseQuery(@NonNull Database db, @NonNull Query query, @NonNull Database.Collections collection, int resultsPerPage){
         this.db = db;
         this.collection = collection;
-        this.query = collection.getCollection(db).where(filter);
+        this.query = query;
+        this.resultsPerPage = resultsPerPage;
+
     }
 
     /**
-     * Refreshes the query and loads the new instances
-     * Loads all instances of the current snapshot.
+     * Refreshes the query and loads the new instances at the current page.
+     * Loads all instances of the current snapshot at the page.
      * On completion, dissolves all previous instances and sets the current instances to the new instances.
      * Then notifies the listener of success.
      * <p>
@@ -82,14 +96,127 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *
      */
     public void refreshData(DataRefreshListener<T> listener){
-        query.get().addOnCompleteListener(task -> {
+        currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
                 listener.onError(this);
                 return;
             }
+
             snapshot = task.getResult();
             loadFromSnapshot(listener);
         });
+    }
+
+
+
+    /**
+     * Refreshes the query and loads the new instances starting at the instance following the last instance of the current page.
+     * If the current page does not exist or is empty, gets the first page
+     * Loads all instances of the current snapshot at the page.
+     * On completion, dissolves all previous instances and sets the current instances to the new instances.
+     * Then notifies the listener of success.
+     * <p>
+     *     If any point, and instances errors, dissolves all newly loaded instances and notifies the listener.
+     *     The current instances remains the same as before the function call.
+     * </p>
+     * <p>
+     *     This will refresh data even if the given page is the current page
+     * </p>
+     * @param listener The listener. Once the data is loaded, the listener is notified of success.
+     *                 Otherwise the listener is notified of failure.
+     *
+     */
+    public void gotoNextPage(DataRefreshListener<T> listener){
+        nextPageQuery();
+        refreshData(listener);
+    }
+
+    /**
+     * Refreshes the query and loads the new instances ending at the instance before the first instance of the current page.
+     * If the current page does not exist or is empty, gets the last page
+     * Loads all instances of the current snapshot at the page.
+     * On completion, dissolves all previous instances and sets the current instances to the new instances.
+     * Then notifies the listener of success.
+     * <p>
+     *     If any point, and instances errors, dissolves all newly loaded instances and notifies the listener.
+     *     The current instances remains the same as before the function call.
+     * </p>
+     * <p>
+     *     This will refresh data even if the given page is the current page
+     * </p>
+     * @param listener The listener. Once the data is loaded, the listener is notified of success.
+     *                 Otherwise the listener is notified of failure.
+     *
+     */
+    public void gotoPreviousPage(DataRefreshListener<T> listener){
+        previousPageQuery();
+        refreshData(listener);
+    }
+
+    /**
+     * Refreshes the query and loads the first page of results
+     * Loads all instances of the current snapshot at the page.
+     * On completion, dissolves all previous instances and sets the current instances to the new instances.
+     * Then notifies the listener of success.
+     * <p>
+     *     If any point, and instances errors, dissolves all newly loaded instances and notifies the listener.
+     *     The current instances remains the same as before the function call.
+     * </p>
+     * <p>
+     *     This will refresh data even if the given page is the current page
+     * </p>
+     * @param listener The listener. Once the data is loaded, the listener is notified of success.
+     *                 Otherwise the listener is notified of failure.
+     *
+     */
+    public void gotoFirstPage(DataRefreshListener<T> listener){
+        firstPageQuery();
+        refreshData(listener);
+    }
+
+    /**
+     * Sets the currentPage query to the set of resultsPerPage after the last document in the previous result.
+     * If the previous result was empty or null, gets the first page of results
+     */
+    private void nextPageQuery(){
+        if(snapshot == null || snapshot.isEmpty()) {
+            firstPageQuery();
+            return;
+        }
+        currentPage = query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
+    }
+
+    /**
+     * Sets the currentPage query to the set of resultsPerPage before the first document in the previous result.
+     * If the previous result was empty or null, gets the last page of results
+     */
+    private void previousPageQuery(){
+        if(snapshot == null || snapshot.isEmpty()) {
+            lastPageQuery();
+            return;
+        }
+        currentPage = query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
+    }
+
+    /**
+     * Gets the first resultsPerPage of the query
+     */
+    private void firstPageQuery(){
+        currentPage = query.limit(resultsPerPage);
+    }
+    /**
+     * Gets the last resultsPerPage of the query
+     */
+    private void lastPageQuery(){
+        currentPage = query.limitToLast(resultsPerPage);
+    }
+
+
+    /**
+     * @return The number of results per page
+     */
+    public int getResultsPerPage(){
+        return resultsPerPage;
     }
 
 
@@ -137,7 +264,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void setNewInstances(List<T> newInstances){
         dissolve();
-        currentInstances = newInstances;
+        currentInstances.addAll(newInstances);
         currentInstances.forEach(i -> i.addListener(this));
         updates = false;
         deletes = false;
@@ -225,15 +352,24 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     }
 
     public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, User u){
-        return new DatabaseQuery<>(db, Filter.arrayContains(db.constants.getString(R.string.database_assoc_user), u.getDocumentID()), Database.Collections.EVENT_ASSOCIATIONS);
+        Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_user), u.getDocumentID());
+        Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
+        Query q = c.getCollection(db).where(f);
+        return new DatabaseQuery<>(db, q, c, 10);
     }
 
     public static DatabaseQuery<Event> getFacilityEvents(Database db, Facility facility){
-        return new DatabaseQuery<>(db, Filter.equalTo(db.constants.getString(R.string.database_event_facilityID), facility.getDocumentID()), Database.Collections.EVENTS);
+        Filter f = Filter.equalTo(db.constants.getString(R.string.database_event_facilityID), facility.getDocumentID());
+        Database.Collections c = Database.Collections.EVENTS;
+        Query q = c.getCollection(db).where(f);
+        return new DatabaseQuery<>(db, q, c, 10);
     }
 
     public static DatabaseQuery<Notification> getMyNotifications(Database db, User u){
-        return new DatabaseQuery<>(db, Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID()), Database.Collections.NOTIFICATIONS);
+        Filter f = Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID());
+        Database.Collections c = Database.Collections.NOTIFICATIONS;
+        Query q = c.getCollection(db).where(f);
+        return new DatabaseQuery<>(db, q, c, 25);
     }
 
     public static DatabaseQuery<User> getUsers(Database db){
