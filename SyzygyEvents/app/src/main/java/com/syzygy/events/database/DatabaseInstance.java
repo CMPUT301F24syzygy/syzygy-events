@@ -386,17 +386,39 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
         InstancePropertyWrapper<W> prop = (InstancePropertyWrapper<W>) p;
         if(Objects.equals(newID, prop.value)) return;
-        if(prop.instance != null){
-            if(prop.instance.isLegalState()) prop.instance.dissolve();
-        }
-        prop.value = newID;
-        prop.instance = null;
+
+        W newInstance = null;
+
         if(!newID.isBlank()){
-            prop.instance = db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {if(!s)setPropertyValue(prop.meta.propertyNameID, "");}); //TODO on error
+            newInstance = db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {if(!s)setPropertyValue(prop.meta.propertyNameID, "");}); //TODO on error
         }else {
             if (!prop.meta.loadsNullable)
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID + " - " + newID));
         }
+        if(prop.instance != null){
+            prop.instance.dissolve();
+        }
+
+        prop.instance = newInstance;
+        prop.value = newID;
+    }
+
+    /**
+     * Exchanges a instance property's instance and id with the given new instance. Fetches a reference to the newInstance
+     * @param prop The property to edit
+     * @param newInstance The new Instance
+     * @param <W> The type of the instance
+     * @throws IllegalArgumentException If the property is not an instance property
+     * @throws ClassCastException If the type does not match the properties type
+     */
+    private <W extends DatabaseInstance<W>> void exchangeInstance(InstancePropertyWrapper<W> prop, W newInstance) throws ClassCastException{
+        if(Objects.equals(newInstance, prop.instance)) return;
+        if(newInstance!=null)newInstance.fetch();
+        if(prop.instance != null){
+            prop.instance.dissolve();
+        }
+        prop.instance = newInstance;
+        prop.value = newInstance == null?"":newInstance.getDocumentID();
     }
 
     /**
@@ -409,18 +431,23 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param data The property key-value set
      * @return {@code true} if the instance was changed as a result
      * @throws IllegalArgumentException if a key is not one of the available properties, or if the value is not valid
+     * @throws ClassCastException if a value does not match an properties type
      */
-
-    protected final boolean modifyData(Map<String, Object> data) throws IllegalArgumentException{
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected final boolean modifyData(Map<String, Object> data) throws IllegalArgumentException, ClassCastException{
         boolean diff = false;
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
-            if(prop == null) db.throwE(new IllegalArgumentException());
+            if(prop == null) db.throwE(new IllegalArgumentException("Invalid property"));
             if(Objects.equals(prop.value, ent.getValue())) continue;
             diff = true;
-            if(!isPropertyValid(prop, ent.getValue())) db.throwE(new IllegalArgumentException());
+            if(!isPropertyValid(prop, ent.getValue())) db.throwE(new IllegalArgumentException("Invalid value"));
             if(prop.meta.loads){
-                exchangeInstance(prop, (String)ent.getValue());
+                if(ent.getValue() instanceof DatabaseInstance){
+                    exchangeInstance((InstancePropertyWrapper) prop, (DatabaseInstance)ent.getValue());
+                }else{
+                    exchangeInstance(prop, (String)ent.getValue());
+                }
             }else{
                 prop.setValue(ent.getValue());
             }
@@ -432,12 +459,13 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
 
     /**
-     * Edits the value of a property
+     * Edits the value of a property. If the property is an instance, loads the property and fetches the reference
      * @param resID The res id of the property name
      * @param newValue the new value of the property
      * @return if the property was changed
      * @throws IllegalArgumentException if the property does not exist or if the property cannot be edited or the new value is invalid
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     * @throws ClassCastException if the value type does not match the properties type
      */
     public final boolean setPropertyValue(int resID, Object newValue) throws IllegalArgumentException, IllegalStateException{
         assertNotIllegalState();
@@ -452,6 +480,33 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }else{
             prop.setValue(newValue);
         }
+        processUpdate();
+        return true;
+    }
+
+    /**
+     * Edits the value of an instance property to the new instance. Fetches a reference to the new instance
+     * @param resID The res id of the property name
+     * @param instance the instance to make the new value. This function will retrieve its own reference
+     * @return if the property was changed
+     * @throws IllegalArgumentException if the property does not exist or if the property cannot be edited or the new value is invalid or the property is not an instance property
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     * @throws ClassCastException if the instance type does not match the properties type
+     */
+    @SuppressWarnings("unchecked")
+    public final <W extends DatabaseInstance<W>> boolean setPropertyInstance(int resID, @Nullable W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
+        assertNotIllegalState();
+        String name = db.constants.getString(resID);
+        PropertyWrapper<?,?> prop = properties.get(name);
+        if(prop==null || !prop.meta.loads) db.throwE(new IllegalArgumentException("Invalid property: " + name));
+        if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
+        if(instance == null && !prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("Cannot set to null: " + name));
+        if(instance != null && !instance.isLegalState()) db.throwE(new IllegalArgumentException("Instance is in illegal state " + name));
+        String id = instance == null? "": instance.getDocumentID();
+        if(!isPropertyValid(prop, id)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + instance.toString()));
+        InstancePropertyWrapper<W> iprop = (InstancePropertyWrapper<W>) prop;
+        if(Objects.equals(iprop.instance, instance)) return false;
+        exchangeInstance(iprop, instance);
         processUpdate();
         return true;
     }
@@ -676,6 +731,21 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             notifyUpdate(Database.UpdateListener.Type.UPDATE);
         }
         return mod;
+    }
+
+    /**
+     * Updates multiple values and notifies listeners. Then updates the database.
+     * @param data The property name -> value mapping of all fields to be edited
+     * @return If the data was changed as a result
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     * @throws IllegalArgumentException if a key is not one of the available properties to edit or a value is not valid
+     * @throws ClassCastException If a value's type does not match the property type
+     */
+    public final boolean updateDataFromMap(Map<String,Object> data) throws IllegalStateException, IllegalArgumentException, ClassCastException{
+        assertNotIllegalState();
+        if(!modifyData(data)) return false;
+        processUpdate();
+        return true;
     }
 
     /**

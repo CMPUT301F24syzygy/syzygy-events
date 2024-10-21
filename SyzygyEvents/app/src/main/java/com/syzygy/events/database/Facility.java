@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 
@@ -28,6 +30,79 @@ public class Facility extends DatabaseInstance<Facility> {
     @Override
     protected Facility cast() {
         return this;
+    }
+
+    public String getName(){
+        return getPropertyValueI(R.string.database_fac_name);
+    }
+
+    public boolean setName(String val){
+        return setPropertyValue(R.string.database_fac_name, val);
+    }
+
+    public GeoPoint getLocation(){
+        return getPropertyValueI(R.string.database_fac_location);
+    }
+
+    public boolean setLocation(GeoPoint val){
+        return setPropertyValue(R.string.database_fac_location, val);
+    }
+
+    public String getDescription(){
+        return getPropertyValueI(R.string.database_fac_description);
+    }
+
+    public boolean setDescription(String val){
+        return setPropertyValue(R.string.database_fac_description, val);
+    }
+
+    public String getImageID(){
+        return getPropertyValueI(R.string.database_fac_imageID);
+    }
+
+    public boolean setImageID(String val){
+        return setPropertyValue(R.string.database_fac_imageID, val);
+    }
+
+    public String getOrganizerID(){
+        return getPropertyValueI(R.string.database_fac_organizer);
+    }
+
+    public Image getImage(){
+        return getPropertyInstanceI(R.string.database_fac_imageID);
+    }
+
+    /**
+     * Sets the Image instance. This function will create a new reference to the instance.
+     * @param val The new instance
+     */
+    public boolean setImage(@Nullable Image val){
+        return setPropertyInstance(R.string.database_fac_imageID, val);
+    }
+
+    public User getOrganizer(){
+        return getPropertyInstanceI(R.string.database_fac_organizer);
+    }
+
+    /**
+     * Updates all properties of the facility. If the facility changes, a notification is sent to listeners once and the database is updated once
+     * @param name The name of the facility
+     * @param location The location of the facility
+     * @param description The description of the facility
+     * @param imageID The ID of the facility profile image
+     * @return If the facility changed as a result
+     */
+    public boolean update(String name,
+                          GeoPoint location,
+                          String description,
+                          String imageID
+    ){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_fac_name, name);
+        map.put(R.string.database_fac_location, location);
+        map.put(R.string.database_fac_description, description);
+        map.put(R.string.database_fac_imageID, imageID);
+        return updateDataFromMap(db.convertIDMapToNames(map));
     }
 
     /**

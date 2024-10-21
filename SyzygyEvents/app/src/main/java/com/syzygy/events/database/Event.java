@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
@@ -32,18 +34,147 @@ public class Event extends DatabaseInstance<Event> {
         return this;
     }
 
+    public String getTitle(){
+        return getPropertyValueI(R.string.database_event_title);
+    }
+
+    public boolean setTitle(String val){
+        return setPropertyValue(R.string.database_event_title, val);
+    }
+
+    public String getPosterID(){
+        return getPropertyValueI(R.string.database_event_posterID);
+    }
+
+    public boolean setPosterID(String val){
+        return setPropertyValue(R.string.database_event_posterID, val);
+    }
+
+    public String getFacilityID(){
+        return getPropertyValueI(R.string.database_event_facilityID);
+    }
+
+    public Boolean getRequiresLocation(){
+        return getPropertyValueI(R.string.database_event_geo);
+    }
+
+    public boolean setRequiresLocation(Boolean val){
+        return setPropertyValue(R.string.database_event_geo, val);
+    }
+
+    public String getDescription(){
+        return getPropertyValueI(R.string.database_event_description);
+    }
+
+    public boolean setDescription(String val){
+        return setPropertyValue(R.string.database_event_description, val);
+    }
+
+    public Integer getCapacity(){
+        return getPropertyValueI(R.string.database_event_capacity);
+    }
+
+    public boolean setCapacity(Integer val){
+        return setPropertyValue(R.string.database_event_capacity, val);
+    }
+
+    public Integer getWaitlistCapacity(){
+        return getPropertyValueI(R.string.database_event_waitlist);
+    }
+
+    public boolean setWaitlistCapacity(Integer val){
+        return setPropertyValue(R.string.database_event_waitlist, val);
+    }
+
+    public String getQrHash(){
+        return getPropertyValueI(R.string.database_event_qrHash);
+    }
+
+    public boolean setQrHash(String val){
+        return setPropertyValue(R.string.database_event_qrHash, val);
+    }
+
+    public Double getDate(){
+        return getPropertyValueI(R.string.database_event_date);
+    }
+
+    public boolean setDate(Double val){
+        return setPropertyValue(R.string.database_event_date, val);
+    }
+
+    public Timestamp getPrice(){
+        return getPropertyValueI(R.string.database_event_price);
+    }
+
+    public boolean setPrice(Timestamp val){
+        return setPropertyValue(R.string.database_event_price, val);
+    }
+
+    public Image getPoster(){
+        return getPropertyInstanceI(R.string.database_event_posterID);
+    }
+
+    /**
+     * Sets the Image instance. This function will create a new reference to the instance.
+     * @param val The new instance
+     */
+    public boolean setPoster(@Nullable Image val){
+        return setPropertyInstance(R.string.database_event_posterID, val);
+    }
+
+    public Facility getFacility(){
+        return getPropertyInstanceI(R.string.database_event_facilityID);
+    }
+
+    /**
+     * Updates all properties of the event. If the event changes, a notification is sent to listeners once and the database is updated once
+     * @param title The title of the event
+     * @param posterID The id of the poster image
+     * @param requiresLocation If the users geolocation is recorded on signup
+     * @param description the description of the event
+     * @param capacity The max capacity of the event
+     * @param waitlistCapacity the max waitlist capacity of the event
+     * @param qrHash the cashed qr code data for the event
+     * @param price the price of the event
+     * @param date the date of the event
+     * @return If the event changed as a result
+     */
+    public boolean update(String title,
+                          String posterID,
+                          Boolean requiresLocation,
+                          String description,
+                          Integer capacity,
+                          Integer waitlistCapacity,
+                          String qrHash,
+                          Double price,
+                          Timestamp date
+    ){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_event_title, title);
+        map.put(R.string.database_event_posterID, posterID);
+        map.put(R.string.database_event_geo, requiresLocation);
+        map.put(R.string.database_event_description, description);
+        map.put(R.string.database_event_capacity, capacity);
+        map.put(R.string.database_event_waitlist, waitlistCapacity);
+        map.put(R.string.database_event_qrHash, qrHash);
+        map.put(R.string.database_event_date, date);
+        map.put(R.string.database_event_price, price);
+
+        return updateDataFromMap(db.convertIDMapToNames(map));
+    }
+
     /**
      * The list of the fields defined for a User
      */
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_title, o -> o instanceof String && !((String) o).isBlank(), true),
-            new PropertyField<String, Image>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, false),
-            new PropertyField<String, Facility>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true),
+            new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true),
+            new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, true),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Integer && ((Integer)o > 0 || (Integer)o == -1), true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double)o)>=0, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_date, o -> o instanceof Timestamp, true)
     };

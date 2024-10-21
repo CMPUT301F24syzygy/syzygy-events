@@ -29,6 +29,23 @@ public class Image extends DatabaseInstance<Image> {
         return this;
     }
 
+    public String getLocType(){
+        return getPropertyValueI(R.string.database_img_locType);
+    }
+
+    public String getLocName(){
+        return getPropertyValueI(R.string.database_img_locName);
+    }
+
+    public String getLocID(){
+        return getPropertyValueI(R.string.database_img_locID);
+    }
+
+    public String getAddress(){
+        return getPropertyValueI(R.string.database_img_address);
+    }
+
+
     /**
      * The list of the fields defined for a User
      */

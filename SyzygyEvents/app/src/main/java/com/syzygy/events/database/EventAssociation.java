@@ -29,6 +29,50 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         return this;
     }
 
+    public GeoPoint getLocation(){
+        return getPropertyValueI(R.string.database_assoc_geo);
+    }
+
+    public boolean setLocation(GeoPoint val){
+        return setPropertyValue(R.string.database_assoc_geo, val);
+    }
+
+    public String getEventID(){
+        return getPropertyValueI(R.string.database_assoc_event);
+    }
+
+    public String getStatus(){
+        return getPropertyValueI(R.string.database_assoc_status);
+    }
+
+    public boolean setStatus(String val){
+        return setPropertyValue(R.string.database_assoc_status, val);
+    }
+
+    public String getUserID(){
+        return getPropertyValueI(R.string.database_assoc_user);
+    }
+
+    public User getUser(){
+        return getPropertyInstanceI(R.string.database_assoc_user);
+    }
+    public Event getEvent(){
+        return getPropertyInstanceI(R.string.database_assoc_event);
+    }
+
+    /**
+     * Updates all properties of the assoc. If the assoc changes, a notification is sent to listeners once and the database is updated once
+     * @param location The location where the user signed into the event
+     * @param status The status of the association
+     * @return If the assoc changed as a result
+     */
+    public boolean update(GeoPoint location, String status){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_assoc_geo, location);
+        map.put(R.string.database_assoc_status, status);
+        return updateDataFromMap(db.convertIDMapToNames(map));
+    }
+
     /**
      * The list of the fields defined for a User
      */

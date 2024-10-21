@@ -30,6 +30,44 @@ public class Notification extends DatabaseInstance<Notification> {
         return this;
     }
 
+    public String getSubject(){
+        return getPropertyValueI(R.string.database_not_subject);
+    }
+
+    public String getBody(){
+        return getPropertyValueI(R.string.database_not_body);
+    }
+
+    public Timestamp getSentTime(){
+        return getPropertyValueI(R.string.database_not_time);
+    }
+
+    public Boolean getIsRead(){
+        return getPropertyValueI(R.string.database_not_read);
+    }
+
+    public String getEventID(){
+        return getPropertyValueI(R.string.database_not_eventID);
+    }
+
+    public String getSenderID(){
+        return getPropertyValueI(R.string.database_not_senderID);
+    }
+
+    public String getReceiverID(){
+        return getPropertyValueI(R.string.database_not_receiverID);
+    }
+
+    public Event getEvent(){
+        return getPropertyInstanceI(R.string.database_not_eventID);
+    }
+    public User getSender(){
+        return getPropertyInstanceI(R.string.database_not_senderID);
+    }
+    public User getReceiver(){
+        return getPropertyInstanceI(R.string.database_not_receiverID);
+    }
+
     /**
      * The list of the fields defined for a User
      */
