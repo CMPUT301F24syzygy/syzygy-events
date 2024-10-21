@@ -194,6 +194,19 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
+     * Increases the reference count of this instance and attaches the listener
+     * @param listener the update listener
+     * @return This instance casted to the generic type
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     */
+    public T fetch(Database.UpdateListener listener) throws IllegalStateException{
+        assertNotIllegalState();
+        referenceCount ++;
+        addListener(listener);
+        return cast();
+    }
+
+    /**
      * Decreases the reference count of this instance
      */
     public void dissolve(){

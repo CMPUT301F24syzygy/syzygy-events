@@ -22,10 +22,11 @@ import java.util.stream.Collectors;
 
 
 /**
- * Stores a query that is executed on a collection within the database. Loads instances returned from this query
+ * Stores a query that is executed on a collection within the database. Loads instances returned from this query in pages
  * @author Gareth Kmet
  * @version 1.0
  * @since 20oct24
+ * @param <T> The type of instance being returned
  */
 public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
@@ -52,12 +53,17 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     /**
      * The current list of loaded instances
      */
-    private List<T> currentInstances = new ArrayList<>();
+    private final List<T> currentInstances = new ArrayList<>();
 
     /**
      * The current query used to get the page
      */
     private Query currentPage;
+
+    /**
+     * The page
+     */
+    private Page thisPage = Page.NULL;
 
     /**
      * If an update has occurred since the last refresh
@@ -101,16 +107,21 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                 listener.onError(this);
                 return;
             }
-
-            snapshot = task.getResult();
+            QuerySnapshot snap = task.getResult();
+            if(thisPage == Page.NEXT && snap.size() < resultsPerPage) {
+                thisPage = Page.LAST;
+            }else if(thisPage == Page.PREVIOUS && snap.size() < resultsPerPage){
+                thisPage = Page.FIRST;
+            }else if(thisPage == Page.FIRST && snap.size() < resultsPerPage){
+                thisPage = Page.FIRST_LAST;
+            }
             loadFromSnapshot(listener);
         });
     }
 
-
-
     /**
      * Refreshes the query and loads the new instances starting at the instance following the last instance of the current page.
+     * If the result is less the the limit, gets the first page.
      * If the current page does not exist or is empty, gets the first page
      * Loads all instances of the current snapshot at the page.
      * On completion, dissolves all previous instances and sets the current instances to the new instances.
@@ -127,12 +138,18 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *
      */
     public void gotoNextPage(DataRefreshListener<T> listener){
+        if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
+            gotoFirstPage(listener);
+            return;
+        }
+        thisPage = Page.NEXT;
         nextPageQuery();
         refreshData(listener);
     }
 
     /**
      * Refreshes the query and loads the new instances ending at the instance before the first instance of the current page.
+     * If the results are empty, gets the last page
      * If the current page does not exist or is empty, gets the last page
      * Loads all instances of the current snapshot at the page.
      * On completion, dissolves all previous instances and sets the current instances to the new instances.
@@ -149,6 +166,11 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *
      */
     public void gotoPreviousPage(DataRefreshListener<T> listener){
+        if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
+            lastPageQuery();
+            return;
+        }
+        thisPage = Page.PREVIOUS;
         previousPageQuery();
         refreshData(listener);
     }
@@ -170,31 +192,86 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *
      */
     public void gotoFirstPage(DataRefreshListener<T> listener){
+        thisPage = Page.FIRST;
         firstPageQuery();
         refreshData(listener);
     }
 
     /**
+     * Refreshes the query and loads the last page of results
+     * Loads all instances of the current snapshot at the page.
+     * On completion, dissolves all previous instances and sets the current instances to the new instances.
+     * Then notifies the listener of success.
+     * <p>
+     *     If any point, and instances errors, dissolves all newly loaded instances and notifies the listener.
+     *     The current instances remains the same as before the function call.
+     * </p>
+     * <p>
+     *     This will refresh data even if the given page is the current page
+     * </p>
+     * @param listener The listener. Once the data is loaded, the listener is notified of success.
+     *                 Otherwise the listener is notified of failure.
+     *
+     */
+    public void gotoLastPage(DataRefreshListener<T> listener){
+        thisPage = Page.LAST;
+        lastPageQuery();
+        refreshData(listener);
+    }
+
+    /**
+     * Goes to the corresponding page
+     * @param listener The listener
+     * @param page The page to goto
+     * @see #gotoFirstPage(DataRefreshListener) 
+     * @see #gotoLastPage(DataRefreshListener) 
+     * @see #gotoNextPage(DataRefreshListener) 
+     * @see #gotoPreviousPage(DataRefreshListener) 
+     */
+    public void gotoPage(DataRefreshListener<T> listener, Page page){
+        switch (page){
+            case NULL:
+                dissolve(); listener.onSuccess(this); break;
+            case LAST:
+                gotoLastPage(listener); break;
+            case NEXT:
+                gotoNextPage(listener); break;
+            case FIRST:
+            case FIRST_LAST:
+                gotoFirstPage(listener); break;
+            case PREVIOUS:
+                gotoPreviousPage(listener); break;
+
+        }
+    }
+
+    /**
+     * @return {@code false} if this thinks there is more data before
+     */
+    public boolean isFirstPage(){
+        return thisPage == Page.FIRST || thisPage == Page.FIRST_LAST;
+    }
+
+    /**
+     * @return {@code true} if this thinks there is more data after
+     */
+    public boolean isLastPage(){
+        return thisPage == Page.LAST || thisPage == Page.FIRST_LAST;
+    }
+
+    /**
      * Sets the currentPage query to the set of resultsPerPage after the last document in the previous result.
-     * If the previous result was empty or null, gets the first page of results
      */
     private void nextPageQuery(){
-        if(snapshot == null || snapshot.isEmpty()) {
-            firstPageQuery();
-            return;
-        }
+        assert snapshot != null;
         currentPage = query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
     }
 
     /**
      * Sets the currentPage query to the set of resultsPerPage before the first document in the previous result.
-     * If the previous result was empty or null, gets the last page of results
      */
     private void previousPageQuery(){
-        if(snapshot == null || snapshot.isEmpty()) {
-            lastPageQuery();
-            return;
-        }
+        assert snapshot != null;
         currentPage = query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
     }
 
@@ -274,6 +351,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * Removes references to all instances that have been created and clears the current instance
      */
     public void dissolve(){
+        thisPage = Page.NULL;
         currentInstances.forEach(i -> i.dissolve(this));
         currentInstances.clear();
     }
@@ -384,5 +462,30 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return null; //TODO
     }
 
-
+    public enum Page{
+        /**
+         * @see #dissolve()
+         */
+        NULL,
+        /**
+         * @see #gotoFirstPage(DataRefreshListener) 
+         */
+        FIRST,
+        /**
+         * @see #gotoLastPage(DataRefreshListener) 
+         */
+        LAST,
+        /**
+         * @see #gotoNextPage(DataRefreshListener)
+         */
+        NEXT,
+        /**
+         * @see #gotoPreviousPage(DataRefreshListener)
+         */
+        PREVIOUS,
+        /**
+         * @see #gotoFirstPage(DataRefreshListener)
+         */
+        FIRST_LAST
+    }
 }
