@@ -284,7 +284,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
-     * Called when this instance is dereferenced. This function should dereference any sub-instances
+     * Called when this instance is dereferenced. This function should dissolve any sub-instances
      */
     protected void subDereferenceInstance() {
         for(String name : iproperties){

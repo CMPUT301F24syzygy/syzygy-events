@@ -17,7 +17,7 @@ import java.util.List;
  * @param <T> The type of instance being returned
  * @see DatabaseQuery
  */
-public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Database.UpdateListener {
+public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseInfLoadQuery<T>> {
 
     /**
      * The database query object
@@ -39,12 +39,14 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
         this.query = query;
     }
 
+
     /**
      * Resets all data and loads the first page of data of this query and loads the new instances
      * @param listener The listener that will be called on completion
      */
-    public void refreshData(DataRefreshListener<T> listener){
-        query.gotoFirstPage(new DatabaseQuery.DataRefreshListener<T>() {
+    @Override
+    public void refreshData(Listener<DatabaseInfLoadQuery<T>> listener){
+        query.gotoFirstPage(new Listener<DatabaseQuery<T>>() {
             @Override
             public void onError(DatabaseQuery<T> query) {
                 listener.onError(DatabaseInfLoadQuery.this);
@@ -63,8 +65,8 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      * Adds a page of data to the current list and loads the instances
      * @param listener The listener that will called on completion.
      */
-    public void incrementData(DataRefreshListener<T> listener){
-        query.gotoNextPage(new DatabaseQuery.DataRefreshListener<T>() {
+    public void incrementData(Listener<DatabaseInfLoadQuery<T>> listener){
+        query.gotoNextPage(new Listener<DatabaseQuery<T>>() {
             @Override
             public void onError(DatabaseQuery<T> query) {
                 listener.onError(DatabaseInfLoadQuery.this);
@@ -138,24 +140,5 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
         if(type == Type.DELETE || type == Type.UPDATE){
             outOfDate = true;
         }
-    }
-
-    /**
-     * Listener that is called when a query finishes loading data
-     * @param <T> The type of the instance
-     */
-    public interface DataRefreshListener<T extends DatabaseInstance<T>>{
-        /**
-         * Called if an error occurred while loading data.
-         * The data of the query is not changed by the refresh
-         * @param query The query
-         */
-        void onError(DatabaseInfLoadQuery<T> query);
-
-        /**
-         * Called when the query has completed refreshing data and now contains all the new loaded instances
-         * @param query The query
-         */
-        void onSuccess(DatabaseInfLoadQuery<T> query);
     }
 }

@@ -90,11 +90,12 @@ public class Notification extends DatabaseInstance<Notification> {
      * <p>
      *     The instance will be invalid on return, only use it after waiting for the initialization listener
      * </p>
+     * <p>
+     *     Sets {@code isRead} to {@code false}
+     * </p>
      * @param db The database
      * @param subject The subject of the notification
      * @param body The body of the notification
-     * @param sentTime The time the notification was sent
-     * @param isRead If the notification is read
      * @param eventID The ID of the event associated to the notification
      * @param receiverID The id of the receiver
      * @param senderID The id of the sender
@@ -103,15 +104,14 @@ public class Notification extends DatabaseInstance<Notification> {
      */
     public static Notification NewInstance(Database db,
                                        String subject,
-                                       String  body,
-                                       Timestamp sentTime,
-                                       Boolean isRead,
+                                       String body,
                                        String eventID, 
                                        String receiverID, 
                                        String senderID,
                                        Database.InitializationListener<Notification> listener
     ){
-        Map<Integer,Object> map = createDataMap(subject, body, sentTime, isRead, eventID, receiverID, senderID);
+        Timestamp sentTime = Timestamp.now();
+        Map<Integer,Object> map = createDataMap(subject, body, sentTime, false, eventID, receiverID, senderID);
 
         if(!validateDataMap(map)){
             return null;

@@ -9,9 +9,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -510,6 +511,68 @@ public class Database implements EventListener<DocumentSnapshot>{
     public interface GetConstantsByID {
         public String getString(int resID);
         public int getInteger(int resID);
+    }
+
+    /**
+     * A class which querries the firestore database
+     */
+    public interface Querrier<T extends Querrier<T>>{
+
+        public void refreshData(Listener<T> listener);
+
+        /**
+         * Listener that is called when a query finishes loading data
+         * @param <S> The type of the querrier
+         */
+        interface Listener<S extends Querrier<S>> {
+            /**
+             * Called if an error occurred while loading data.
+             * The data of the query is not changed by the refresh
+             * @param query The query
+             */
+            public void onError(S query);
+            /**
+             * Called when the query has completed loading data and now contains all the new loaded instances
+             * @param query The query
+             */
+            public void onSuccess(S query);
+        }
+        /**
+         * Listener that is called when a query finishes loading data and returns data
+         * @param <S> The type of the querrier
+         * @param <W> The type of return data
+         */
+        interface DataListener<S extends Querrier<S>, W extends QueryResult<?>> {
+            /**
+             * Called if an error occurred while loading data.
+             * @param query The query
+             */
+            public void onError(S query);
+            /**
+             * Called when the query has completed getting the data
+             * @param query The query
+             * @param data The list of instances found by the query
+             */
+            public void onSuccess(S query, W data);
+        }
+
+        public class QueryResult<V> {
+            public final V result;
+
+            public QueryResult(V result) {
+                this.result = result;
+            }
+        }
+
+        /**
+         * The result of a query
+         */
+        public class QueryInstanceResult<V extends DatabaseInstance<V>> extends QueryResult<List<V>>{
+
+            public QueryInstanceResult(List<V> list) {
+                super(java.util.Collections.unmodifiableList(list));
+            }
+        }
     }
 
 }

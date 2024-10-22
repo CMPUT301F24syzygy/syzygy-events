@@ -3,8 +3,6 @@ package com.syzygy.events.database;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.firebase.firestore.AggregateSource;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.Query;
@@ -14,11 +12,8 @@ import com.syzygy.events.R;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -28,7 +23,7 @@ import java.util.stream.Collectors;
  * @since 20oct24
  * @param <T> The type of instance being returned
  */
-public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener {
+public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseQuery<T>>{
     /**
      * The database
      */
@@ -47,9 +42,9 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     private @Nullable QuerySnapshot snapshot;
 
     /**
-     * The number of results returned per page
+     * The number of results returned per page. If null, all results are returned
      */
-    private final int resultsPerPage;
+    private final @Nullable Integer resultsPerPage;
     /**
      * The current list of loaded instances
      */
@@ -79,8 +74,9 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * @param db The database
      * @param query The query
      * @param collection The collection which this queries
+     * @param resultsPerPage The total number of results to be passed per page, if it is null, all results are retrieved
      */
-    public DatabaseQuery(@NonNull Database db, @NonNull Query query, @NonNull Database.Collections collection, int resultsPerPage){
+    public DatabaseQuery(@NonNull Database db, @NonNull Query query, @NonNull Database.Collections collection, @Nullable Integer resultsPerPage){
         this.db = db;
         this.collection = collection;
         this.query = query;
@@ -101,18 +97,22 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
-    public void refreshData(DataRefreshListener<T> listener){
+    public void refreshData(Listener<DatabaseQuery<T>> listener){
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
                 listener.onError(this);
                 return;
             }
             QuerySnapshot snap = task.getResult();
-            if(thisPage == Page.NEXT && snap.size() < resultsPerPage) {
-                thisPage = Page.LAST;
-            }else if(thisPage == Page.PREVIOUS && snap.size() < resultsPerPage){
-                thisPage = Page.FIRST;
-            }else if(thisPage == Page.FIRST && snap.size() < resultsPerPage){
+            if(resultsPerPage != null){
+                if(thisPage == Page.NEXT && snap.size() < resultsPerPage) {
+                    thisPage = Page.LAST;
+                }else if(thisPage == Page.PREVIOUS && snap.size() < resultsPerPage){
+                    thisPage = Page.FIRST;
+                }else if(thisPage == Page.FIRST && snap.size() < resultsPerPage){
+                    thisPage = Page.FIRST_LAST;
+                }
+            }else{
                 thisPage = Page.FIRST_LAST;
             }
             loadFromSnapshot(listener);
@@ -137,7 +137,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
-    public void gotoNextPage(DataRefreshListener<T> listener){
+    public void gotoNextPage(Listener<DatabaseQuery<T>> listener){
         if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
             gotoFirstPage(listener);
             return;
@@ -165,7 +165,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
-    public void gotoPreviousPage(DataRefreshListener<T> listener){
+    public void gotoPreviousPage(Listener<DatabaseQuery<T>> listener){
         if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
             lastPageQuery();
             return;
@@ -191,7 +191,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
-    public void gotoFirstPage(DataRefreshListener<T> listener){
+    public void gotoFirstPage(Listener<DatabaseQuery<T>> listener){
         thisPage = Page.FIRST;
         firstPageQuery();
         refreshData(listener);
@@ -213,7 +213,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
-    public void gotoLastPage(DataRefreshListener<T> listener){
+    public void gotoLastPage(Listener<DatabaseQuery<T>> listener){
         thisPage = Page.LAST;
         lastPageQuery();
         refreshData(listener);
@@ -223,12 +223,12 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * Goes to the corresponding page
      * @param listener The listener
      * @param page The page to goto
-     * @see #gotoFirstPage(DataRefreshListener) 
-     * @see #gotoLastPage(DataRefreshListener) 
-     * @see #gotoNextPage(DataRefreshListener) 
-     * @see #gotoPreviousPage(DataRefreshListener) 
+     * @see #gotoFirstPage(Listener)
+     * @see #gotoLastPage(Listener)
+     * @see #gotoNextPage(Listener)
+     * @see #gotoPreviousPage(Listener)
      */
-    public void gotoPage(DataRefreshListener<T> listener, Page page){
+    public void gotoPage(Listener<DatabaseQuery<T>> listener, Page page){
         switch (page){
             case NULL:
                 dissolve(); listener.onSuccess(this); break;
@@ -264,6 +264,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void nextPageQuery(){
         assert snapshot != null;
+        if(resultsPerPage == null) return;
         currentPage = query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
     }
 
@@ -272,6 +273,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void previousPageQuery(){
         assert snapshot != null;
+        if(resultsPerPage == null) return;
         currentPage = query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
     }
 
@@ -279,20 +281,22 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * Gets the first resultsPerPage of the query
      */
     private void firstPageQuery(){
+        if(resultsPerPage == null) return;
         currentPage = query.limit(resultsPerPage);
     }
     /**
      * Gets the last resultsPerPage of the query
      */
     private void lastPageQuery(){
+        if(resultsPerPage == null) return;
         currentPage = query.limitToLast(resultsPerPage);
     }
 
 
     /**
-     * @return The number of results per page
+     * @return The number of results per page. {@code null} if infinite
      */
-    public int getResultsPerPage(){
+    public @Nullable Integer getResultsPerPage(){
         return resultsPerPage;
     }
 
@@ -307,7 +311,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * </p>
      * @param listener The listener for the refresh
      */
-    private void loadFromSnapshot(DataRefreshListener<T> listener){
+    private void loadFromSnapshot(Listener<DatabaseQuery<T>> listener){
         if(snapshot == null) return;
         List<DocumentSnapshot> newInstanceDocuments = snapshot.getDocuments();
         final List<T> newInstances = new ArrayList<>();
@@ -410,25 +414,6 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return deletes;
     }
 
-    /**
-     * Listener that is called when a query finishes loading data
-     * @param <T> The type of the instance
-     */
-    public interface DataRefreshListener<T extends DatabaseInstance<T>>{
-        /**
-         * Called if an error occurred while loading data.
-         * The data of the query is not changed by the refresh
-         * @param query The query
-         */
-        void onError(DatabaseQuery<T> query);
-
-        /**
-         * Called when the query has completed refreshing data and now contains all the new loaded instances
-         * @param query The query
-         */
-        void onSuccess(DatabaseQuery<T> query);
-    }
-
     public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, User u){
         Filter f1 = Filter.equalTo(db.constants.getString(R.string.database_assoc_user), u.getDocumentID());
         Filter f2 = Filter.notEqualTo(db.constants.getString(R.string.database_assoc_status), db.constants.getString(R.string.event_assoc_status_cancelled));
@@ -454,14 +439,14 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     /**
      * @param status iF null or blank, returns all
      */
-    public static DatabaseQuery<User> getAttachedUsers(Database db, Event e, String status){
+    public static DatabaseQuery<User> getAttachedUsers(Database db, Event e, String status, boolean returnAll){
         Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
         if(status != null && !status.isBlank()){
             f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
         }
         Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 25);
+        return new DatabaseQuery<>(db, q, c, returnAll ? null : 25);
     }
 
     public static DatabaseQuery<User> getUsers(Database db){
@@ -491,23 +476,23 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
          */
         NULL,
         /**
-         * @see #gotoFirstPage(DataRefreshListener) 
+         * @see #gotoFirstPage(Listener)
          */
         FIRST,
         /**
-         * @see #gotoLastPage(DataRefreshListener) 
+         * @see #gotoLastPage(Listener)
          */
         LAST,
         /**
-         * @see #gotoNextPage(DataRefreshListener)
+         * @see #gotoNextPage(Listener)
          */
         NEXT,
         /**
-         * @see #gotoPreviousPage(DataRefreshListener)
+         * @see #gotoPreviousPage(Listener)
          */
         PREVIOUS,
         /**
-         * @see #gotoFirstPage(DataRefreshListener)
+         * @see #gotoFirstPage(Listener)
          */
         FIRST_LAST
     }

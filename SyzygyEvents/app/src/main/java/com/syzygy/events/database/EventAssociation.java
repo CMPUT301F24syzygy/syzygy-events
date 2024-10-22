@@ -1,13 +1,16 @@
 package com.syzygy.events.database;
 
-import androidx.annotation.NonNull;
-
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+
 /**
  * An instance of an association of a user to an event
  * @author Gareth Kmet
@@ -157,5 +160,196 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
+    }
+
+    /**
+     * A query result of EventAssociations. This provides a methods to mass modify and notify users
+     */
+    public static class QueryModifier<T extends Database.Querrier<T>> extends Database.Querrier.QueryInstanceResult<EventAssociation> {
+
+        private boolean dissolved = false;
+        private final Database db;
+        private final T querrier;
+
+        /**
+         * Fetches all instances in the list and stores them in a unmodifiable reference
+         * @param db The database
+         * @param querrier The querrier that got the results
+         * @param list The list of results
+         */
+        public QueryModifier(Database db, T querrier, List<EventAssociation> list) {
+            super(list);
+            this.querrier = querrier;
+            result.forEach(DatabaseInstance::fetch);
+            this.db = db;
+        }
+
+        /**
+         * Sets the status of each association
+         * @param statusID The resId of the new status
+         */
+        public void setStatus(int statusID){
+            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            String status = db.constants.getString(statusID);
+            result.forEach(e -> e.setStatus(status));
+        }
+
+        /**
+         * Invites all users to the corresponding events. Sets the association to Invited and notifies the user that they were selected by the lottery
+         * @param listener The listener called on completion with the {@link NotificationResult}
+         */
+        public void inviteUsersToEventFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
+            setStatus(R.string.event_assoc_status_invited,
+                    db.constants.getString(R.string.notification_lottery_notChosen_subject),
+                    db.constants.getString(R.string.notification_lottery_notChosen_body),
+                    true, true, listener
+            );
+        }
+        /**
+         * Notifies the users that they were rejected by the lottery for their associated event
+         * @param listener The listener called on completion with the {@link NotificationResult}
+         */
+        public void rejectUsersFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
+            notify(db.constants.getString(R.string.notification_lottery_notChosen_subject),
+                    db.constants.getString(R.string.notification_lottery_notChosen_body),
+                    true, false, listener
+            );
+        }
+
+        /**
+         * Cancels all users from the respective events. Sets the association to Cancelled and notifies the users that they were removed from the event
+         * @param listener The listener called on completion with the {@link NotificationResult}
+         */
+        public void cancelUsers(Database.Querrier.DataListener<T, NotificationResult> listener){
+            setStatus(R.string.event_assoc_status_cancelled,
+                    db.constants.getString(R.string.notification_cancelled_subject),
+                    db.constants.getString(R.string.notification_cancelled_body),
+                    true, false, listener
+            );
+        }
+
+        /**
+         * Deletes all associations. Then dissolves self
+         */
+        public void delete(){
+            result.forEach(DatabaseInstance::deleteInstance);
+            dissolve();
+        }
+
+        /**
+         * Sets the status of each association and notifies the user
+         * @param statusID The resId of the new status
+         * @param notificationSubject The subject of the notification
+         * @param notificationBody The body of the notification
+         * @param notificationAttachEvent If the event should be attached to the notification
+         * @param notificationFromOrganizer If the even should be sent from the organizer
+         * @param listener The listener that is called with the notification result upon completion.
+         *                 Only the {@code onSuccess} is called
+         * @see NotificationResult
+         */
+        public void setStatus(int statusID, String notificationSubject, String notificationBody, boolean notificationAttachEvent, boolean notificationFromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            String status = db.constants.getString(statusID);
+            notify(
+                    e -> e.setStatus(status),
+                    notificationSubject,
+                    notificationBody,
+                    notificationAttachEvent,
+                    notificationFromOrganizer,
+                    listener
+            );
+        }
+
+        /**
+         * Sends a notification to all users
+         * @param subject The subject of the notification
+         * @param body The body of the notification
+         * @param attachEvent If the event should be attached to the notification
+         * @param fromOrganizer If the even should be sent from the organizer
+         * @param listener The listener that is called with the notification result upon completion.
+         *                 Only the {@code onSuccess} is called
+         * @see NotificationResult
+         */
+        public void notify(String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            notify(e -> {}, subject, body, attachEvent, fromOrganizer, listener);
+        }
+
+        /**
+         * Applies the consumer to each association and notifies the users
+         * @param subject The subject of the notification
+         * @param body The body of the notification
+         * @param attachEvent If the event should be attached to the notification
+         * @param fromOrganizer If the even should be sent from the organizer
+         * @param listener The listener that is called with the notification result upon completion.
+         *                 Only the {@code onSuccess} is called
+         * @see NotificationResult
+         */
+        public void notify(Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+            List<Notification> failedNotifications = new ArrayList<>();
+            List<Notification> successNotifications = new ArrayList<>();
+
+            Database.InitializationListener<Notification> asyncForLoop = new Database.InitializationListener<Notification>() {
+                private int i = -1;
+                @Override
+                public void onInitialization(Notification instance, boolean success) {
+                    if(!success){
+                        failedNotifications.add(instance);
+                    }
+                    ++i;
+                    if(i >= result.size()){
+                        listener.onSuccess(querrier, new NotificationResult(successNotifications, failedNotifications));
+                    }
+
+
+                    EventAssociation e = result.get(i);
+                    consumer.accept(e);
+
+                    //Send notification
+                    Notification.NewInstance(db,
+                            db.constants.getString(R.string.notification_lottery_chosen_subject),
+                            db.constants.getString(R.string.notification_lottery_chosen_body),
+                            attachEvent ? e.getEventID() : "",
+                            e.getUserID(),
+                            fromOrganizer ? e.getEvent().getFacility().getOrganizerID() : "0",
+                            this
+                    );
+                }
+            };
+        }
+
+        public int size() {
+            return result.size();
+        }
+
+
+        public void dissolve(){
+            if(dissolved) return;
+            dissolved = true;
+            result.forEach(DatabaseInstance::dissolve);
+        }
+
+        public static <T extends Database.Querrier<T>> QueryModifier<T> EMPTY(Database db, T q){
+            return new QueryModifier<>(db, q, new ArrayList<>());
+        }
+    }
+
+    /**
+     * Stores the result of a mass notification.
+     * <p>
+     *     Stores all sent notifications as the {@code result}.
+     * </p>
+     */
+    public static class NotificationResult extends Database.Querrier.QueryInstanceResult<Notification> {
+
+        /**
+         * All notifications that failed to send
+         */
+        public final List<Notification> failedNotifications;
+
+        public NotificationResult(List<Notification> list, List<Notification> failedNotifications) {
+            super(list);
+            this.failedNotifications = Collections.unmodifiableList(failedNotifications);
+        }
     }
 }
