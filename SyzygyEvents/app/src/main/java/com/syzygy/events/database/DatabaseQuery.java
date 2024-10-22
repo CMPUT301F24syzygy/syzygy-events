@@ -100,7 +100,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     public void refreshData(Listener<DatabaseQuery<T>> listener){
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
-                listener.onError(this);
+                listener.onCompletion(this, false);
                 return;
             }
             QuerySnapshot snap = task.getResult();
@@ -231,7 +231,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     public void gotoPage(Listener<DatabaseQuery<T>> listener, Page page){
         switch (page){
             case NULL:
-                dissolve(); listener.onSuccess(this); break;
+                dissolve(); listener.onCompletion(this, true); break;
             case LAST:
                 gotoLastPage(listener); break;
             case NEXT:
@@ -323,13 +323,13 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                     newInstances.forEach(i -> {
                         if (i != null) i.dissolve();
                     });
-                    listener.onError(DatabaseQuery.this);
+                    listener.onCompletion(DatabaseQuery.this, false);
                     return;
                 }
                 count ++;
                 if(count >= newInstanceDocuments.size()){
                     setNewInstances(newInstances);
-                    listener.onSuccess(DatabaseQuery.this);
+                    listener.onCompletion(DatabaseQuery.this, true);
                     return;
                 }
                 DocumentSnapshot doc = newInstanceDocuments.get(count);

@@ -12,8 +12,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
-import org.jetbrains.annotations.Unmodifiable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -526,16 +524,10 @@ public class Database implements EventListener<DocumentSnapshot>{
          */
         interface Listener<S extends Querrier<S>> {
             /**
-             * Called if an error occurred while loading data.
-             * The data of the query is not changed by the refresh
-             * @param query The query
-             */
-            public void onError(S query);
-            /**
              * Called when the query has completed loading data and now contains all the new loaded instances
              * @param query The query
              */
-            public void onSuccess(S query);
+            public void onCompletion(S query, boolean success);
         }
         /**
          * Listener that is called when a query finishes loading data and returns data
@@ -544,16 +536,11 @@ public class Database implements EventListener<DocumentSnapshot>{
          */
         interface DataListener<S extends Querrier<S>, W extends QueryResult<?>> {
             /**
-             * Called if an error occurred while loading data.
-             * @param query The query
-             */
-            public void onError(S query);
-            /**
              * Called when the query has completed getting the data
              * @param query The query
              * @param data The list of instances found by the query
              */
-            public void onSuccess(S query, W data);
+            public void onCompletion(S query, W data, boolean success);
         }
 
         public class QueryResult<V> {

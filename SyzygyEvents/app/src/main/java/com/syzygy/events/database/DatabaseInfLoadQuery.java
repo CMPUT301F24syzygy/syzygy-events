@@ -46,18 +46,14 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      */
     @Override
     public void refreshData(Listener<DatabaseInfLoadQuery<T>> listener){
-        query.gotoFirstPage(new Listener<DatabaseQuery<T>>() {
-            @Override
-            public void onError(DatabaseQuery<T> query) {
-                listener.onError(DatabaseInfLoadQuery.this);
+        query.gotoFirstPage((query, success) -> {
+            if(!success){
+                listener.onCompletion(DatabaseInfLoadQuery.this, false);
+                return;
             }
-
-            @Override
-            public void onSuccess(DatabaseQuery<T> query) {
-                clearInstances();
-                addAllInstances();
-                listener.onSuccess(DatabaseInfLoadQuery.this);
-            }
+            clearInstances();
+            addAllInstances();
+            listener.onCompletion(DatabaseInfLoadQuery.this, true);
         });
     }
 
@@ -66,17 +62,9 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      * @param listener The listener that will called on completion.
      */
     public void incrementData(Listener<DatabaseInfLoadQuery<T>> listener){
-        query.gotoNextPage(new Listener<DatabaseQuery<T>>() {
-            @Override
-            public void onError(DatabaseQuery<T> query) {
-                listener.onError(DatabaseInfLoadQuery.this);
-            }
-
-            @Override
-            public void onSuccess(DatabaseQuery<T> query) {
-                addAllInstances();
-                listener.onSuccess(DatabaseInfLoadQuery.this);
-            }
+        query.gotoNextPage((query, success) -> {
+            if(success) addAllInstances();
+            listener.onCompletion(DatabaseInfLoadQuery.this, success);
         });
     }
 

@@ -298,7 +298,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                     }
                     ++i;
                     if(i >= result.size()){
-                        listener.onSuccess(querrier, new NotificationResult(successNotifications, failedNotifications));
+                        listener.onCompletion(querrier, new NotificationResult(successNotifications, failedNotifications), true);
                     }
 
 
@@ -322,15 +322,22 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
             return result.size();
         }
 
-
+        /**
+         * Returns the references
+         */
         public void dissolve(){
             if(dissolved) return;
             dissolved = true;
             result.forEach(DatabaseInstance::dissolve);
         }
 
+
         public static <T extends Database.Querrier<T>> QueryModifier<T> EMPTY(Database db, T q){
             return new QueryModifier<>(db, q, new ArrayList<>());
+        }
+
+        public static <T extends Database.Querrier<T>> QueryModifier<T> SINGLETON(Database db, T q, EventAssociation assoc){
+            return new QueryModifier<>(db, q, Collections.singletonList(assoc));
         }
     }
 

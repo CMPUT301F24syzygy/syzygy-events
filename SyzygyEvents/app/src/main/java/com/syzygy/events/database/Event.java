@@ -33,10 +33,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     private int currentWaitlist = 0;
 
-    private final Query waitlistQuery;
-    private final Query inviteQuery;
-    private final AggregateQuery waitlistCountQuery;
-    private final AggregateQuery enrolledCountQuery;
+    private final Query assocUsersQuery;
 
     /**
      * Checks to make sure the generic type is the type of this instance
@@ -47,31 +44,10 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     protected Event(Database db, String eventID) throws ClassCastException {
         super(db, eventID, Database.Collections.EVENTS, fields);
 
-        Query assocUsersQuery = Database.Collections.EVENT_ASSOCIATIONS.getCollection(db).whereEqualTo(
+        assocUsersQuery = Database.Collections.EVENT_ASSOCIATIONS.getCollection(db).whereEqualTo(
                 db.constants.getString(R.string.database_assoc_event),
                 getDocumentID()
         );
-
-        waitlistQuery = assocUsersQuery.whereEqualTo(
-                db.constants.getString(R.string.database_assoc_status),
-                db.constants.getString(R.string.event_assoc_status_waitlist)
-        );
-
-        inviteQuery = assocUsersQuery.whereEqualTo(
-                db.constants.getString(R.string.database_assoc_status),
-                db.constants.getString(R.string.event_assoc_status_invited)
-        );
-
-        Query enrolledQuery = assocUsersQuery.whereIn(
-                db.constants.getString(R.string.database_assoc_status),
-                Arrays.asList(
-                        db.constants.getString(R.string.event_assoc_status_invited),
-                        db.constants.getString(R.string.event_assoc_status_enrolled)
-                )
-        );
-        
-        waitlistCountQuery = waitlistQuery.count();
-        enrolledCountQuery = enrolledQuery.count();
     }
 
     /**
@@ -80,19 +56,30 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     @Override
     public void refreshData(Listener<Event> listener) {
+        AggregateQuery waitlistCountQuery = assocUsersQuery.whereEqualTo(
+                db.constants.getString(R.string.database_assoc_status),
+                db.constants.getString(R.string.event_assoc_status_waitlist)
+        ).count();
+        AggregateQuery enrolledInvitedCountQuery = assocUsersQuery.whereIn(
+                db.constants.getString(R.string.database_assoc_status),
+                Arrays.asList(
+                        db.constants.getString(R.string.event_assoc_status_invited),
+                        db.constants.getString(R.string.event_assoc_status_enrolled)
+                )
+        ).count();
         waitlistCountQuery.get(AggregateSource.SERVER).addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
-                listener.onError(this);
+                listener.onCompletion(this, false);
                 return;
             }
             currentWaitlist = (int) task.getResult().getCount();
-            enrolledCountQuery.get(AggregateSource.SERVER).addOnCompleteListener(task2 -> {
+            enrolledInvitedCountQuery.get(AggregateSource.SERVER).addOnCompleteListener(task2 -> {
                 if(!task2.isSuccessful()){
-                    listener.onError(this);
+                    listener.onCompletion(this, false);
                     return;
                 }
                 currentEnrolled = (int) task2.getResult().getCount();
-                listener.onSuccess(this);
+                listener.onCompletion(this, true);
             });
         });
     }
@@ -102,24 +89,19 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Refreshes the current enrolled and waitlist counts then queries the waitlist for a random {@code count} users.
      * Returns the selected users and the unselected users.
      * @param count The number of users to randomly select, if {@code count <= 0}, selects enough users to fill all open spots
-     * @param listener The listener to be called on completion. {@link DataListener#onError(Database.Querrier)}
-     *                 is called if the data refresh failed.
-     *                 If there are negative empty spots to be filled, the
-     *                 {@link DataListener#onSuccess(Database.Querrier, QueryResult)} with empty arrays
+     * @param listener The listener to be called on completion. {@link DataListener#onCompletion(Database.Querrier, QueryResult, boolean)}
+     *                 is called with {@code false} if the data refresh failed.
+     *                 If there are negative empty spots to be filled, {@code true} is returned with empty arrays
      */
     public void getLottery(final int count, DataListener<Event, LotteryResult> listener){
-        refreshData(new Listener<Event>() {
-            @Override
-            public void onError(Event query) {
-                listener.onError(Event.this);
+        refreshData((query, success) -> {
+            if(!success){
+                listener.onCompletion(query, null, false);
+                return;
             }
-
-            @Override
-            public void onSuccess(Event query) {
-                int getCount = count;
-                if(getCount <= 0) getCount = currentEnrolled - currentWaitlist;
-                shuffleWaitlist(getCount, listener);
-            }
+            int getCount = count;
+            if(getCount <= 0) getCount = currentEnrolled - currentWaitlist;
+            shuffleWaitlist(getCount, listener);
         });
     }
 
@@ -131,37 +113,30 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     @SuppressWarnings("unchecked")
     private void shuffleWaitlist(int count, DataListener<Event, LotteryResult> listener){
         if(count < 0){
-            listener.onSuccess(this, new LotteryResult(EventAssociation.QueryModifier.EMPTY(db, this), EventAssociation.QueryModifier.EMPTY(db, this), count));
+            listener.onCompletion(this, new LotteryResult(EventAssociation.QueryModifier.EMPTY(db, this), EventAssociation.QueryModifier.EMPTY(db, this), count), true);
             return;
         }
-        DatabaseQuery<EventAssociation> waitlistUsers = new DatabaseQuery<>(db, waitlistQuery, Database.Collections.EVENT_ASSOCIATIONS, null);
-        waitlistUsers.refreshData(new Listener<DatabaseQuery<EventAssociation>>() {
-            @Override
-            public void onError(DatabaseQuery<EventAssociation> query) {
-                waitlistUsers.dissolve();
-                listener.onError(Event.this);
+        getWaitlistUsers((query, data, success) -> {
+            if(!success){
+                listener.onCompletion(query, null, false);
+                return;
             }
+            List<EventAssociation> users = new ArrayList<>(data.result);
 
-            @Override
-            public void onSuccess(DatabaseQuery<EventAssociation> query) {
-                List<EventAssociation> users = new ArrayList<>(query.getCurrentInstances());
+            List<EventAssociation> chosen = users;
+            List<EventAssociation> unChosen = new ArrayList<>();
 
-                List<EventAssociation> chosen = users;
-                List<EventAssociation> unChosen = new ArrayList<>();
-
-                if(count == 0){
-                    chosen = unChosen;
-                    unChosen = users;
-                }else if(count > users.size()){
-                    Collections.shuffle(users);
-                    chosen = users.subList(0,count);
-                    unChosen = users.subList(count, users.size());
-                }
-                EventAssociation.QueryModifier<Event> c = new EventAssociation.QueryModifier<>(db, Event.this, chosen);
-                EventAssociation.QueryModifier<Event> u = new EventAssociation.QueryModifier<>(db, Event.this, unChosen);
-                waitlistUsers.dissolve();
-                listener.onSuccess(Event.this, new LotteryResult(c,u,count));
+            if(count == 0){
+                chosen = unChosen;
+                unChosen = users;
+            }else if(count > users.size()){
+                Collections.shuffle(users);
+                chosen = users.subList(0,count);
+                unChosen = users.subList(count, users.size());
             }
+            EventAssociation.QueryModifier<Event> c = new EventAssociation.QueryModifier<>(db, Event.this, chosen);
+            EventAssociation.QueryModifier<Event> u = new EventAssociation.QueryModifier<>(db, Event.this, unChosen);
+            listener.onCompletion(query, new LotteryResult(c,u,count), true);
         });
     }
 
@@ -213,41 +188,21 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             if(executed) db.throwE(new IllegalStateException("This lottery result has already been executed"));
             executed = true;
             if(notifyRejected) {
-                notChosen.rejectUsersFromLottery(new DataListener<Event, EventAssociation.NotificationResult>() {
-                    @Override public void onError(Event query) {
-                        listener.onError(query);
+                notChosen.rejectUsersFromLottery((query, data, success) -> {
+                    if(!success){
+                        listener.onCompletion(query, data, false);
                         dissolve();
+                        return;
                     }
-
-                    @Override public void onSuccess(Event query, EventAssociation.NotificationResult data) {
-                        result.inviteUsersToEventFromLottery(new DataListener<Event, EventAssociation.NotificationResult>() {
-                            @Override
-                            public void onError(Event query) {
-                                listener.onError(query);
-                                dissolve();
-                            }
-
-                            @Override
-                            public void onSuccess(Event query, EventAssociation.NotificationResult data) {
-                                listener.onSuccess(query, data);
-                                dissolve();
-                            }
-                        });
-                    }
+                    result.inviteUsersToEventFromLottery((query1, data1, success2) -> {
+                        listener.onCompletion(query1, data1, success2);
+                        dissolve();
+                    });
                 });
             }else{
-                result.inviteUsersToEventFromLottery(new DataListener<Event, EventAssociation.NotificationResult>() {
-                    @Override
-                    public void onError(Event query) {
-                        listener.onError(query);
-                        dissolve();
-                    }
-
-                    @Override
-                    public void onSuccess(Event query, EventAssociation.NotificationResult data) {
-                        listener.onSuccess(query, data);
-                        dissolve();
-                    }
+                result.inviteUsersToEventFromLottery((query, data, success) -> {
+                    listener.onCompletion(query, data, success);
+                    dissolve();
                 });
             }
         }
@@ -268,21 +223,73 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     public void getInvitedUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
-        DatabaseQuery<EventAssociation> inviteUsers = new DatabaseQuery<>(db, inviteQuery, Database.Collections.EVENT_ASSOCIATIONS, null);
-        inviteUsers.refreshData(new Listener<DatabaseQuery<EventAssociation>>() {
-            @Override
-            public void onError(DatabaseQuery<EventAssociation> query) {
-                inviteUsers.dissolve();
-                listener.onError(Event.this);
-            }
+        getUsersByStatus(R.string.event_assoc_status_invited, listener);
+    }
 
-            @Override
-            public void onSuccess(DatabaseQuery<EventAssociation> query) {
+    /**
+     * Returns all enrolled users
+     * @param listener The listener which is called with the list
+     */
+    public void getEnrolledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        getUsersByStatus(R.string.event_assoc_status_enrolled, listener);
+    }
+
+    /**
+     * Returns all cancelled users
+     * @param listener The listener which is called with the list
+     */
+    public void getCancelledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        getUsersByStatus(R.string.event_assoc_status_cancelled, listener);
+    }
+
+    /**
+     * Returns all waitlist users
+     * @param listener The listener which is called with the list
+     */
+    public void getWaitlistUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        getUsersByStatus(R.string.event_assoc_status_waitlist, listener);
+    }
+
+    /**
+     * Returns all associated users with the given association status
+     * @param statusID The res ID of the status
+     * @param listener The listener which is called on completion
+     */
+    public void getUsersByStatus(int statusID, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        Query query = assocUsersQuery.whereEqualTo(
+                db.constants.getString(R.string.database_assoc_status),
+                db.constants.getString(statusID)
+        );
+        getAssociatedUsersFromQuery(query, listener);
+    }
+
+    /**
+     * Gets the {@link EventAssociation.QueryModifier} from a {@link Query}.
+     * @param query The query to evaluate
+     * @param listener The listener that gets called on completion
+     * @see DatabaseQuery#refreshData(Listener)
+     */
+    public void getAssociatedUsersFromQuery(Query query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        getAssociatedUsersFromQuery(new DatabaseQuery<>(db, query, Database.Collections.EVENT_ASSOCIATIONS, null), listener);
+    }
+
+    /**
+     * Gets the {@link EventAssociation.QueryModifier} from a {@link DatabaseQuery}.
+     * Dissolves the {@code DatabaseQuery} on completion
+     * @param query The query to evaluate
+     * @param listener The listener that gets called on completion
+     * @see DatabaseQuery#refreshData(Listener)
+     */
+    public void getAssociatedUsersFromQuery(DatabaseQuery<EventAssociation> query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        query.refreshData((query2, success) -> {
+            if(!success){
+                listener.onCompletion(Event.this, null, false);
+            }else{
                 List<EventAssociation> users = new ArrayList<>(query.getCurrentInstances());
                 EventAssociation.QueryModifier<Event> q = new EventAssociation.QueryModifier<>(db, Event.this, users);
-                inviteUsers.dissolve();
-                listener.onSuccess(Event.this, q);
+                listener.onCompletion(Event.this, q, true);
             }
+            query.dissolve();
         });
     }
 
@@ -291,31 +298,16 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener){
-        getInvitedUsers(new DataListener<Event, EventAssociation.QueryModifier<Event>>() {
-            @Override
-            public void onError(Event query) {
-                listener.onError(query);
+        getInvitedUsers((query, data, success) -> {
+            if(!success){
+                listener.onCompletion(query, null, false);
             }
-
-            @Override
-            public void onSuccess(Event query, EventAssociation.QueryModifier<Event> data) {
-                data.cancelUsers(new DataListener<Event, EventAssociation.NotificationResult>() {
-                    @Override
-                    public void onError(Event query) {
-                        listener.onError(query);
-                        data.dissolve();
-                    }
-
-                    @Override
-                    public void onSuccess(Event query, EventAssociation.NotificationResult data2) {
-                        listener.onSuccess(query, data2);
-                        data.dissolve();
-                    }
-                });
-            }
+            data.cancelUsers((query1, data2, success2) -> {
+                listener.onCompletion(query1, data2, false);
+                data.dissolve();
+            });
         });
     }
-
 
     /**
      * @return The number of users that count against enrollment. Includes Enrolled and Invited
