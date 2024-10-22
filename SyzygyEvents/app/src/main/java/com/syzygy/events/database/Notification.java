@@ -13,6 +13,7 @@ import java.util.Map;
  * @version 1.0
  * @since 19oct24
  */
+@Database.Dissovable
 public class Notification extends DatabaseInstance<Notification> {
 
     /**

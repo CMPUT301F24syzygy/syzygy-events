@@ -12,6 +12,8 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -561,5 +563,11 @@ public class Database implements EventListener<DocumentSnapshot>{
             }
         }
     }
+
+    /**
+     * Represents a class which must call {@code .dissolve} when no longer used
+     */
+    @Target(ElementType.TYPE)
+    public @interface Dissovable { }
 
 }

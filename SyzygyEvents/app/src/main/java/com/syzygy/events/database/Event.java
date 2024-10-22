@@ -22,6 +22,7 @@ import java.util.Map;
  * @version 1.0
  * @since 19oct24
  */
+@Database.Dissovable
 public class Event extends DatabaseInstance<Event> implements Database.Querrier<Event>{
 
     /**
@@ -140,6 +141,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         });
     }
 
+    /**
+     * The random selected list user and unselected users returned by a lottery call along with a method to execute the lottery.
+     * This acts as a confirmation stage for the lottery.
+     */
+    @Database.Dissovable
     public class LotteryResult extends QueryResult<EventAssociation.QueryModifier<Event>> {
         /**
          * The count of users that should have been selected

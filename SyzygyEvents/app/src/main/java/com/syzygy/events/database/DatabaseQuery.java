@@ -23,6 +23,7 @@ import java.util.List;
  * @since 20oct24
  * @param <T> The type of instance being returned
  */
+@Database.Dissovable
 public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseQuery<T>>{
     /**
      * The database

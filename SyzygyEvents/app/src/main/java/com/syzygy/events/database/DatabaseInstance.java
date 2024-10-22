@@ -26,6 +26,7 @@ import java.util.function.Predicate;
  * TODO - Add error handling on instance exchanges
  * TODO - change on instance load, if null, update subdelete
  */
+@Database.Dissovable
 public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
     /**
      * The number of references to this Instance

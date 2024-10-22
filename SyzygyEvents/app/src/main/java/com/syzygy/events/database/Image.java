@@ -13,6 +13,7 @@ import java.util.Map;
  * @version 1.0
  * @since 19oct24
  */
+@Database.Dissovable
 public class Image extends DatabaseInstance<Image> {
 
     /**
@@ -124,7 +125,7 @@ public class Image extends DatabaseInstance<Image> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String, Timestamp) 
+     * @see #createDataMap(String, String, String, String, Timestamp)
      */
     public static boolean validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

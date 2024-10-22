@@ -17,6 +17,7 @@ import java.util.function.Consumer;
  * @version 1.0
  * @since 20oct24
  */
+@Database.Dissovable
 public class EventAssociation extends DatabaseInstance<EventAssociation>{
     /**
      * Checks to make sure the generic type is the type of this instance
@@ -165,6 +166,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     /**
      * A query result of EventAssociations. This provides a methods to mass modify and notify users
      */
+    @Database.Dissovable
     public static class QueryModifier<T extends Database.Querrier<T>> extends Database.Querrier.QueryInstanceResult<EventAssociation> {
 
         private boolean dissolved = false;
@@ -286,6 +288,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @see NotificationResult
          */
         public void notify(Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
             List<Notification> failedNotifications = new ArrayList<>();
             List<Notification> successNotifications = new ArrayList<>();
 
@@ -339,6 +342,15 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         public static <T extends Database.Querrier<T>> QueryModifier<T> SINGLETON(Database db, T q, EventAssociation assoc){
             return new QueryModifier<>(db, q, Collections.singletonList(assoc));
         }
+    }
+
+    /**
+     * Returns an object which contains methods that help notify the user or change the status of the association.
+     * This object must be called with {@code .dissolve} once complete
+     * @return The methods object
+     */
+    public QueryModifier<Event> methods(){
+        return QueryModifier.SINGLETON(db, getEvent(), this);
     }
 
     /**
