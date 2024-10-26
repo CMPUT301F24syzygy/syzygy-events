@@ -142,6 +142,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void gotoNextPage(Listener<DatabaseQuery<T>> listener){
         if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
             gotoFirstPage(listener);
@@ -170,6 +172,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void gotoPreviousPage(Listener<DatabaseQuery<T>> listener){
         if(thisPage == Page.NULL || snapshot == null || snapshot.isEmpty()) {
             lastPageQuery();
@@ -196,6 +200,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void gotoFirstPage(Listener<DatabaseQuery<T>> listener){
         thisPage = Page.FIRST;
         firstPageQuery();
@@ -218,6 +224,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void gotoLastPage(Listener<DatabaseQuery<T>> listener){
         thisPage = Page.LAST;
         lastPageQuery();
@@ -233,6 +241,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * @see #gotoNextPage(Listener)
      * @see #gotoPreviousPage(Listener)
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void gotoPage(Listener<DatabaseQuery<T>> listener, Page page){
         switch (page){
             case NULL:

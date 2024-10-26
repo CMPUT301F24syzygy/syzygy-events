@@ -1,9 +1,14 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,6 +70,10 @@ public class Image extends DatabaseInstance<Image> {
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_img_uploadTime, o -> o instanceof Timestamp, false)
     };
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Collections.emptyList();
+    }
 
     /**
      * Creates a new Image instance in the database using the given data.

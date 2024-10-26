@@ -1,11 +1,18 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,6 +21,7 @@ import java.util.Map;
  * @author Gareth Kmet
  * @version 1.0
  * @since 19oct24
+ * TODO - add has admin privledges
  */
 @Database.Dissovable
 public class User extends DatabaseInstance<User> {
@@ -164,14 +172,24 @@ public class User extends DatabaseInstance<User> {
     }
 
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Arrays.asList(
+                new Pair<>(Database.Collections.EVENT_ASSOCIATIONS.getCollection(db)
+                        .whereEqualTo(db.constants.getString(R.string.database_assoc_user), getDocumentID()), Database.Collections.EVENT_ASSOCIATIONS),
+                new Pair<>(Database.Collections.NOTIFICATIONS.getCollection(db)
+                        .whereEqualTo(db.constants.getString(R.string.database_not_receiverID), getDocumentID()), Database.Collections.NOTIFICATIONS)
+        );
+    }
+
     /**
      * The list of the fields defined for a User
      */
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_description, o -> o instanceof String, true),
-            new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true),
-            new PropertyField<String, Facility>(R.string.database_user_facilityID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true),
+            new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
+            new PropertyField<String, Facility>(R.string.database_user_facilityID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),

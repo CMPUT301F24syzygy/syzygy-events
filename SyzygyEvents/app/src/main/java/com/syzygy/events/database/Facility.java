@@ -1,11 +1,17 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -119,10 +125,17 @@ public class Facility extends DatabaseInstance<Facility> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_fac_location, o -> o instanceof GeoPoint, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_description, o -> o instanceof String, true),
-            new PropertyField<String, User>(R.string.database_fac_organizer, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false),
-            new PropertyField<String, Image>(R.string.database_fac_imageID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, true)
+            new PropertyField<String, User>(R.string.database_fac_organizer, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
+            new PropertyField<String, Image>(R.string.database_fac_imageID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.IMAGES, true, true)
     };
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Collections.singletonList(
+                new Pair<>(Database.Collections.EVENTS.getCollection(db)
+                        .whereEqualTo(db.constants.getString(R.string.database_event_facilityID), getDocumentID()), Database.Collections.EVENTS)
+        );
+    }
 
     /**
      * Creates a new Image instance in the database using the given data.

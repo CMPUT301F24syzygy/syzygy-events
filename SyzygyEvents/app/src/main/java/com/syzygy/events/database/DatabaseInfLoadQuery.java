@@ -36,7 +36,8 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      */
     private final List<T> instances = new ArrayList<>();
 
-    public DatabaseInfLoadQuery(@NonNull DatabaseQuery<T> query) {
+    @Database.MustStir
+    public DatabaseInfLoadQuery(@NonNull @Database.Stirs DatabaseQuery<T> query) {
         this.query = query;
     }
 
@@ -46,6 +47,8 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      * @param listener The listener that will be called on completion
      */
     @Override
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
     public void refreshData(Listener<DatabaseInfLoadQuery<T>> listener){
         query.gotoFirstPage((query, success) -> {
             if(!success){
@@ -62,6 +65,7 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      * Adds a page of data to the current list and loads the instances
      * @param listener The listener that will called on completion.
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
     public void incrementData(Listener<DatabaseInfLoadQuery<T>> listener){
         query.gotoNextPage((query, success) -> {
             if(success) addAllInstances();
@@ -80,6 +84,7 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
     /**
      * Removes references to all instances that have been created and clears the current instance
      */
+    @Database.AutoStir
     public void dissolve(){
         query.dissolve();
         clearInstances();
@@ -101,6 +106,7 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
      */
     @Unmodifiable
     @NonNull
+    @Database.Observes
     public List<T> getInstances(){
         return Collections.unmodifiableList(instances);
     }
@@ -109,6 +115,7 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
     /**
      * Clears the set of instances
      */
+    @Database.StirsDeep(what = "Results")
     private void clearInstances(){
         instances.forEach(i -> {
             i.dissolve(this);
@@ -120,6 +127,7 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
     /**
      * Adds all the instances in the current page to this set
      */
+    @Database.Titrates(what = "All instances")
     private void addAllInstances(){
         query.getCurrentInstances().forEach(i -> instances.add(i.fetch(this)));
     }

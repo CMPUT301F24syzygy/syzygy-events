@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
@@ -582,8 +584,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_title, o -> o instanceof String && !((String) o).isBlank(), true),
-            new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true),
-            new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false),
+            new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
+            new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String, true),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, false),
@@ -596,6 +598,13 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<List<Timestamp>, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof List && !((List<?>)o).isEmpty() && ((List<?>)o).stream().allMatch(i -> i instanceof Timestamp), true),
     };
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Collections.singletonList(
+                new Pair<>(Database.Collections.EVENT_ASSOCIATIONS.getCollection(db)
+                        .whereEqualTo(db.constants.getString(R.string.database_assoc_event), getDocumentID()), Database.Collections.EVENT_ASSOCIATIONS)
+        );
+    }
 
     /**
      * Creates a new Image instance in the database using the given data.

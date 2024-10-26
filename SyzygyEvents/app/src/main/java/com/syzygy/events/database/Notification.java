@@ -1,9 +1,14 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,11 +90,15 @@ public class Notification extends DatabaseInstance<Notification> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_body, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_not_time, o -> o instanceof Timestamp, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false)
+            new PropertyField<String, Event>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, true, false),
+            new PropertyField<String, User>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
+            new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, true, false)
     };
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Collections.emptyList();
+    }
 
     /**
      * Creates a new Image instance in the database using the given data.

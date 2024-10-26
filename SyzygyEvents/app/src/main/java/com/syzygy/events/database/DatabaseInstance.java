@@ -1,11 +1,14 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +28,7 @@ import java.util.function.Predicate;
  *
  * TODO - Add error handling on instance exchanges
  * TODO - change on instance load, if null, update subdelete
+ * TODO - deletion cascading and possible duplicate deletion
  */
 @Database.Dissovable
 public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
@@ -44,6 +48,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * If the instance has been initialized with data
      */
     private boolean isInitialized = false;
+
+    /**
+     * If the instance has been deleted
+     */
+    private boolean isDeleted = false;
 
     /**
      * The database
@@ -89,6 +98,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see #initializeData(Map, boolean)
      */
     private final Set<Database.InitializationListener<T>> initializationListeners = new HashSet<>();
+
 
 
     /**
@@ -234,12 +244,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
     /**
      * Decreases the reference count to zero
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Property Instances")
-    public void fullDissolve() throws IllegalStateException{
-        assertNotIllegalState();
+    public void fullDissolve() {
         referenceCount = 0;
         dereferenceInstance();
     }
@@ -258,7 +266,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see #assertNotIllegalState()
      */
     public final boolean isLegalState(){
-        return !isDereferenced && isInitialized;
+        return !isDereferenced && isInitialized && !isDeleted;
     }
 
     /**
@@ -315,7 +323,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param instance The subinstance
      * @param type The type of the update
      * @param <S> The type of the subinstance
-     * @see #deleteSubInstance(DatabaseInstance)
+     * @see #onSubInstanceDelete(DatabaseInstance)
      */
     @Database.AutoStir(when="Instance is deleted and Property is not nullable")
     @Database.StirsDeep(what="Property Instances", when="Instance is deleted and Property is not nullable")
@@ -331,7 +339,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             case INIT:
                 break;
             case DELETE:
-                deleteSubInstance(instance);
+                onSubInstanceDelete(instance);
                 break;
         }
     }
@@ -346,7 +354,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @Database.AutoStir(when="Property is not nullable")
     @Database.StirsDeep(what="Property Instances", when="Property is not nullable")
-    private void deleteSubInstance(@Database.Observes DatabaseInstance<?> instance){
+    private void onSubInstanceDelete(@Database.Observes DatabaseInstance<?> instance){
         for(Map.Entry<String,PropertyWrapper<?,?>> ent : properties.entrySet()){
             PropertyWrapper<?,?> prop = ent.getValue();
             if(!prop.meta.loads || prop.meta.loadsCollection != instance.collection) continue;
@@ -732,7 +740,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param listener The listener that should be called once all initialization is complete
      * @throws IllegalArgumentException If the value is empty but the property is not nullable
      */
-    @SuppressWarnings("unchecked")
     @Database.Titrates(what="Sub instances")
     protected void subInitialize(Database.InitializationListener<T> listener, int count) throws IllegalArgumentException{
         if(count >= iproperties.size()) {
@@ -821,16 +828,46 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Dereferences the instance and notifies all listeners that the instance was deleted
      * @see Database#deleteFromDatabase(DatabaseInstance)
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
-    public void deleteInstance() throws IllegalStateException{
-        assertNotIllegalState();
+    public void deleteInstance(){
+        if(!isLegalState()) return;
+        isDeleted = true;
         db.deleteFromDatabase(this);
         notifyUpdate(Database.UpdateListener.Type.DELETE);
         fullDissolve();
     }
+
+    /**
+     * Deletes all subinstances that are cascaded
+     */
+    @Database.StirsDeep(what = "Sub instances")
+    private void deleteSubInstances(){
+        for(String prop : iproperties){
+            PropertyWrapper<?,?> p = properties.get(prop);
+            assert p != null;
+            InstancePropertyWrapper<?> iprop = p.iS();
+            if(iprop.instance!=null && iprop.meta.cascadeDelete){
+                iprop.instance.deleteInstance();
+            }
+        }
+        //Don't care about async because we are just deleting
+        //Might need to add in error checks but this doesnt effect the caller
+        for(Pair<Query, Database.Collections> qc: subInstanceCascadeDeleteQuery()){
+            DatabaseQuery<?> dq = new DatabaseQuery<>(db, qc.first, qc.second, null);
+            dq.refreshData((query, success) -> {
+                if(!success) return;
+                query.getCurrentInstances().forEach(DatabaseInstance::deleteInstance);
+                dq.dissolve();
+            });
+        }
+    }
+
+    /**
+     * @return A list of all querries that should be run whose instances will be deleted when this instance is deleted
+     */
+    protected abstract List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery();
 
     /**
      * Returns the collection that this instance is apart of
@@ -898,6 +935,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          * If the instance can be null
          */
         public final boolean loadsNullable;
+        /**
+         *
+         */
+        public final boolean cascadeDelete;
 
         /**
          * @param propertyNameID The ID of the res string that defines the string used for the property key in the database
@@ -906,14 +947,16 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          * @param loads If the property loads an instance
          * @param loadsCollection The collection that the instance is apart of if applicable
          * @param nullable If the instance can be null
+         * @param cascadeDelete If the instance should be deleted upon the deletion of this instance
          */
-        public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit, boolean loads, Database.Collections loadsCollection, boolean nullable) {
+        public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit, boolean loads, Database.Collections loadsCollection, boolean nullable, boolean cascadeDelete) {
             this.propertyNameID = propertyNameID;
             this.isValid = isValid;
             this.canEdit = canEdit;
             this.loads = loads;
             this.loadsCollection = loadsCollection;
             this.loadsNullable = nullable;
+            this.cascadeDelete = cascadeDelete;
         }
 
         /**
@@ -924,7 +967,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          * @param canEdit If the property can be edited
          */
         public PropertyField(int propertyNameID, Predicate<Object> isValid, boolean canEdit){
-            this(propertyNameID, isValid, canEdit, false, null, true);
+            this(propertyNameID, isValid, canEdit, false, null, true, false);
         }
 
         /**

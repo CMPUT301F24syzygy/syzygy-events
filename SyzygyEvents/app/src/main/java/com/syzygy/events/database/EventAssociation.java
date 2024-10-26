@@ -1,7 +1,10 @@
 package com.syzygy.events.database;
 
+import android.util.Pair;
+
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
 import java.util.ArrayList;
@@ -95,13 +98,17 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * The list of the fields defined for a User
      */
     private static final PropertyField<?, ?>[] fields = {
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<String, User>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
+            new PropertyField<String, Event>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, false, false),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint || o == null, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_status, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_assoc_time, o -> o instanceof Timestamp, false)
     };
 
+    @Override
+    protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+        return Collections.emptyList();
+    }
 
     /**
      * Creates a new Image instance in the database using the given data.
