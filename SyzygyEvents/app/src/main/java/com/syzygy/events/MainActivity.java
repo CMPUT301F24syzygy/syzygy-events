@@ -1,6 +1,5 @@
 package com.syzygy.events;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +18,7 @@ import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
-public class EntrantActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     private ActivityEntrantBinding entrantBinding;
     private ActivityOrganizerBinding organizerBinding;
     private NavController navController;
@@ -66,7 +65,7 @@ public class EntrantActivity extends AppCompatActivity {
             navController.navigateUp();
         }
         else {
-            PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
+            PopupMenu m = new PopupMenu(MainActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
