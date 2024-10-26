@@ -6,4 +6,7 @@
     <string name="title_entrant_notifications">Notifications</string>
     <string name="no_acc_title_organizer">Create Facility</string>
     <string name="acc_title_admin">Create Facility</string>
+    <string name="title_organizer_profile">Facility</string>
+    <string name="title_organizer_events">Events</string>
+    <string name="title_organizer_create">Add Event</string>
 </resources>

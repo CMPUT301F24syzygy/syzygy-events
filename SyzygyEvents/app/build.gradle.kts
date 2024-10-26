@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    // id("com.android.application") -- errored when include
+    //id("com.android.application") // errored when include
     id("com.google.gms.google-services")
 }
 

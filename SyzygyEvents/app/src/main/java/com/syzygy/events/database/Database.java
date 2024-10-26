@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  * @version 1.0
  * @since 19oct24
  */
-public class Database implements EventListener<DocumentSnapshot>{
+public class Database implements EventListener<DocumentSnapshot> {
 
     /**
      * Set of listeners which are called whenever an error occurs

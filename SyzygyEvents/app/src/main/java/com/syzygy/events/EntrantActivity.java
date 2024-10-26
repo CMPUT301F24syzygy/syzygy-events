@@ -15,21 +15,27 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
-public class EntrantActivity extends AppCompatActivity {
+import java.io.Serializable;
 
+public class EntrantActivity extends AppCompatActivity {
     private ActivityEntrantBinding binding;
     private NavController navController;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         binding = ActivityEntrantBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
+        database = new Database(getResources());
+
+        BottomNavigationView navView = binding.navView;
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_entrant_profile, R.id.nav_entrant_events, R.id.nav_entrant_qr, R.id.nav_entrant_notifications)
@@ -67,7 +73,7 @@ public class EntrantActivity extends AppCompatActivity {
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    Intent intent = new Intent(EntrantActivity.this, EntrantActivity.class);
+                    Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
                     startActivity(intent);
                     return true;
                 }
