@@ -11,6 +11,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.function.Predicate;
  *
  * TODO - Add error handling on instance exchanges
  * TODO - change on instance load, if null, update subdelete
- * TODO - deletion cascading and possible duplicate deletion
  */
 @Database.Dissovable
 public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
@@ -366,7 +366,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             iprop.value = "";
             iprop.instance = null;
             if(!prop.meta.loadsNullable){
-                deleteInstance();
+                deleteInstance(success -> {});
             }else{
                 notifyUpdate(Type.UPDATE);
             }
@@ -826,42 +826,84 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
-     * Dereferences the instance and notifies all listeners that the instance was deleted
+     * Dereferences the instance. Then cascade deletes all cascading properties. Then notifies all listeners that the instance was deleted.
+     * @param listener called on completion of deletion, returns false if one or more errors occured
      * @see Database#deleteFromDatabase(DatabaseInstance)
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
-    public void deleteInstance(){
+    public void deleteInstance(Database.Querrier.EmptyListener listener){
         if(!isLegalState()) return;
         isDeleted = true;
         db.deleteFromDatabase(this);
-        notifyUpdate(Database.UpdateListener.Type.DELETE);
-        fullDissolve();
+        deleteSubInstances(success -> {
+            notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
+            fullDissolve();
+        });
     }
 
     /**
      * Deletes all subinstances that are cascaded
+     * @param listener called on completion of deletion
      */
     @Database.StirsDeep(what = "Sub instances")
-    private void deleteSubInstances(){
-        for(String prop : iproperties){
-            PropertyWrapper<?,?> p = properties.get(prop);
-            assert p != null;
-            InstancePropertyWrapper<?> iprop = p.iS();
-            if(iprop.instance!=null && iprop.meta.cascadeDelete){
-                iprop.instance.deleteInstance();
+    private void deleteSubInstances(Database.Querrier.EmptyListener listener){
+        List<Pair<Query, Database.Collections>> queries = subInstanceCascadeDeleteQuery();
+        //Have I ever mentioned that I hate async
+        Database.Querrier.EmptyListener l2 = new Database.Querrier.EmptyListener() {
+            private int i = -1;
+            private boolean s;
+            @Override
+            public void onCompletion(boolean success) {
+                s = s || success;
+                i ++;
+                if(i > queries.size()){
+                    listener.onCompletion(s);
+                    return;
+                }
+                Pair<Query, Database.Collections> qc = queries.get(i);
+                DatabaseQuery<?> dq = new DatabaseQuery<>(db, qc.first, qc.second, null);
+                dq.refreshData((query, success2) -> {
+                    if(!success) this.onCompletion(false);
+                    Database.Querrier.EmptyListener thiser = this;
+                    Database.Querrier.EmptyListener l3 = new Database.Querrier.EmptyListener() {
+                        private int j = -1;
+                        private boolean s2 = true;
+                        @Override
+                        public void onCompletion(boolean success) {
+                            s2 = s2 || success;
+                            j++;
+                            if(j > dq.getCurrentInstances().size()){
+                                dq.dissolve();
+                                thiser.onCompletion(s2);
+                                return;
+                            }
+                            dq.getCurrentInstances().get(j).deleteInstance(this);
+                        }
+                    };
+                });
             }
-        }
-        //Don't care about async because we are just deleting
-        //Might need to add in error checks but this doesnt effect the caller
-        for(Pair<Query, Database.Collections> qc: subInstanceCascadeDeleteQuery()){
-            DatabaseQuery<?> dq = new DatabaseQuery<>(db, qc.first, qc.second, null);
-            dq.refreshData((query, success) -> {
-                if(!success) return;
-                query.getCurrentInstances().forEach(DatabaseInstance::deleteInstance);
-                dq.dissolve();
-            });
-        }
+        };
+
+        Database.Querrier.EmptyListener l1 = new Database.Querrier.EmptyListener() {
+            private int i = -1;
+            private boolean s= true;
+            @Override
+            public void onCompletion(boolean success) {
+                s = s || success;
+                i ++;
+                if(i > iproperties.size()){
+                    l2.onCompletion(s);
+                    return;
+                }
+                PropertyWrapper<?,?> p = properties.get(iproperties.get(i));
+                assert p != null;
+                InstancePropertyWrapper<?> iprop = p.iS();
+                if(iprop.instance!=null && iprop.meta.cascadeDelete){
+                    iprop.instance.deleteInstance(this);
+                }
+            }
+        };
     }
 
     /**
@@ -997,6 +1039,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             @Override
             protected NullInstance cast() {
                 throw new UnsupportedOperationException();
+            }
+
+            @Override
+            protected List<Pair<Query, Database.Collections>> subInstanceCascadeDeleteQuery() {
+                return Collections.emptyList();
             }
         }
     }

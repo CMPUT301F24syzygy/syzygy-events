@@ -528,6 +528,16 @@ public class Database implements EventListener<DocumentSnapshot>{
         public void refreshData(Listener<T> listener);
 
         /**
+         * Listener that is called when a query finishes loading and processing data
+         */
+        interface EmptyListener{
+            /**
+             * Called when the query has completed loading and processing data
+             */
+            public void onCompletion(boolean success);
+        }
+
+        /**
          * Listener that is called when a query finishes loading data
          * @param <S> The type of the querrier
          */
