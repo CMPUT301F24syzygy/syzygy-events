@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "760935022915",
+    "project_id": "syzygy-events",
+    "storage_bucket": "syzygy-events.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760935022915:android:8e73ac784599d0339b2ff6",
+        "android_client_info": {
+          "package_name": "com.syzygy.events"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfjOH3fByguG3eKAmR1W8RLJ8FevD4Y6Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
