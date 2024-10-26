@@ -17,11 +17,11 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
-
-import java.io.Serializable;
+import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
 public class EntrantActivity extends AppCompatActivity {
-    private ActivityEntrantBinding binding;
+    private ActivityEntrantBinding entrantBinding;
+    private ActivityOrganizerBinding organizerBinding;
     private NavController navController;
     private Database database;
 
@@ -29,22 +29,21 @@ public class EntrantActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
-        binding = ActivityEntrantBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
         database = new Database(getResources());
 
-        BottomNavigationView navView = binding.navView;
+        entrantBinding = ActivityEntrantBinding.inflate(getLayoutInflater());
+        organizerBinding = ActivityOrganizerBinding.inflate(getLayoutInflater());
+
+        setContentView(entrantBinding.getRoot());
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_entrant_profile, R.id.nav_entrant_events, R.id.nav_entrant_qr, R.id.nav_entrant_notifications)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_entrant);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+        NavigationUI.setupWithNavController(entrantBinding.navView, navController);
 
-        navView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
+        entrantBinding.navView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 for(;navController.navigateUp(););
@@ -73,14 +72,40 @@ public class EntrantActivity extends AppCompatActivity {
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
-                    startActivity(intent);
+                    if (menuItem.getItemId() == R.id.entrant_item) {
+                        switchToEntrant();
+                    }
+                    else if (menuItem.getItemId() == R.id.organizer_item) {
+                        switchToOrganizer();
+                    }
                     return true;
                 }
             });
             m.show();
         }
         return true;
+    }
+
+    public void switchToEntrant() {
+        setContentView(entrantBinding.getRoot());
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_entrant_profile, R.id.nav_entrant_events, R.id.nav_entrant_qr, R.id.nav_entrant_notifications)
+                .build();
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_entrant);
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(entrantBinding.navView, navController);
+
+    }
+
+    public void switchToOrganizer() {
+        setContentView(organizerBinding.getRoot());
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_organizer_profile, R.id.nav_organizer_events, R.id.nav_organizer_create)
+                .build();
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_organizer);
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(organizerBinding.organizerNavView, navController);
+
     }
 
 
