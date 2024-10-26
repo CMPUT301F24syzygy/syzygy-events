@@ -3,23 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/nav_entrant_profile">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.syzygy.events.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/nav_entrant_profile"
+        android:name="com.syzygy.events.ui.entrant.EntrantProfileFragment"
+        android:label="@string/title_entrant_profile"
+        tools:layout="@layout/fragment_entrant_profile" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.syzygy.events.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/nav_entrant_events"
+        android:name="com.syzygy.events.ui.entrant.EntrantEventsFragment"
+        android:label="@string/title_entrant_events"
+        tools:layout="@layout/fragment_entrant_events" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.syzygy.events.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/nav_entrant_qr"
+        android:name="com.syzygy.events.ui.entrant.EntrantQrFragment"
+        android:label="@string/title_entrant_qr"
+        tools:layout="@layout/fragment_entrant_qr" />
+
+    <fragment
+        android:id="@+id/nav_entrant_notifications"
+        android:name="com.syzygy.events.ui.entrant.EntrantNotificationsFragment"
+        android:label="@string/title_entrant_notifications"
+        tools:layout="@layout/fragment_entrant_notifications" />
 </navigation>
