@@ -24,11 +24,13 @@ public class User extends DatabaseInstance<User> {
      * @param db The database
      * @param deviceID The id of the device associated with the user
      */
+    @Database.Salty
     protected User(Database db, String deviceID) throws ClassCastException {
         super(db, deviceID, Database.Collections.USERS, fields);
     }
 
     @Override
+    @Database.Observes
     protected User cast() {
         return this;
     }
@@ -54,7 +56,7 @@ public class User extends DatabaseInstance<User> {
         return getPropertyValueI(R.string.database_user_profileID);
     }
 
-    public boolean setProfileImageID(String val){
+    public boolean setProfileImageID(@Database.Dilutes String val){
         return setPropertyValue(R.string.database_user_profileID, val);
     }
 
@@ -62,7 +64,7 @@ public class User extends DatabaseInstance<User> {
         return getPropertyValueI(R.string.database_user_facilityID);
     }
 
-    public boolean setFacilityID(String val){
+    public boolean setFacilityID(@Database.Dilutes String val){
         return setPropertyValue(R.string.database_user_facilityID, val);
     }
 
@@ -102,6 +104,7 @@ public class User extends DatabaseInstance<User> {
         return getPropertyValueI(R.string.database_user_createdTime);
     }
 
+    @Database.Observes
     public Image getProfileImage(){
         return getPropertyInstanceI(R.string.database_user_profileID);
     }
@@ -110,10 +113,12 @@ public class User extends DatabaseInstance<User> {
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param val The new instance
      */
-    public boolean setProfileImage(@Nullable Image val){
+    @Database.StirsDeep(what = "The previous Image")
+    public boolean setProfileImage(@Nullable @Database.Dilutes Image val){
         return setPropertyInstance(R.string.database_user_profileID, val);
     }
 
+    @Database.Observes
     public Facility getFacility(){
         return getPropertyInstanceI(R.string.database_user_facilityID);
     }
@@ -122,7 +127,8 @@ public class User extends DatabaseInstance<User> {
      * Sets the Facility instance. This function will create a new reference to the instance.
      * @param val The new instance
      */
-    public boolean setFacility(@Nullable Facility val){
+    @Database.StirsDeep(what = "The previous Image")
+    public boolean setFacility(@Nullable @Database.Dilutes Facility val){
         return setPropertyInstance(R.string.database_user_facilityID, val);
     }
 
@@ -131,17 +137,16 @@ public class User extends DatabaseInstance<User> {
      * @param name The name of the user
      * @param description The description of the user
      * @param profileImageID The ID of the profile image
-     * @param facilityID The ID of the user's facility
      * @param email The email of the user
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
      * @return If the user changed as a result
      */
+    @Database.StirsDeep(what = "The previous image")
     public boolean update(String name,
                           String description,
-                          Image profileImageID,
-                          Facility facilityID,
+                          @Database.Dilutes String profileImageID,
                           String email,
                           String phoneNumber,
                           Boolean organizerNotifications,
@@ -151,7 +156,6 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_name, name);
         map.put(R.string.database_user_description, description);
         map.put(R.string.database_user_profileID, profileImageID);
-        map.put(R.string.database_user_facilityID, facilityID);
         map.put(R.string.database_user_email, email);
         map.put(R.string.database_user_phoneNumber, phoneNumber);
         map.put(R.string.database_user_adminNotifications, adminNotifications);
@@ -196,15 +200,15 @@ public class User extends DatabaseInstance<User> {
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
      * @param listener The initializer listener: this will be called once the user is ready
-     * @return The user instance in an illegal state
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
-    public static User NewInstance(Database db,
+    @Database.MustStir
+    public static void NewInstance(Database db,
                                    String deviceID,
                                    String name,
                                    String description,
-                                   String profileImageID,
-                                   String facilityID,
+                                   @Database.Dilutes String profileImageID,
+                                   @Database.Dilutes String facilityID,
                                    String email,
                                    String phoneNumber,
                                    Boolean organizerNotifications,
@@ -214,10 +218,11 @@ public class User extends DatabaseInstance<User> {
         Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, Timestamp.now());
 
         if(!(validateDeviceID(deviceID) && validateDataMap(map))){
-            return null;
+            listener.onInitialization(null, false);
+            return;
         }
 
-        return db.createNewInstance(Database.Collections.USERS, deviceID, db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.USERS, deviceID, db.convertIDMapToNames(map), listener);
     }
 
     public static boolean validateDeviceID(String deviceID){
@@ -238,8 +243,8 @@ public class User extends DatabaseInstance<User> {
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String name,String description,
-                                                      String profileImageID,
-                                                      String facilityID,
+                                                      @Database.Observes String profileImageID,
+                                                      @Database.Observes String facilityID,
                                                       String email,
                                                       String phoneNumber,
                                                       Boolean organizerNotifications,
@@ -266,7 +271,7 @@ public class User extends DatabaseInstance<User> {
      * @return The
      * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Timestamp)
      */
-    public static boolean validateDataMap(Map<Integer, Object> dataMap){
+    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 

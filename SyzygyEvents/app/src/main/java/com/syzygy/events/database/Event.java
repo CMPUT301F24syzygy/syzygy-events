@@ -5,15 +5,19 @@ import androidx.annotation.Nullable;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.AggregateQuery;
 import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * An instance of a event database item
@@ -42,6 +46,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param db The database
      * @param eventID The id of the event
      */
+    @Database.Salty
     protected Event(Database db, String eventID) throws ClassCastException {
         super(db, eventID, Database.Collections.EVENTS, fields);
 
@@ -94,6 +99,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      *                 is called with {@code false} if the data refresh failed.
      *                 If there are negative empty spots to be filled, {@code true} is returned with empty arrays
      */
+    @Database.MustStir
     public void getLottery(final int count, DataListener<Event, LotteryResult> listener){
         refreshData((query, success) -> {
             if(!success){
@@ -111,7 +117,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Queries the waitlist and shuffles the result
      * @param listener Called on completion with the shuffled list
      */
-    @SuppressWarnings("unchecked")
+    @Database.MustStir
     private void shuffleWaitlist(int count, DataListener<Event, LotteryResult> listener){
         if(count < 0){
             listener.onCompletion(this, new LotteryResult(EventAssociation.QueryModifier.EMPTY(db, this), EventAssociation.QueryModifier.EMPTY(db, this), count), true);
@@ -161,7 +167,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param notChosen The list of notChosen users
          * @param count The count of users that should have been selected
          */
-        public LotteryResult(EventAssociation.QueryModifier<Event> chosen, EventAssociation.QueryModifier<Event> notChosen, int count) {
+        public LotteryResult(@Database.Stirs EventAssociation.QueryModifier<Event> chosen, @Database.Stirs EventAssociation.QueryModifier<Event> notChosen, int count) {
             super(chosen);
             this.count = count;
             this.notChosen = notChosen;
@@ -174,6 +180,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             return count == result.size();
         }
 
+        @Database.Observes
         public Event getEvent(){
             return Event.this;
         }
@@ -189,6 +196,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param notifyRejected If the rejected users should be notified
          * TODO if an update errors
          */
+        @Database.Stirred
+        @Database.AutoStir
         public void execute(DataListener<Event, EventAssociation.NotificationResult> listener, boolean notifyRejected) throws IllegalStateException{
             if(dissolved) db.throwE(new IllegalStateException("This lottery result was cancelled"));
             if(executed) db.throwE(new IllegalStateException("This lottery result has already been executed"));
@@ -197,17 +206,20 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 notChosen.rejectUsersFromLottery((query, data, success) -> {
                     if(!success){
                         listener.onCompletion(query, data, false);
+                        if(data != null)data.dissolve();
                         dissolve();
                         return;
                     }
                     result.inviteUsersToEventFromLottery((query1, data1, success2) -> {
                         listener.onCompletion(query1, data1, success2);
+                        if(data1!=null)data1.dissolve();
                         dissolve();
                     });
                 });
             }else{
                 result.inviteUsersToEventFromLottery((query, data, success) -> {
                     listener.onCompletion(query, data, success);
+                    if(data!=null)data.dissolve();
                     dissolve();
                 });
             }
@@ -216,6 +228,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         /**
          * Cancels the result. Returns all references and does not notify users
          */
+        @Database.AutoStir
         public void dissolve(){
             if(dissolved) return;
             dissolved = true;
@@ -228,6 +241,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Returns all invited users who have not accepted
      * @param listener The listener which is called with the list
      */
+    @Database.MustStir
     public void getInvitedUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_invited, listener);
     }
@@ -236,6 +250,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Returns all enrolled users
      * @param listener The listener which is called with the list
      */
+    @Database.MustStir
     public void getEnrolledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_enrolled, listener);
     }
@@ -244,6 +259,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Returns all cancelled users
      * @param listener The listener which is called with the list
      */
+    @Database.MustStir
     public void getCancelledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_cancelled, listener);
     }
@@ -252,6 +268,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Returns all waitlist users
      * @param listener The listener which is called with the list
      */
+    @Database.MustStir
     public void getWaitlistUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_waitlist, listener);
     }
@@ -261,6 +278,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param statusID The res ID of the status
      * @param listener The listener which is called on completion
      */
+    @Database.MustStir
     public void getUsersByStatus(int statusID, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         Query query = assocUsersQuery.whereEqualTo(
                 db.constants.getString(R.string.database_assoc_status),
@@ -275,6 +293,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener that gets called on completion
      * @see DatabaseQuery#refreshData(Listener)
      */
+    @Database.MustStir
     public void getAssociatedUsersFromQuery(Query query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         getAssociatedUsersFromQuery(new DatabaseQuery<>(db, query, Database.Collections.EVENT_ASSOCIATIONS, null), listener);
     }
@@ -286,7 +305,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener that gets called on completion
      * @see DatabaseQuery#refreshData(Listener)
      */
-    public void getAssociatedUsersFromQuery(DatabaseQuery<EventAssociation> query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    @Database.MustStir
+    public void getAssociatedUsersFromQuery(@Database.Stirs DatabaseQuery<EventAssociation> query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
         query.refreshData((query2, success) -> {
             if(!success){
                 listener.onCompletion(Event.this, null, false);
@@ -303,13 +323,17 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Cancels all invited users who have not accepted. Users are set to Cancelled and then notified
      * @param listener The listener which is called with the list
      */
+    @Database.Stirred
     public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener){
         getInvitedUsers((query, data, success) -> {
             if(!success){
                 listener.onCompletion(query, null, false);
+                if(data!=null)data.dissolve();
             }
+            assert data != null;
             data.cancelUsers((query1, data2, success2) -> {
                 listener.onCompletion(query1, data2, false);
+                data2.dissolve();
                 data.dissolve();
             });
         });
@@ -332,11 +356,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     @Override
-    protected void subDereferenceInstance() {
-        super.subDereferenceInstance();
-    }
-
-    @Override
+    @Database.Observes
     protected Event cast() {
         return this;
     }
@@ -353,7 +373,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_posterID);
     }
 
-    public boolean setPosterID(String val){
+    @Database.StirsDeep(what = "The previous image")
+    public boolean setPosterID(@Database.Dilutes String val){
         return setPropertyValue(R.string.database_event_posterID, val);
     }
 
@@ -393,6 +414,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_createdTime);
     }
 
+    @Database.Observes
     public Image getPoster(){
         return getPropertyInstanceI(R.string.database_event_posterID);
     }
@@ -402,12 +424,129 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param val The new instance
      */
-    public boolean setPoster(@Nullable Image val){
+    @Database.StirsDeep(what = "The previous image")
+    public boolean setPoster(@Nullable @Database.Dilutes Image val){
         return setPropertyInstance(R.string.database_event_posterID, val);
     }
 
+    @Database.Observes
     public Facility getFacility(){
         return getPropertyInstanceI(R.string.database_event_facilityID);
+    }
+
+    public Timestamp getOpenRegistrationDate(){
+        return getPropertyValueI(R.string.database_event_openDate);
+    }
+
+    public Timestamp getCloseRegistrationDate(){
+        return getPropertyValueI(R.string.database_event_closedDate);
+    }
+
+    public List<Timestamp> getEventDates(){
+        return getPropertyValueI(R.string.database_event_dates);
+    }
+
+    public boolean setEventDates(List<Timestamp> val){
+        return setPropertyValue(R.string.database_event_dates, val);
+    }
+
+    public Double getPrice(){
+        return getPropertyValueI(R.string.database_event_price);
+    }
+
+    public boolean setPrice(Double val){
+        return setPropertyValue(R.string.database_event_price, val);
+    }
+
+    /**
+     * Adds a user to the waitlist given that the user either does not have an association with the event or the association is cancelled.
+     * <p>
+     *     The listener will be returned with false success if an error occurs or the user cannot be added to the waitlist.
+     * </p>
+     * @param user The user to be added
+     * @param location The current location of the user. If this event requires geolocation, the location cannot be null.
+     *                 If the event does not require geo, the location is auto set to null
+     * @param listener The listener for completion. Ownership of the event association is given to the user
+     */
+    @Database.MustStir
+    public void addUserToWaitlist(@Database.Observes User user, @Nullable GeoPoint location, DataListener<Event, QueryResult<EventAssociation>> listener){
+
+        if(getRequiresLocation()){
+            if(location == null){
+                listener.onCompletion(this, null, false);
+                return;
+            }
+        }else{
+            location = null;
+        }
+
+        GeoPoint finalLocation = getRequiresLocation() ? location : null;
+
+        if(!isRegistrationOpen()){
+            listener.onCompletion(this, null, false);
+            return;
+        }
+        refreshData((query, success) -> {
+            if(!success) {
+                listener.onCompletion(this, null, false);
+                return;
+            }
+            if(getCurrentWaitlist() >= getWaitlistCapacity()){
+                listener.onCompletion(this, null, false);
+                return;
+            }
+
+            getUserAssociation(user, (query1, data, success1) -> {
+                if(!success1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+                if(data.size() > 1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+                if(data.size() == 1) {
+                    data.setStatus(R.string.event_assoc_status_waitlist);
+                    EventAssociation e = data.result.get(0).fetch();
+                    String status = e.getStatus();
+
+                    if (!Objects.equals(status, db.constants.getString(R.string.notification_cancelled_body))) {
+                        //Not in state where can become waitlist
+                        listener.onCompletion(this, new QueryResult<>(e), false);
+                        data.dissolve();
+                        return;
+                    }
+                    e.setStatus(R.string.database_event_waitlist);
+                    listener.onCompletion(this, new QueryResult<>(data.result.get(0)), true);
+                    data.dissolve();
+                    return;
+                }
+                //User isnt already associated
+                EventAssociation.NewInstance(db, getDocumentID(), finalLocation, db.constants.getString(R.string.event_assoc_status_waitlist), user.getDocumentID(), (instance, success2) -> {
+                    listener.onCompletion(this, new QueryResult<>(instance), success2);
+                    data.dissolve();
+                });
+            });
+
+        });
+    }
+
+    /**
+     * Gets the association of the user
+     * @param user The user to retrieve
+     * @param listener Ownership is passed of the event assoc
+     */
+    @Database.MustStir
+    public void getUserAssociation(@Database.Observes User user, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+        getAssociatedUsersFromQuery(assocUsersQuery.whereEqualTo(db.constants.getString(R.string.database_assoc_user), user.getDocumentID()), listener);
+    }
+
+    /**
+     * @return Returns if now is between the closed and open registration date.
+     */
+    public boolean isRegistrationOpen(){
+        Timestamp now = Timestamp.now();
+        return now.compareTo(getOpenRegistrationDate()) >= 0 && now.compareTo(getCloseRegistrationDate()) <= 0;
     }
 
     /**
@@ -416,19 +555,25 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param posterID The id of the poster image
      * @param description the description of the event
      * @param qrHash the cashed qr code data for the event
+     * @param price The price of the event
+     * @param eventDates The dates that the event occurs
      * @return If the event changed as a result
      */
+    @Database.StirsDeep(what = "The previous image")
     public boolean update(String title,
-                          String posterID,
+                          @Database.Dilutes String posterID,
                           String description,
-                          String qrHash
+                          String qrHash,
+                          Double price,
+                          List<Timestamp> eventDates
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_event_title, title);
         map.put(R.string.database_event_posterID, posterID);
         map.put(R.string.database_event_description, description);
         map.put(R.string.database_event_qrHash, qrHash);
-
+        map.put(R.string.database_event_price, price);
+        map.put(R.string.database_event_dates, eventDates);
         return updateDataFromMap(db.convertIDMapToNames(map));
     }
 
@@ -440,11 +585,15 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true),
             new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String && !((String) o).isBlank(), true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String, true),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, false),
             new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Integer && ((Integer)o > 0 || (Integer)o == -1), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String, true),
-            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false)
+            new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double) o) >= 0, true),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp, false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
+            new PropertyField<List<Timestamp>, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof List && !((List<?>)o).isEmpty() && ((List<?>)o).stream().allMatch(i -> i instanceof Timestamp), true),
     };
 
 
@@ -464,29 +613,39 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param description the description of the event
      * @param capacity The max capacity of the event
      * @param waitlistCapacity the max waitlist capacity of the event
-     * @param qrHash the cashed qr code data for the event
-     * @return The user instance in an illegal state
+     * @param qrHash the cashed qr code data for the event,
+     * @param price The price of the event
+     * @param openRegistrationDate The date that registration opens, if null uses now
+     * @param closedRegistrationDate The date that registration closes and the lottery opens
+     * @param eventDates The dates that the event occurs
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
-    public static Event NewInstance(Database db,
+    @Database.MustStir
+    public static void NewInstance(Database db,
                                        String title,
-                                       String posterID,
-                                       String facilityID,
+                                       @Database.Dilutes String posterID,
+                                       @Database.Dilutes String facilityID,
                                        Boolean requiresLocation,
                                        String description,
                                        Integer capacity,
                                        Integer waitlistCapacity,
                                        String qrHash,
+                                       Double price,
+                                       @Nullable Timestamp openRegistrationDate,
+                                       Timestamp closedRegistrationDate,
+                                       List<Timestamp> eventDates,
                                        Database.InitializationListener<Event> listener
     ){
         Timestamp now = Timestamp.now();
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, now);
+        openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
+        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, openRegistrationDate, closedRegistrationDate, eventDates,  now);
 
         if(!validateDataMap(map)){
-            return null;
+            listener.onInitialization(null, false);
+            return;
         }
 
-        return db.createNewInstance(Database.Collections.EVENTS, facilityID + "-" + now.toString(), db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.EVENTS, facilityID + "-" + now.toString(), db.convertIDMapToNames(map), listener);
     }
 
     /**
@@ -499,17 +658,25 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param capacity The max capacity of the event
      * @param waitlistCapacity the max waitlist capacity of the event
      * @param qrHash the cashed qr code data for the event
+     * @param price The price of the event
+     * @param openRegistrationDate The date that registration opens
+     * @param closedRegistrationDate The date that registration closes and the lottery opens
+     * @param eventDates The dates that the event occurs
      * @param createdTime The time when the event was created
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String title,
-                                                     String posterID,
-                                                     String facilityID,
+                                                     @Database.Observes String posterID,
+                                                     @Database.Observes String facilityID,
                                                      Boolean requiresLocation,
                                                      String description,
                                                      Integer capacity,
                                                      Integer waitlistCapacity,
                                                      String qrHash,
+                                                     Double price,
+                                                     Timestamp openRegistrationDate,
+                                                     Timestamp closedRegistrationDate,
+                                                     List<Timestamp> eventDates,
                                                      Timestamp createdTime
 
     ){
@@ -522,7 +689,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         map.put(R.string.database_event_capacity, capacity);
         map.put(R.string.database_event_waitlist, waitlistCapacity);
         map.put(R.string.database_event_qrHash, qrHash);
+        map.put(R.string.database_event_price, price);
         map.put(R.string.database_event_createdTime, createdTime);
+        map.put(R.string.database_event_openDate, openRegistrationDate);
+        map.put(R.string.database_event_closedDate, closedRegistrationDate);
+        map.put(R.string.database_event_dates, eventDates);
 
         return map;
     }
@@ -531,9 +702,9 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Timestamp)
+     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp, List, Timestamp)
      */
-    public static boolean validateDataMap(Map<Integer, Object> dataMap){
+    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

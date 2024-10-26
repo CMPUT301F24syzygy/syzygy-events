@@ -24,11 +24,13 @@ public class Facility extends DatabaseInstance<Facility> {
      * @param db The database
      * @param orgID The id of the organizer
      */
+    @Database.Salty
     protected Facility(Database db, String orgID) throws ClassCastException {
         super(db, orgID, Database.Collections.FACILITIES, fields);
     }
 
     @Override
+    @Database.Observes
     protected Facility cast() {
         return this;
     }
@@ -69,6 +71,7 @@ public class Facility extends DatabaseInstance<Facility> {
         return getPropertyValueI(R.string.database_fac_organizer);
     }
 
+    @Database.Observes
     public Image getImage(){
         return getPropertyInstanceI(R.string.database_fac_imageID);
     }
@@ -77,10 +80,12 @@ public class Facility extends DatabaseInstance<Facility> {
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param val The new instance
      */
-    public boolean setImage(@Nullable Image val){
+    @Database.StirsDeep(what = "The previous image")
+    public boolean setImage(@Nullable @Database.Dilutes Image val){
         return setPropertyInstance(R.string.database_fac_imageID, val);
     }
 
+    @Database.Observes
     public User getOrganizer(){
         return getPropertyInstanceI(R.string.database_fac_organizer);
     }
@@ -93,10 +98,11 @@ public class Facility extends DatabaseInstance<Facility> {
      * @param imageID The ID of the facility profile image
      * @return If the facility changed as a result
      */
+    @Database.StirsDeep(what = "The previous image")
     public boolean update(String name,
                           GeoPoint location,
                           String description,
-                          String imageID
+                          @Database.Dilutes String imageID
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_fac_name, name);
@@ -133,24 +139,25 @@ public class Facility extends DatabaseInstance<Facility> {
      * @param imageID The ID of the facility profile image
      * @param organizerID The Id of the organizer
      * @param listener The initializer listener: this will be called once the user is ready
-     * @return The user instance in an illegal state
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
-    public static Facility NewInstance(Database db,
+    @Database.MustStir
+    public static void NewInstance(Database db,
                                     String name,
                                     GeoPoint location,
                                     String description,
-                                    String imageID,
-                                    String organizerID,
+                                    @Database.Dilutes String imageID,
+                                    @Database.Dilutes String organizerID,
                                     Database.InitializationListener<Facility> listener
     ){
         Map<Integer,Object> map = createDataMap(name, location, description, imageID, organizerID);
 
         if(!validateDataMap(map)){
-            return null;
+            listener.onInitialization(null, false);
+            return;
         }
 
-        return db.createNewInstance(Database.Collections.FACILITIES, organizerID, db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.FACILITIES, organizerID, db.convertIDMapToNames(map), listener);
     }
 
     /**
@@ -165,8 +172,8 @@ public class Facility extends DatabaseInstance<Facility> {
     public static Map<Integer, Object> createDataMap(String name,
                                                      GeoPoint location,
                                                      String description,
-                                                     String imageID,
-                                                     String organizerID
+                                                     @Database.Observes String imageID,
+                                                     @Database.Observes String organizerID
 
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -184,7 +191,7 @@ public class Facility extends DatabaseInstance<Facility> {
      * @return The
      * @see #createDataMap(String, GeoPoint, String, String, String)
      */
-    public static boolean validateDataMap(Map<Integer, Object> dataMap){
+    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

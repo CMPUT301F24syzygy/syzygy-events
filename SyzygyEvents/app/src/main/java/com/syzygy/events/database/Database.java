@@ -12,9 +12,11 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +73,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @param <T> The type of the instance
      * @throws IllegalStateException If the instance still has references
      */
-    <T extends DatabaseInstance<T>> void returnInstance(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void returnInstance(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         if(instance.isReferenced()) throw new IllegalStateException("Instance is still referenced: " + instance.toString());
         cache.remove(instance.getDatabaseID());
     }
@@ -84,7 +86,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see DatabaseInstance#getDocumentReference()
      * @see DatabaseInstance#getData()
      */
-    <T extends DatabaseInstance<T>> void updateDatabase(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void updateDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         // TODO might be double notifiying
         instance.getDocumentReference().set(instance.getData());
     }
@@ -96,7 +98,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @see DatabaseInstance#getDocumentReference()
      */
-    <T extends DatabaseInstance<T>> void deleteFromDatabase(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void deleteFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         // TODO might be double notifiying
         instance.getDocumentReference().delete();
     }
@@ -109,7 +111,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see DatabaseInstance#getDocumentReference()
      * @see DatabaseInstance#getData()
      */
-    <T extends DatabaseInstance<T>> void addToDatabase(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void addToDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         // TODO might be double notifiying
         instance.getDocumentReference().set(instance.getData());
     }
@@ -122,7 +124,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see DatabaseInstance#updateDataFromDatabase(Map)
      * @see DatabaseInstance#getDocumentReference()
      */
-    <T extends DatabaseInstance<T>> void updateFromDatabase(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void updateFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -140,7 +142,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see DatabaseInstance#initializeData(Map, boolean)
      * @see DatabaseInstance#getDocumentReference()
      */
-    <T extends DatabaseInstance<T>> void initializeFromDatabase(DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -160,7 +162,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @throws IllegalArgumentException If the document does not match the instance
      * @see DatabaseInstance#initializeData(Map, boolean)
      */
-    <T extends DatabaseInstance<T>> void initializeFromDatabase(DatabaseInstance<T> instance, DocumentSnapshot snapshot) throws IllegalStateException, IllegalArgumentException{
+    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, DocumentSnapshot snapshot) throws IllegalStateException, IllegalArgumentException{
         if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
         instance.initializeData(snapshot.getData(), snapshot.exists());
     }
@@ -192,8 +194,9 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see Collections#newInstance(Database, String)
      */
     @SuppressWarnings("unchecked")
+    @MustStir
     public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener){
-        return getInstance(collection, documentID, null);
+        return getInstance(collection, documentID, listener, null);
     };
 
     /**
@@ -224,6 +227,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @see Collections#newInstance(Database, String)
      */
     @SuppressWarnings("unchecked")
+    @MustStir
     public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener, @Nullable DocumentSnapshot document) throws IllegalArgumentException{
         //TODO deal with no exists
         DatabaseInstance<T> instance = (DatabaseInstance<T>)(cache.computeIfAbsent(collection.getDatabaseID(documentID), k->{
@@ -247,6 +251,7 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @param <T> The type of the instance
      */
     @SuppressWarnings("unchecked")
+    @MustStir
     public <T extends DatabaseInstance<T>> T getInstanceFromCache(Collections collection, String documentID) {
         DatabaseInstance<T> val = (DatabaseInstance<T>) cache.get(collection.getDatabaseID(documentID));
         if(val == null){
@@ -273,7 +278,8 @@ public class Database implements EventListener<DocumentSnapshot>{
      * @param <T> The type of instance
      */
     @SuppressWarnings("unchecked")
-    public <T extends DatabaseInstance<T>> T createNewInstance(Collections collection, String documentID, Map<String, Object> data, InitializationListener<T> listener){
+    @MustStir()
+    public <T extends DatabaseInstance<T>> void createNewInstance(Collections collection, String documentID, Map<String, Object> data, InitializationListener<T> listener){
         //TODO deal with exists
         DatabaseInstance<T> instance = (DatabaseInstance<T>) cache.computeIfAbsent(collection.getDatabaseID(documentID), k -> collection.newInstance(this, documentID));
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -285,12 +291,12 @@ public class Database implements EventListener<DocumentSnapshot>{
                     instance.fullDissolve();
                     listener.onInitialization(instance.cast(), false);
                 }else{
+                    instance.addInitializationListener(listener);
                     instance.initializeData(data, true);
                     addToDatabase(instance);
                 }
             }
         });
-        return instance.fetch();
     };
 
     /**
@@ -381,7 +387,7 @@ public class Database implements EventListener<DocumentSnapshot>{
          * @param instance The database instance
          * @return The unique database identifier
          */
-        String getDatabaseID(DatabaseInstance<?> instance){
+        String getDatabaseID(@Observes DatabaseInstance<?> instance){
           return getDatabaseID(instance.getDocumentID());
         };
 
@@ -439,6 +445,7 @@ public class Database implements EventListener<DocumentSnapshot>{
          */
         @SuppressWarnings("unchecked")
         @NonNull
+        @Salty
         <T extends DatabaseInstance<T>> DatabaseInstance<T> newInstance(Database db, String id) {
             switch(this){
                 case USERS:
@@ -482,7 +489,7 @@ public class Database implements EventListener<DocumentSnapshot>{
              */
             DEREFERENCED
         };
-        public <T extends DatabaseInstance <T>> void onUpdate(DatabaseInstance<T> instance, Type type);
+        public <T extends DatabaseInstance <T>> void onUpdate(@Observes DatabaseInstance<T> instance, Type type);
     }
 
     /**
@@ -502,7 +509,7 @@ public class Database implements EventListener<DocumentSnapshot>{
          *                            occurred.
          * @see DatabaseInstance#initializeData(Map, boolean)
          */
-        public void onInitialization(T instance, boolean success);
+        public void onInitialization(@MustStir T instance, boolean success);
     }
 
     /**
@@ -529,7 +536,7 @@ public class Database implements EventListener<DocumentSnapshot>{
              * Called when the query has completed loading data and now contains all the new loaded instances
              * @param query The query
              */
-            public void onCompletion(S query, boolean success);
+            public void onCompletion(@Observes S query, boolean success);
         }
         /**
          * Listener that is called when a query finishes loading data and returns data
@@ -542,7 +549,7 @@ public class Database implements EventListener<DocumentSnapshot>{
              * @param query The query
              * @param data The list of instances found by the query
              */
-            public void onCompletion(S query, W data, boolean success);
+            public void onCompletion(@Observes S query, @Particulates W data, boolean success);
         }
 
         public class QueryResult<V> {
@@ -567,7 +574,79 @@ public class Database implements EventListener<DocumentSnapshot>{
     /**
      * Represents a class which must call {@code .dissolve} when no longer used
      */
+    @Documented
     @Target(ElementType.TYPE)
     public @interface Dissovable { }
+
+    /**
+     * Represents a instance return that gives up ownership of the instance. The receiver must dissolve the instance once complete
+     */
+    @Documented
+    @Target({ElementType.PARAMETER, ElementType.CONSTRUCTOR, ElementType.METHOD})
+    public @interface MustStir { public String when() default "Always";}
+
+    /**
+     * Represents a instance return that keeps ownership of the instance. The receiver must fetch the instance for further use. The user does not need to dissolve
+     */
+    @Documented
+    @Target({ElementType.METHOD})
+    public @interface Stirred {public String when() default "Always"; }
+
+
+    /**
+     * Represents a instance method that will dissolves itself after calling the method. The receiver cannot use the instance any longer
+     */
+    @Documented
+    @Target({ElementType.METHOD})
+    public @interface AutoStir {public String when() default "Always"; }
+
+    /**
+     * Represents an instance that may need to be fetched or dissolved depending on the documentation by the original method
+     */
+    @Documented
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
+    public @interface Particulates { }
+
+    /**
+     * Represents a parameter instance that will be fetched by the method. Thus if the caller dissolve the argument after, the argument will still be cached
+     */
+    @Documented
+    @Target({ElementType.PARAMETER})
+    public @interface Dilutes {public String when() default "Always"; }
+
+    /**
+     * Represents that the method fetches certain instances
+     */
+    @Documented
+    @Target({ElementType.METHOD})
+    public @interface Titrates {public String what(); public String when() default "Always"; }
+
+    /**
+     * Represents a instance return that has not yet fetched the instance, the instance must be fetched by the caller otherwise the instance will be stuck in a broken state
+     */
+    @Documented
+    @Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
+    public @interface Salty { }
+
+    /**
+     * Represents a parameter instance that will be not fetched by the method. Thus if the caller dissolves the argument after, the method may fail. If the caller wishes to use the instance, they must fetch
+     */
+    @Documented
+    @Target({ElementType.PARAMETER, ElementType.METHOD})
+    public @interface Observes { }
+
+    /**
+     * Represents an instance that will be dissolved by the method. The caller must fetch the instance before calling if they wish for further use
+     */
+    @Documented
+    @Target({ElementType.PARAMETER})
+    public @interface Stirs { public String when() default "Always";}
+
+    /**
+     * Represents an method call that will dissolve an object
+     */
+    @Documented
+    @Target({ElementType.METHOD})
+    public @interface StirsDeep { public String what(); public String when() default "Always";}
 
 }

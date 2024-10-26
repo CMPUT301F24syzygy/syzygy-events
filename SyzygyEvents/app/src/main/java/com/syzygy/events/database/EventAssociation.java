@@ -25,11 +25,13 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * @param db The database
      * @param assocID The id of the association
      */
+    @Database.Salty
     protected EventAssociation(Database db, String assocID) throws ClassCastException {
         super(db, assocID, Database.Collections.EVENT_ASSOCIATIONS, fields);
     }
 
     @Override
+    @Database.Observes
     protected EventAssociation cast() {
         return this;
     }
@@ -54,14 +56,20 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         return setPropertyValue(R.string.database_assoc_status, val);
     }
 
+    public boolean setStatus(int resID){
+        return setPropertyValue(R.string.database_assoc_status, db.constants.getString(resID));
+    }
+
     public String getUserID(){
         return getPropertyValueI(R.string.database_assoc_user);
     }
 
+    @Database.Observes
     public User getUser(){
         return getPropertyInstanceI(R.string.database_assoc_user);
     }
 
+    @Database.Observes
     public Event getEvent(){
         return getPropertyInstanceI(R.string.database_assoc_event);
     }
@@ -89,7 +97,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint, true),
+            new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint || o == null, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_status, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_assoc_time, o -> o instanceof Timestamp, false)
     };
@@ -109,23 +117,24 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * @param status The status of the association
      * @param userID The id of the user
      * @param listener The initializer listener: this will be called once the user is ready
-     * @return The user instance in an illegal state
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
-    public static Image NewInstance(Database db,
-                                    String eventID,
+    @Database.MustStir
+    public static void NewInstance(Database db,
+                                    @Database.Dilutes String eventID,
                                     GeoPoint location,
                                     String status,
-                                    String userID,
-                                    Database.InitializationListener<Image> listener
+                                    @Database.Dilutes String userID,
+                                    Database.InitializationListener<EventAssociation> listener
     ){
         Map<Integer,Object> map = createDataMap(eventID, location, status, userID, Timestamp.now());
 
         if(!validateDataMap(map)){
-            return null;
+            listener.onInitialization(null, false);
+            return;
         }
 
-        return db.createNewInstance(Database.Collections.EVENT_ASSOCIATIONS, eventID+"-"+userID, db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.EVENT_ASSOCIATIONS, eventID+"-"+userID, db.convertIDMapToNames(map), listener);
     }
 
     /**
@@ -137,10 +146,10 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * @param time When the user first became associated to the event
      * @return The map
      */
-    public static Map<Integer, Object> createDataMap(String eventID,
+    public static Map<Integer, Object> createDataMap(@Database.Observes String eventID,
                                                      GeoPoint location,
                                                      String status,
-                                                     String userID,
+                                                     @Database.Observes String userID,
                                                      Timestamp time
 
     ){
@@ -159,12 +168,12 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * @return The
      * @see #createDataMap(String, GeoPoint, String, String, Timestamp)  
      */
-    public static boolean validateDataMap(Map<Integer, Object> dataMap){
+    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 
     /**
-     * A query result of EventAssociations. This provides a methods to mass modify and notify users
+     * A query result of EventAssociations. This provides a methods to mass modify and notify user
      */
     @Database.Dissovable
     public static class QueryModifier<T extends Database.Querrier<T>> extends Database.Querrier.QueryInstanceResult<EventAssociation> {
@@ -179,7 +188,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param querrier The querrier that got the results
          * @param list The list of results
          */
-        public QueryModifier(Database db, T querrier, List<EventAssociation> list) {
+        @Database.MustStir
+        public QueryModifier(Database db, @Database.Observes T querrier, @Database.Dilutes List<EventAssociation> list) {
             super(list);
             this.querrier = querrier;
             result.forEach(DatabaseInstance::fetch);
@@ -200,6 +210,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * Invites all users to the corresponding events. Sets the association to Invited and notifies the user that they were selected by the lottery
          * @param listener The listener called on completion with the {@link NotificationResult}
          */
+        @Database.Stirred
         public void inviteUsersToEventFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
             setStatus(R.string.event_assoc_status_invited,
                     db.constants.getString(R.string.notification_lottery_notChosen_subject),
@@ -211,6 +222,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * Notifies the users that they were rejected by the lottery for their associated event
          * @param listener The listener called on completion with the {@link NotificationResult}
          */
+        @Database.Stirred
         public void rejectUsersFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
             notify(db.constants.getString(R.string.notification_lottery_notChosen_subject),
                     db.constants.getString(R.string.notification_lottery_notChosen_body),
@@ -222,6 +234,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * Cancels all users from the respective events. Sets the association to Cancelled and notifies the users that they were removed from the event
          * @param listener The listener called on completion with the {@link NotificationResult}
          */
+        @Database.Stirred
         public void cancelUsers(Database.Querrier.DataListener<T, NotificationResult> listener){
             setStatus(R.string.event_assoc_status_cancelled,
                     db.constants.getString(R.string.notification_cancelled_subject),
@@ -233,6 +246,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         /**
          * Deletes all associations. Then dissolves self
          */
+        @Database.StirsDeep(what="Deletes the result instances")
+        @Database.AutoStir
         public void delete(){
             result.forEach(DatabaseInstance::deleteInstance);
             dissolve();
@@ -249,6 +264,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          *                 Only the {@code onSuccess} is called
          * @see NotificationResult
          */
+        @Database.Stirred
         public void setStatus(int statusID, String notificationSubject, String notificationBody, boolean notificationAttachEvent, boolean notificationFromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
             if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
             String status = db.constants.getString(statusID);
@@ -272,6 +288,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          *                 Only the {@code onSuccess} is called
          * @see NotificationResult
          */
+        @Database.Stirred
         public void notify(String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
             if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
             notify(e -> {}, subject, body, attachEvent, fromOrganizer, listener);
@@ -284,10 +301,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param attachEvent If the event should be attached to the notification
          * @param fromOrganizer If the even should be sent from the organizer
          * @param listener The listener that is called with the notification result upon completion.
-         *                 Only the {@code onSuccess} is called
+         *                 Only the {@code onSuccess} is called. Ownership is passed on to the caller
          * @see NotificationResult
          */
-        public void notify(Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+        @Database.Stirred
+        public void notify(@Database.Observes Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
             if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
             List<Notification> failedNotifications = new ArrayList<>();
             List<Notification> successNotifications = new ArrayList<>();
@@ -295,13 +313,17 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
             Database.InitializationListener<Notification> asyncForLoop = new Database.InitializationListener<Notification>() {
                 private int i = -1;
                 @Override
-                public void onInitialization(Notification instance, boolean success) {
+                public void onInitialization( Notification instance, boolean success) {
                     if(!success){
                         failedNotifications.add(instance);
+                    }else{
+                        successNotifications.add(instance);
                     }
                     ++i;
                     if(i >= result.size()){
-                        listener.onCompletion(querrier, new NotificationResult(successNotifications, failedNotifications), true);
+                        NotificationResult n = new NotificationResult(successNotifications, failedNotifications);
+                        listener.onCompletion(querrier, n, true);
+                        n.dissolve();
                     }
 
 
@@ -328,6 +350,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         /**
          * Returns the references
          */
+        @Database.AutoStir
+        @Database.StirsDeep(what="The result instances")
         public void dissolve(){
             if(dissolved) return;
             dissolved = true;
@@ -335,11 +359,13 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         }
 
 
-        public static <T extends Database.Querrier<T>> QueryModifier<T> EMPTY(Database db, T q){
+        @Database.MustStir
+        public static <T extends Database.Querrier<T>> QueryModifier<T> EMPTY(Database db, @Database.Observes T q){
             return new QueryModifier<>(db, q, new ArrayList<>());
         }
 
-        public static <T extends Database.Querrier<T>> QueryModifier<T> SINGLETON(Database db, T q, EventAssociation assoc){
+        @Database.MustStir
+        public static <T extends Database.Querrier<T>> QueryModifier<T> SINGLETON(Database db, @Database.Observes T q, @Database.Dilutes EventAssociation assoc){
             return new QueryModifier<>(db, q, Collections.singletonList(assoc));
         }
     }
@@ -349,6 +375,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * This object must be called with {@code .dissolve} once complete
      * @return The methods object
      */
+    @Database.MustStir
+    @Database.Titrates(what="This")
     public QueryModifier<Event> methods(){
         return QueryModifier.SINGLETON(db, getEvent(), this);
     }
@@ -359,6 +387,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      *     Stores all sent notifications as the {@code result}.
      * </p>
      */
+    @Database.Dissovable
     public static class NotificationResult extends Database.Querrier.QueryInstanceResult<Notification> {
 
         /**
@@ -366,9 +395,17 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          */
         public final List<Notification> failedNotifications;
 
-        public NotificationResult(List<Notification> list, List<Notification> failedNotifications) {
+        @Database.MustStir
+        public NotificationResult(@Database.Stirs List<Notification> list, @Database.Stirs List<Notification> failedNotifications) {
             super(list);
             this.failedNotifications = Collections.unmodifiableList(failedNotifications);
+        }
+
+        @Database.AutoStir
+        @Database.StirsDeep(what = "The result and failure notifications")
+        public void dissolve(){
+            result.forEach(DatabaseInstance::dissolve);
+            failedNotifications.forEach(DatabaseInstance::dissolve);
         }
     }
 }

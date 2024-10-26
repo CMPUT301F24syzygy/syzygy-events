@@ -104,6 +104,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see DatabaseInstance#documentID
      */
     @SuppressWarnings("unchecked")
+    @Database.Salty
     protected DatabaseInstance(Database db, String documentID, Database.Collections collection, @NonNull PropertyField<?,?>[] properties) throws ClassCastException, IllegalArgumentException{
         T t = (T)this;
         if(properties.length == 0) db.throwE(new IllegalArgumentException("Properties is empty: " + collection));
@@ -125,6 +126,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Gets this instance casted to the generic type
      * @return This as the generic type
      */
+    @Database.Observes
     protected abstract T cast();
 
     /**
@@ -161,11 +163,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see Database.InitializationListener
      * @throws IllegalStateException if the instance is dereferenced
      */
+    @Database.MustStir
     public final void addInitializationListener(@Nullable Database.InitializationListener<T> listener) throws IllegalStateException{
         if(listener == null) return;
         if(isInitialized){
             assertNotIllegalState();
-            listener.onInitialization(cast(), true);
+            listener.onInitialization(fetch(), true);
         }else{
             initializationListeners.add(listener);
         }
@@ -187,6 +190,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return This instance casted to the generic type
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
+    @Database.MustStir
     public T fetch() throws IllegalStateException{
         assertNotIllegalState();
         referenceCount ++;
@@ -199,6 +203,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return This instance casted to the generic type
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
+    @Database.MustStir
     public T fetch(Database.UpdateListener listener) throws IllegalStateException{
         assertNotIllegalState();
         referenceCount ++;
@@ -209,6 +214,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Decreases the reference count of this instance
      */
+    @Database.AutoStir
+    @Database.StirsDeep(what="Property Instances", when="No Longer Referenced")
     public void dissolve(){
         referenceCount = Math.min(referenceCount - 1, 0);
         dereferenceInstance();
@@ -218,6 +225,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Removes the listener from the instance and decreases the reference
      * @param listener The listener
      */
+    @Database.AutoStir
+    @Database.StirsDeep(what="Property Instances", when="No Longer Referenced")
     public void dissolve(Database.UpdateListener listener){
         removeListener(listener);
         dissolve();
@@ -227,6 +236,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Decreases the reference count to zero
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
+    @Database.AutoStir
+    @Database.StirsDeep(what="Property Instances")
     public void fullDissolve() throws IllegalStateException{
         assertNotIllegalState();
         referenceCount = 0;
@@ -273,6 +284,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Checks if the instance is dereferenced, in which case its tells the database to forget this
      * instance and to remove it from cache. Also, clears all listeners.
      */
+    @Database.StirsDeep(what="Property Instances")
     protected final void dereferenceInstance() {
         if (isReferenced()) return;
         if (isDereferenced) return; // already dereferenced
@@ -287,6 +299,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Called when this instance is dereferenced. This function should dissolve any sub-instances
      */
+    @Database.StirsDeep(what="Property Instances")
     protected void subDereferenceInstance() {
         for(String name : iproperties){
             PropertyWrapper<?,?> prop = properties.get(name);
@@ -304,8 +317,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param <S> The type of the subinstance
      * @see #deleteSubInstance(DatabaseInstance)
      */
+    @Database.AutoStir(when="Instance is deleted and Property is not nullable")
+    @Database.StirsDeep(what="Property Instances", when="Instance is deleted and Property is not nullable")
     @Override
-    public <S extends DatabaseInstance<S>> void onUpdate(DatabaseInstance<S> instance, Type type) {
+    public <S extends DatabaseInstance<S>> void onUpdate(@Database.Observes DatabaseInstance<S> instance, Type type) {
         if(!isLegalState()) return;
         switch (type){
             case UPDATE:
@@ -329,7 +344,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      *</p>
      * @param instance The subinstance
      */
-    private void deleteSubInstance(DatabaseInstance<?> instance){
+    @Database.AutoStir(when="Property is not nullable")
+    @Database.StirsDeep(what="Property Instances", when="Property is not nullable")
+    private void deleteSubInstance(@Database.Observes DatabaseInstance<?> instance){
         for(Map.Entry<String,PropertyWrapper<?,?>> ent : properties.entrySet()){
             PropertyWrapper<?,?> prop = ent.getValue();
             if(!prop.meta.loads || prop.meta.loadsCollection != instance.collection) continue;
@@ -395,7 +412,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws ClassCastException If the type does not match the properties type
      */
     @SuppressWarnings("unchecked")
-    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, String newID) throws IllegalArgumentException, ClassCastException{
+    @Database.StirsDeep(what="Previous Instance")
+    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID) throws IllegalArgumentException, ClassCastException{
         if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
         InstancePropertyWrapper<W> prop = (InstancePropertyWrapper<W>) p;
         if(Objects.equals(newID, prop.value)) return;
@@ -424,7 +442,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalArgumentException If the property is not an instance property
      * @throws ClassCastException If the type does not match the properties type
      */
-    private <W extends DatabaseInstance<W>> void exchangeInstance(InstancePropertyWrapper<W> prop, W newInstance) throws ClassCastException{
+    @Database.AutoStir
+    @Database.StirsDeep(what="Previous Instance")
+    private <W extends DatabaseInstance<W>> void exchangeInstance(InstancePropertyWrapper<W> prop, @Database.Dilutes W newInstance) throws ClassCastException{
         if(Objects.equals(newInstance, prop.instance)) return;
         if(newInstance!=null)newInstance.fetch();
         if(prop.instance != null){
@@ -447,7 +467,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws ClassCastException if a value does not match an properties type
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected final boolean modifyData(Map<String, Object> data) throws IllegalArgumentException, ClassCastException{
+    @Database.StirsDeep(what="Old Instances of Instance properties that are modified")
+    protected final boolean modifyData(@Database.Dilutes Map<String, Object> data) throws IllegalArgumentException, ClassCastException{
         boolean diff = false;
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
@@ -480,7 +501,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws ClassCastException if the value type does not match the properties type
      */
-    public final boolean setPropertyValue(int resID, Object newValue) throws IllegalArgumentException, IllegalStateException{
+    @Database.StirsDeep(what="The previous instance", when="Modifying an instance property")
+    public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue) throws IllegalArgumentException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
@@ -507,7 +529,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws ClassCastException if the instance type does not match the properties type
      */
     @SuppressWarnings("unchecked")
-    public final <W extends DatabaseInstance<W>> boolean setPropertyInstance(int resID, @Nullable W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
+    @Database.StirsDeep(what="The previous instance")
+    public final <W extends DatabaseInstance<W>> boolean setPropertyInstance(int resID, @Nullable @Database.Dilutes W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
@@ -531,6 +554,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalArgumentException if the property does not exist
      * @throws ClassCastException if the generic is incorrect
      */
+    @Database.Observes
     public final Object getPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
@@ -547,6 +571,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws ClassCastException if the generic is incorrect
      */
     @SuppressWarnings("unchecked")
+    @Database.Observes
     public final <V> V getPropertyValueI(int resID) throws IllegalArgumentException, ClassCastException{
         return (V) getPropertyValue(resID);
     }
@@ -557,6 +582,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return The value of the property as an Object
      * @throws IllegalArgumentException if the property does not exist or does not have instances
      */
+    @Database.Observes
     public final Object getPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
@@ -572,6 +598,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws ClassCastException if the generic is incorrect
      */
     @SuppressWarnings("unchecked")
+    @Database.Observes
     public final <W extends DatabaseInstance<W>> W getPropertyInstanceI(int resID) throws IllegalArgumentException, ClassCastException{
         return (W) getPropertyInstance(resID);
     }
@@ -583,7 +610,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param value The value to test
      * @return {@code true} if the value is valid
      */
-    public final boolean isPropertyValid(int resID, Object value){
+    public final boolean isPropertyValid(int resID, @Database.Observes Object value){
         PropertyWrapper<?, ?> prop = properties.get(db.constants.getString(resID));
         if(prop == null) return false;
         return isPropertyValid(prop, value);
@@ -595,7 +622,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param value the value to test
      * @return {@code true} if the value is valid
      */
-    public final boolean isPropertyValid(PropertyWrapper<?,?> prop, Object value){
+    public final boolean isPropertyValid(PropertyWrapper<?,?> prop, @Database.Observes Object value){
         return prop.meta.isValid.test(value);
     }
 
@@ -604,7 +631,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param data The property name-value map
      * @return {@code true} is the data is valid
      */
-    public final boolean isDataValid(Map<String, Object> data){
+    public final boolean isDataValid(@Database.Observes Map<String, Object> data){
         for(Map.Entry<String, Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
             if(prop == null) return false;
@@ -618,7 +645,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param data The property resID-value map where resID is the res ID of the property name
      * @return {@code true} is the data is valid
      */
-    public final boolean isDataValidIDs(Map<Integer, Object> data){
+    public final boolean isDataValidIDs(@Database.Observes Map<Integer, Object> data){
         for(Map.Entry<Integer, Object> ent : data.entrySet()){
             if(!isPropertyValid(ent.getKey(),ent.getValue())) return false;
         }
@@ -631,7 +658,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param fields The set of propertyFields to test against
      * @return {@code true} is the data is valid
      */
-    public static boolean isDataValid(Map<Integer, Object> map, PropertyField<?,?>[] fields){
+    public static boolean isDataValid(@Database.Observes Map<Integer, Object> map, PropertyField<?,?>[] fields){
         Set<Integer> ids = map.keySet();
         for(PropertyField<?,?> prop : fields){
             if(!map.containsKey(prop.propertyNameID)) continue;
@@ -675,7 +702,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param exists If the document exists in the database
      * @throws IllegalStateException if the instance has already been initialized
      */
-    final void initializeData(Map<String, Object> data, boolean exists) throws IllegalStateException{
+    @Database.AutoStir(when="Error")
+    final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists) throws IllegalStateException{
         if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
         modifyData(data);
         subInitialize(new Database.InitializationListener<T>() {
@@ -705,6 +733,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalArgumentException If the value is empty but the property is not nullable
      */
     @SuppressWarnings("unchecked")
+    @Database.Titrates(what="Sub instances")
     protected void subInitialize(Database.InitializationListener<T> listener, int count) throws IllegalArgumentException{
         if(count >= iproperties.size()) {
             listener.onInitialization(this.cast(), true);
@@ -737,7 +766,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return {@code true} if the instance was changed as a result
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
-    final boolean updateDataFromDatabase(Map<String, Object> data) throws IllegalStateException{
+    @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
+    final boolean updateDataFromDatabase(@Database.Dilutes Map<String, Object> data) throws IllegalStateException{
         assertNotIllegalState();
         boolean mod = modifyData(data);
         if(mod){
@@ -754,7 +784,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalArgumentException if a key is not one of the available properties to edit or a value is not valid
      * @throws ClassCastException If a value's type does not match the property type
      */
-    public final boolean updateDataFromMap(Map<String,Object> data) throws IllegalStateException, IllegalArgumentException, ClassCastException{
+    @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
+    public final boolean updateDataFromMap(@Database.Dilutes Map<String,Object> data) throws IllegalStateException, IllegalArgumentException, ClassCastException{
         assertNotIllegalState();
         if(!modifyData(data)) return false;
         processUpdate();
@@ -766,6 +797,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return The property key-value map of the instance
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
+    @Database.Observes
     protected final Map<String, Object> getData() throws IllegalStateException{
         assertNotIllegalState();
         Map<String, Object> values = new HashMap<>();
@@ -791,6 +823,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see Database#deleteFromDatabase(DatabaseInstance)
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
+    @Database.AutoStir
+    @Database.StirsDeep(what="Sub Instances")
     public void deleteInstance() throws IllegalStateException{
         assertNotIllegalState();
         db.deleteFromDatabase(this);
@@ -949,7 +983,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          * @throws ClassCastException if the value is not the correct type
          */
         @SuppressWarnings("unchecked")
-        public void setValue(Object value) throws ClassCastException{
+        public void setValue(@Database.Observes Object value) throws ClassCastException{
             this.value = (V) value;
         }
 

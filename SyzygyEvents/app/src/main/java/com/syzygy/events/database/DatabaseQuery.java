@@ -77,6 +77,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * @param collection The collection which this queries
      * @param resultsPerPage The total number of results to be passed per page, if it is null, all results are retrieved
      */
+    @Database.MustStir
     public DatabaseQuery(@NonNull Database db, @NonNull Query query, @NonNull Database.Collections collection, @Nullable Integer resultsPerPage){
         this.db = db;
         this.collection = collection;
@@ -98,6 +99,9 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      *                 Otherwise the listener is notified of failure.
      *
      */
+    @Database.Titrates(what = "Result instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
+    @Database.Observes
     public void refreshData(Listener<DatabaseQuery<T>> listener){
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
@@ -312,6 +316,9 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * </p>
      * @param listener The listener for the refresh
      */
+    @Database.Titrates(what = "Result Instances", when = "All success")
+    @Database.StirsDeep(what = "Previous Instances", when = "All success")
+    @Database.Observes
     private void loadFromSnapshot(Listener<DatabaseQuery<T>> listener){
         if(snapshot == null) return;
         List<DocumentSnapshot> newInstanceDocuments = snapshot.getDocuments();
@@ -319,7 +326,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Database.InitializationListener<T> l = new Database.InitializationListener<T>() {
             private int count = -1;
             @Override
-            public void onInitialization(T instance, boolean success) {
+            public void onInitialization(@Database.Observes T instance, boolean success) {
                 if(!success){
                     newInstances.forEach(i -> {
                         if (i != null) i.dissolve();
@@ -327,6 +334,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                     listener.onCompletion(DatabaseQuery.this, false);
                     return;
                 }
+                newInstances.add(instance);
                 count ++;
                 if(count >= newInstanceDocuments.size()){
                     setNewInstances(newInstances);
@@ -344,10 +352,14 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * Sets the new instances. Dissolves all previous instances and clears updates/deletions
      * @param newInstances the new instances
      */
-    private void setNewInstances(List<T> newInstances){
+    @Database.StirsDeep(what = "Previous Instances")
+    private void setNewInstances(@Database.Dilutes List<T> newInstances){
+
         dissolve();
+        List<T> previous = new ArrayList<>(currentInstances);
         currentInstances.addAll(newInstances);
-        currentInstances.forEach(i -> i.addListener(this));
+        currentInstances.forEach(i -> i.fetch(this));
+        previous.forEach(DatabaseInstance::dissolve);
         updates = false;
         deletes = false;
     }
@@ -355,6 +367,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     /**
      * Removes references to all instances that have been created and clears the current instance
      */
+    @Database.StirsDeep(what = "Previous Instances")
     public void dissolve(){
         thisPage = Page.NULL;
         currentInstances.forEach(i -> i.dissolve(this));
@@ -362,7 +375,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     }
 
     @Override
-    public <S extends DatabaseInstance<S>> void onUpdate(DatabaseInstance<S> instance, Type type) {
+    public <S extends DatabaseInstance<S>> void onUpdate(@Database.Observes DatabaseInstance<S> instance, Type type) {
         switch (type){
             case UPDATE:
                 updates = true;
@@ -382,6 +395,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     @Unmodifiable
     @NonNull
+    @Database.Observes
     public List<T> getCurrentInstances(){
         return Collections.unmodifiableList(currentInstances);
     }
@@ -415,7 +429,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return deletes;
     }
 
-    public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, User u){
+    @Database.MustStir
+    public static DatabaseQuery<EventAssociation> getMyEventsFilter(Database db, @Database.Observes User u){
         Filter f1 = Filter.equalTo(db.constants.getString(R.string.database_assoc_user), u.getDocumentID());
         Filter f2 = Filter.notEqualTo(db.constants.getString(R.string.database_assoc_status), db.constants.getString(R.string.event_assoc_status_cancelled));
         Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
@@ -423,14 +438,16 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return new DatabaseQuery<>(db, q, c, 10);
     }
 
-    public static DatabaseQuery<Event> getFacilityEvents(Database db, Facility facility){
+    @Database.MustStir
+    public static DatabaseQuery<Event> getFacilityEvents(Database db, @Database.Observes Facility facility){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_event_facilityID), facility.getDocumentID());
         Database.Collections c = Database.Collections.EVENTS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_event_createdTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, 10);
     }
 
-    public static DatabaseQuery<Notification> getMyNotifications(Database db, User u){
+    @Database.MustStir
+    public static DatabaseQuery<Notification> getMyNotifications(Database db, @Database.Observes User u){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID());
         Database.Collections c = Database.Collections.NOTIFICATIONS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_not_time), Query.Direction.DESCENDING);
@@ -440,7 +457,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     /**
      * @param status iF null or blank, returns all
      */
-    public static DatabaseQuery<User> getAttachedUsers(Database db, Event e, String status, boolean returnAll){
+    @Database.MustStir
+    public static DatabaseQuery<User> getAttachedUsers(Database db, @Database.Observes Event e, String status, boolean returnAll){
         Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
         if(status != null && !status.isBlank()){
             f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
@@ -450,6 +468,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return new DatabaseQuery<>(db, q, c, returnAll ? null : 25);
     }
 
+    @Database.MustStir
     public static DatabaseQuery<User> getUsers(Database db){
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.USERS;
@@ -457,6 +476,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return new DatabaseQuery<>(db, q, c, 25);
     }
 
+    @Database.MustStir
     public static DatabaseQuery<Event> getEvents(Database db){
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.EVENTS;
@@ -464,6 +484,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         return new DatabaseQuery<>(db, q, c, 10);
     }
 
+    @Database.MustStir
     public static DatabaseQuery<Image> getImages(Database db){
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.IMAGES;

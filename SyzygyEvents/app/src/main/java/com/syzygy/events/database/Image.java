@@ -22,11 +22,13 @@ public class Image extends DatabaseInstance<Image> {
      * @param db The database
      * @param imageID The id of the image
      */
+    @Database.Salty
     protected Image(Database db, String imageID) throws ClassCastException {
         super(db, imageID, Database.Collections.IMAGES, fields);
     }
 
     @Override
+    @Database.Observes
     protected Image cast() {
         return this;
     }
@@ -77,10 +79,10 @@ public class Image extends DatabaseInstance<Image> {
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
      * @param listener The initializer listener: this will be called once the user is ready
-     * @return The user instance in an illegal state
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
-    public static Image NewInstance(Database db,
+    @Database.MustStir
+    public static void NewInstance(Database db,
                                    String locName,
                                    String locType,
                                    String locID,
@@ -90,10 +92,11 @@ public class Image extends DatabaseInstance<Image> {
         Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
 
         if(!validateDataMap(map)){
-            return null;
+            listener.onInitialization(null, false);
+            return;
         }
 
-        return db.createNewInstance(Database.Collections.IMAGES, locID, db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.IMAGES, locID, db.convertIDMapToNames(map), listener);
     }
 
     /**
