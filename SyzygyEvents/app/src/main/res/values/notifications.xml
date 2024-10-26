@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_lottery_notChosen_subject">Bad</string>
+    <string name="notification_lottery_notChosen_body">Bad</string>
+    <string name="notification_lottery_chosen_subject">Good</string>
+    <string name="notification_lottery_chosen_body">Good</string>
+    <string name="notification_cancelled_subject">Good</string>
+    <string name="notification_cancelled_body">Good</string>
+</resources>

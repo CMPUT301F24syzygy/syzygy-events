@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="event_assoc_status_waitlist">Waitlist</string>
+    <string name="event_assoc_status_invited">Invited</string>
+    <string name="event_assoc_status_enrolled">Enrolled</string>
+    <string name="event_assoc_status_cancelled">Cancelled</string>
+</resources>
