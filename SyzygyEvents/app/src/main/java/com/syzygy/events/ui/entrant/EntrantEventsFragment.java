@@ -34,4 +34,5 @@ public class EntrantEventsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
 }

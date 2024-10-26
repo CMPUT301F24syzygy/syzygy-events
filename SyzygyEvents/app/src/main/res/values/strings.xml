@@ -4,4 +4,6 @@
     <string name="title_entrant_events">My Events</string>
     <string name="title_entrant_qr">QR Scan</string>
     <string name="title_entrant_notifications">Notifications</string>
+    <string name="no_acc_title_organizer">Create Facility</string>
+    <string name="acc_title_admin">Create Facility</string>
 </resources>
