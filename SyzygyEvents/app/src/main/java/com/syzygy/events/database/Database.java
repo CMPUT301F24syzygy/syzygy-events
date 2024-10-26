@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -51,19 +53,19 @@ public class Database implements EventListener<DocumentSnapshot>{
      */
     private final HashMap<String, DatabaseInstance<?>> cache = new HashMap<>();
 
-    @NonNull GetConstantsByID constants;
+    @NonNull Resources constants;
 
     /**
      * The firestore database
      */
     private final FirebaseFirestore db;
 
-    public Database(@NonNull GetConstantsByID constants){
+    public Database(@NonNull Resources constants){
         db = FirebaseFirestore.getInstance();
         this.constants = constants;
     }
 
-    public void setConstants(@NonNull GetConstantsByID constants){
+    public void setConstants(@NonNull Resources constants){
         this.constants = constants;
     }
 
@@ -510,14 +512,6 @@ public class Database implements EventListener<DocumentSnapshot>{
          * @see DatabaseInstance#initializeData(Map, boolean)
          */
         public void onInitialization(@MustStir T instance, boolean success);
-    }
-
-    /**
-     * To access constant values defined in res
-     */
-    public interface GetConstantsByID {
-        public String getString(int resID);
-        public int getInteger(int resID);
     }
 
     /**
