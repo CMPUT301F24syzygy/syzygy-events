@@ -4,7 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="?attr/actionBarSize"
-    tools:context=".ui.admin.AdminProfilesFragment">
+    tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/button_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="openEntrant"
+        android:text="fuck this"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </Button>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
@@ -13,13 +15,11 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.databinding.ActivityOrganizerBinding;
+import com.syzygy.events.databinding.ActivityEntrantBinding;
 
-public class OrganizerActivity extends AppCompatActivity {
-
-    private ActivityOrganizerBinding organizerBinding;
+public class EntrantActivity extends AppCompatActivity {
+    private ActivityEntrantBinding entrantBinding;
     private NavController navController;
     private Database database;
 
@@ -28,21 +28,21 @@ public class OrganizerActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        organizerBinding = ActivityOrganizerBinding.inflate(getLayoutInflater());
+        entrantBinding = ActivityEntrantBinding.inflate(getLayoutInflater());
 
-        setContentView(organizerBinding.getRoot());
+        setContentView(entrantBinding.getRoot());
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_organizer_profile, R.id.nav_organizer_events, R.id.nav_organizer_create)
+                R.id.nav_entrant_profile, R.id.nav_entrant_events, R.id.nav_entrant_qr, R.id.nav_entrant_notifications)
                 .build();
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_organizer);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_entrant);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(organizerBinding.organizerNavView, navController);
+        NavigationUI.setupWithNavController(entrantBinding.navView, navController);
 
-        organizerBinding.organizerNavView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
+        entrantBinding.navView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                for (; navController.navigateUp(); ) ;
+                for(;navController.navigateUp(););
                 NavigationUI.onNavDestinationSelected(item, navController);
                 return true;
             }
@@ -60,18 +60,20 @@ public class OrganizerActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             navController.navigateUp();
-        } else {
-            PopupMenu m = new PopupMenu(OrganizerActivity.this, findViewById(item.getItemId()));
+        }
+        else {
+            PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     if (menuItem.getItemId() == R.id.entrant_item) {
-                        Intent intent = new Intent(OrganizerActivity.this, EntrantActivity.class);
-                        startActivity(intent);
-                    } else if (menuItem.getItemId() == R.id.organizer_item) {
                         return true;
+                    }
+                    else if (menuItem.getItemId() == R.id.organizer_item) {
+                        Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
+                        startActivity(intent);
                     }
                     return true;
                 }
@@ -80,5 +82,6 @@ public class OrganizerActivity extends AppCompatActivity {
         }
         return true;
     }
+
 
 }
