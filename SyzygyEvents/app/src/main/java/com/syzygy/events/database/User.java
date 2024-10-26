@@ -21,7 +21,6 @@ import java.util.Map;
  * @author Gareth Kmet
  * @version 1.0
  * @since 19oct24
- * TODO - add has admin privledges
  */
 @Database.Dissovable
 public class User extends DatabaseInstance<User> {
@@ -108,6 +107,14 @@ public class User extends DatabaseInstance<User> {
         return setPropertyValue(R.string.database_user_orgNotifications, val);
     }
 
+    public Boolean isAdmin(){
+        return getPropertyValueI(R.string.database_user_isAdmin);
+    }
+
+    public boolean makeAdmin(Boolean val){
+        return setPropertyValue(R.string.database_user_isAdmin, val);
+    }
+
     public Timestamp getCreatedTime(){
         return getPropertyValueI(R.string.database_user_createdTime);
     }
@@ -149,6 +156,7 @@ public class User extends DatabaseInstance<User> {
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
+     * @param isAdmin If the user has admin privileges
      * @return If the user changed as a result
      */
     @Database.StirsDeep(what = "The previous image")
@@ -158,7 +166,8 @@ public class User extends DatabaseInstance<User> {
                           String email,
                           String phoneNumber,
                           Boolean organizerNotifications,
-                          Boolean adminNotifications
+                          Boolean adminNotifications,
+                          Boolean isAdmin
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_user_name, name);
@@ -168,6 +177,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_phoneNumber, phoneNumber);
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
+        map.put(R.string.database_user_isAdmin, isAdmin);
         return updateDataFromMap(db.convertIDMapToNames(map));
     }
 
@@ -194,6 +204,7 @@ public class User extends DatabaseInstance<User> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_orgNotifications, o -> o instanceof Boolean, true),
+            new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_isAdmin, o -> o instanceof Boolean, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_user_createdTime, o -> o instanceof Timestamp, false),
 
     };
@@ -217,6 +228,7 @@ public class User extends DatabaseInstance<User> {
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
+     * @param isAdmin If the user has admin privileges
      * @param listener The initializer listener: this will be called once the user is ready
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
@@ -231,9 +243,10 @@ public class User extends DatabaseInstance<User> {
                                    String phoneNumber,
                                    Boolean organizerNotifications,
                                    Boolean adminNotifications,
+                                   Boolean isAdmin,
                                    Database.InitializationListener<User> listener
     ){
-        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, Timestamp.now());
+        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, isAdmin, Timestamp.now());
 
         if(!(validateDeviceID(deviceID) && validateDataMap(map))){
             listener.onInitialization(null, false);
@@ -257,6 +270,7 @@ public class User extends DatabaseInstance<User> {
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
+     * @param isAdmin If the user has admin privileges
      * @param createdTime The time when the account was created
      * @return The map
      */
@@ -267,6 +281,7 @@ public class User extends DatabaseInstance<User> {
                                                       String phoneNumber,
                                                       Boolean organizerNotifications,
                                                       Boolean adminNotifications,
+                                                      Boolean isAdmin,
                                                       Timestamp createdTime
 
     ){
@@ -280,6 +295,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
         map.put(R.string.database_user_createdTime, createdTime);
+        map.put(R.string.database_user_isAdmin, isAdmin);
         return map;
     }
 
@@ -287,7 +303,7 @@ public class User extends DatabaseInstance<User> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The
-     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Timestamp)
+     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Boolean, Timestamp)
      */
     public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
