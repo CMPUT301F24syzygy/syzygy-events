@@ -23,7 +23,7 @@ public class EntrantEventsFragment extends Fragment {
 
         String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
         ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.entrant_events_item, dataList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_entrant_events, dataList);
         binding.entrantEventsList.setAdapter(adapter);
 
         return binding.getRoot();

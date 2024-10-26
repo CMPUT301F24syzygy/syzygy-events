@@ -23,7 +23,7 @@ public class EntrantNotificationsFragment extends Fragment {
 
         String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
         ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.entrant_notifications_item, dataList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_entrant_notifications, dataList);
         binding.entrantNotificationsList.setAdapter(adapter);
 
         return binding.getRoot();
