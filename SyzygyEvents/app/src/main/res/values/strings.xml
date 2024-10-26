@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Syzygy Events</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_entrant_profile">My Profile</string>
+    <string name="title_entrant_events">My Events</string>
+    <string name="title_entrant_qr">QR Scan</string>
+    <string name="title_entrant_notifications">Notifications</string>
 </resources>
