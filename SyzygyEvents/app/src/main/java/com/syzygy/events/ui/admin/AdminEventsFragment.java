@@ -1,4 +1,4 @@
-package com.syzygy.events.ui.organizer;
+package com.syzygy.events.ui.admin;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,21 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.syzygy.events.R;
-import com.syzygy.events.databinding.FragmentOrganizerEventsBinding;
+import com.syzygy.events.databinding.FragmentAdminEventsBinding;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class OrganizerEventsFragment extends Fragment {
-    private FragmentOrganizerEventsBinding binding;
+public class AdminEventsFragment extends Fragment {
+    private com.syzygy.events.databinding.FragmentAdminEventsBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentOrganizerEventsBinding.inflate(inflater, container, false);
+        binding = FragmentAdminEventsBinding.inflate(inflater, container, false);
 
         String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
         ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_organizer_events, dataList);
-        binding.organizerEventsList.setAdapter(adapter);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_admin_events, dataList);
+        binding.adminEventsList.setAdapter(adapter);
 
         return binding.getRoot();
     }
@@ -34,4 +34,5 @@ public class OrganizerEventsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
 }

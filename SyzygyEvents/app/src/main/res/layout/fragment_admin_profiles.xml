@@ -7,4 +7,10 @@
     android:paddingBottom="?attr/actionBarSize"
     tools:context=".ui.admin.AdminProfilesFragment">
 
+    <ListView
+        android:id="@+id/admin_profiles_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
