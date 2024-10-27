@@ -1,11 +1,15 @@
 package com.syzygy.events.database;
 
+import android.net.Uri;
 import android.util.Pair;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +59,10 @@ public class Image extends DatabaseInstance<Image> {
         return getPropertyValueI(R.string.database_img_address);
     }
 
+    public Uri getImage()  {
+        return Uri.parse(getAddress());
+    }
+
     public Timestamp getUploadTime(){
         return getPropertyValueI(R.string.database_img_uploadTime);
     }
@@ -76,6 +84,11 @@ public class Image extends DatabaseInstance<Image> {
         return Collections.emptyList();
     }
 
+    @Override
+    protected void requiredFirstDelete(Database.Querrier.EmptyListener listener) {
+        db.deleteImage(getDocumentID(), listener::onCompletion);
+    }
+
     /**
      * Creates a new Image instance in the database using the given data.
      * <p>
@@ -88,6 +101,7 @@ public class Image extends DatabaseInstance<Image> {
      * @param locName the Name of where the image is stored
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
+     * @param image the image file
      * @param listener The initializer listener: this will be called once the user is ready
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
@@ -96,18 +110,48 @@ public class Image extends DatabaseInstance<Image> {
                                    String locName,
                                    String locType,
                                    String locID,
-                                   String address,
+                                   Uri image,
                                    Database.InitializationListener<Image> listener
     ){
-        Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
-
-        if(!validateDataMap(map).isEmpty()){
+        if(image == null){
             listener.onInitialization(null, false);
             return;
         }
 
-        db.createNewInstance(Database.Collections.IMAGES, locID, db.convertIDMapToNames(map), listener);
+        db.addImageToStorage(locID, image, success -> {
+            if(!success){
+                listener.onInitialization(null, false);
+                return;
+            }
+            db.getImageURL(locID, uri -> {
+                if(uri == null){
+                    db.deleteImage(locID, success2 -> {
+                        if(!success2){
+                            db.throwE(new IllegalStateException("Hanging Image: " + locID + " :Image was created, failed to get uri, failed to delete"));
+                        }
+                        listener.onInitialization(null, false);
+                    });
+                    return;
+                }
+
+                String address = uri.toString();
+
+                Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
+
+                if(!validateDataMap(map).isEmpty()){
+                    db.deleteImage(locID, success2 -> {
+                        if(!success2){
+                            db.throwE(new IllegalStateException("Hanging Image: " + locID + " :Image was created, uri retrieved, failed validation, failed to delete"));
+                        }
+                        listener.onInitialization(null, false);
+                    });
+                    return;
+                }
+                db.createNewInstance(Database.Collections.IMAGES, locID, db.convertIDMapToNames(map), listener);
+            });
+        });
     }
+
 
     /**
      * Turns the properties as arguments into a map that is usable by the database

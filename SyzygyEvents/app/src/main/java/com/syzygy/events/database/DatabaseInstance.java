@@ -1,6 +1,5 @@
 package com.syzygy.events.database;
 
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -852,12 +851,29 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.StirsDeep(what="Sub Instances")
     public void deleteInstance(Database.Querrier.EmptyListener listener){
         if(!isLegalState()) return;
-        isDeleted = true;
-        db.deleteFromDatabase(this);
-        deleteSubInstances(success -> {
-            notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
-            fullDissolve();
+        requiredFirstDelete(success -> {
+            if(!success){
+                listener.onCompletion(false);
+                return;
+            }
+            isDeleted = true;
+            db.deleteFromDatabase(this);
+            deleteSubInstances(success2 -> {
+                notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
+                fullDissolve();
+                listener.onCompletion(true);
+            });
         });
+
+
+    }
+
+    /**
+     * Deletes any sub objects that are not instances.
+     * Called before the instance and sub instances are deleted; they are only deleted if this returns true
+     */
+    protected void requiredFirstDelete(Database.Querrier.EmptyListener listener){
+        listener.onCompletion(true);
     }
 
     /**

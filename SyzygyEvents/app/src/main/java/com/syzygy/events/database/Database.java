@@ -1,6 +1,7 @@
 package com.syzygy.events.database;
 
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,7 +15,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -60,9 +64,14 @@ public class Database implements EventListener<DocumentSnapshot> {
      * The firestore database
      */
     private final FirebaseFirestore db;
+    /**
+     * The firebase storage for images
+     */
+    private final StorageReference storage;
 
     public Database(@NonNull Resources constants){
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance().getReference();
         this.constants = constants;
     }
 
@@ -310,6 +319,48 @@ public class Database implements EventListener<DocumentSnapshot> {
             map.put(constants.getString(ent.getKey()), ent.getValue());
         }
         return map;
+    }
+
+    /**
+     * Adds the image to the database;
+     * @param fileName The filename including extension (e.g. `folder/image.jpg`)
+     * @param image The image file
+     * @param listener Called on completion. true if upload was successful
+     */
+    public void addImageToStorage(String fileName, Uri image, Consumer<Boolean> listener){
+        StorageReference ref = storage.child(fileName);
+        ref.putFile(image).addOnCompleteListener(task -> {
+            listener.accept(task.isSuccessful());
+        });
+    }
+
+    /**
+     * Gets the shareable/downloadable url to the image
+     * @param fileName The filename including extension (e.g. `folder/image.jpg`)
+     * @param listener Called on completion with the download address of the image.
+     *                 If the url failed to be retrieved, null is returned.
+     */
+    public void getImageURL(String fileName, Consumer<Uri> listener){
+        StorageReference ref = storage.child(fileName);
+        ref.getDownloadUrl().addOnCompleteListener(task -> {
+            if(!task.isSuccessful()){
+                listener.accept(null);
+                return;
+            }
+            listener.accept(task.getResult());
+        });
+    }
+
+    /**
+     * Deletes the image from the storage
+     * @param fileName The filename including extension (e.g. `folder/image.jpg`)
+     * @param listener Called on completion. true if the deletion was successful
+     */
+    public void deleteImage(String fileName, Consumer<Boolean> listener){
+        StorageReference ref = storage.child(fileName);
+        ref.delete().addOnCompleteListener(runnable -> {
+            listener.accept(runnable.isSuccessful());
+        });
     }
 
 

@@ -7,9 +7,13 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +33,7 @@ import java.util.function.Consumer;
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
 
     private static final int LOCATION_REQUEST_CODE = 359;
+    private static final int IMAGE_REQUEST_CODE = 718;
 
     private Database db;
     private User user;
@@ -37,6 +42,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     private FusedLocationProviderClient location;
 
     private final List<Consumer<Location>> locationListeners = new ArrayList<>();
+    private final List<Consumer<Uri>> imageListeners = new ArrayList<>();
 
     @Override
     public void onCreate() {
@@ -90,6 +96,13 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     }
 
     /**
+     * @return If permission has been granted to get images
+     */
+    private boolean canGetImage(){
+        return ActivityCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
      * Gets the current location and actions all location listeners. Location listeners are passed
      * {@code null} if permissions are not granted or the location fails.
      * Clears the listeners list after actioning.
@@ -112,6 +125,30 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     }
 
     /**
+     * Gets the an image and actions all image listeners. Image listeners are passed
+     * {@code null} if permissions are not granted or the image fails.
+     * Clears the listeners list after actioning.
+     */
+    @SuppressLint("MissingPermission")
+    private void retrieveImage(){
+        if(canGetImage()){
+            location.getLastLocation().addOnCompleteListener(task -> {
+                if(!task.isSuccessful()){
+                    pingLocation(false);
+                    return;
+                }
+                ActivityResultLauncher<PickVisualMediaRequest> pickImage = currentActivity.registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                    imageListeners.forEach(l -> l.accept(uri));
+                    imageListeners.clear();
+                });
+                pickImage.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+            });
+        }else{
+            pingImage(false);
+        }
+    }
+
+    /**
      * Called when users grants/declines location permission.
      * Actions all waiting location listeners. Passes {@code null} if permissions are not granted or the location fails.
      * Clears the listeners list after retrieval.
@@ -125,6 +162,23 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
                 l.accept(null);
             }
             locationListeners.clear();
+        }
+    }
+
+    /**
+     * Called when users grants/declines image permission.
+     * Actions all waiting image listeners. Passes {@code null} if permissions are not granted or the image fails.
+     * Clears the listeners list after retrieval.
+     * @param granted If permission was granted
+     */
+    void pingImage(boolean granted){
+        if(granted){
+            retrieveImage();
+        }else{
+            for(Consumer<Uri> l : imageListeners){
+                l.accept(null);
+            }
+            imageListeners.clear();
         }
     }
 
@@ -143,6 +197,24 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
         }else{
             retrieveLocation();
+        }
+    }
+
+    /**
+     * Gets an image from the user
+     * <p>
+     *     Checks if file search permissions are granted. If not, asks for permission.
+     *     Then actions the listener with {@code null} if permissions are still not granted or an error occurs.
+     *     Otherwise passes the image
+     * </p>
+     * @param imageListener The listener. Called when the image has been retrieved
+     */
+    public void getImage(Consumer<Uri> imageListener){
+        imageListeners.add(imageListener);
+        if(!canGetImage()){
+            ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, IMAGE_REQUEST_CODE);
+        }else{
+            retrieveImage();
         }
     }
 
@@ -202,6 +274,8 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             if(requestCode == LOCATION_REQUEST_CODE){
                 ((SyzygyApplication) getApplication()).pingLocation(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+            }else if(requestCode == IMAGE_REQUEST_CODE){
+                ((SyzygyApplication) getApplication()).pingImage(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
             }
         }
     }

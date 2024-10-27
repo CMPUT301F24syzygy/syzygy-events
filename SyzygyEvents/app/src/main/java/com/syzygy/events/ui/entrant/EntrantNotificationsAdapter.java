@@ -41,8 +41,10 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         TextView body = view.findViewById(R.id.body);
         body.setText(notification.getBody());
 
-        //TextView sender = view.findViewById(R.id.sender);
-        //sender.setText(notification.getSender().getName());
+        if(notification.getSender() != null){
+            TextView sender = view.findViewById(R.id.sender);
+            sender.setText(notification.getSender().getName());
+        }
 
         TextView sent_date = view.findViewById(R.id.sent_date);
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
