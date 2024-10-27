@@ -66,15 +66,19 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
             PopupMenu m = new PopupMenu(OrganizerActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
+            SyzygyApplication app = (SyzygyApplication)getApplication();
+            m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
+            m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+            if (app.getUser().isAdmin()) {
+                m.getMenu().findItem(R.id.admin_item).setVisible(true);
+            }
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     if (menuItem.getItemId() == R.id.entrant_item) {
-                        Intent intent = new Intent(OrganizerActivity.this, EntrantActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(EntrantActivity.class);
                     } else if (menuItem.getItemId() == R.id.admin_item) {
-                        Intent intent = new Intent(OrganizerActivity.this, AdminActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(AdminActivity.class);
                     }
                     return true;
                 }

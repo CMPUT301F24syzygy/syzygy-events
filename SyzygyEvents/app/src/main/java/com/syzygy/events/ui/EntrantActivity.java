@@ -39,9 +39,9 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_entrant);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(entrantBinding.navView, navController);
+        NavigationUI.setupWithNavController(entrantBinding.entrantNavView, navController);
 
-        entrantBinding.navView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
+        entrantBinding.entrantNavView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 for(;navController.navigateUp(););
@@ -67,15 +67,23 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
             PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
+            SyzygyApplication app = (SyzygyApplication)getApplication();
+            if (app.getUser().getFacility() != null) {
+                m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
+                m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+            }
+            if (app.getUser().isAdmin()) {
+                m.getMenu().findItem(R.id.admin_item).setVisible(true);
+            }
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     if (menuItem.getItemId() == R.id.organizer_item) {
-                        Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(OrganizerActivity.class);
                     } else if (menuItem.getItemId() == R.id.admin_item) {
-                        Intent intent = new Intent(EntrantActivity.this, AdminActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(AdminActivity.class);
+                    } else if (menuItem.getItemId() == R.id.add_organizer_item) {
+                        navController.navigate(R.id.nav_signup_facility_secondary);
                     }
                     return true;
                 }
