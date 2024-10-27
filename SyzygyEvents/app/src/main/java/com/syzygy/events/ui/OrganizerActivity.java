@@ -1,9 +1,12 @@
 package com.syzygy.events.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +16,13 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.qrcode.QRCodeWriter;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
@@ -86,6 +95,23 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
             m.show();
         }
         return true;
+    }
+
+    public void generateQr(String data) {
+        BitMatrix matrix;
+        try {
+            matrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, 100, 100);
+        } catch (WriterException e) {
+            return;
+        }
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
+        for (int i=0; i<100; i++) {
+            for (int j=0; j<100; j++) {
+                bitmap.setPixel(i, j, matrix.get(i, j) ? Color.BLACK : Color.WHITE);
+            }
+        }
+        //v.setImageBitmap(bitmap);
+
     }
 
 }

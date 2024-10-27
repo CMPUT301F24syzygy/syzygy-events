@@ -7,4 +7,5 @@
     android:paddingBottom="?attr/actionBarSize"
     tools:context=".ui.entrant.EntrantProfileFragment">
 
+
 </androidx.constraintlayout.widget.ConstraintLayout>
