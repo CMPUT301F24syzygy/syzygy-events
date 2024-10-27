@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/entrant_item"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="" />
+        android:title="@string/acc_title_entrant" />
+
+    <item
+        android:id="@+id/add_organizer_item"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/add_acc_title_organizer" />
 
     <item
         android:id="@+id/organizer_item"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/acc_title_organizer" />
+        android:title="@string/acc_title_organizer"
+        android:visible="false" />
 
     <item
         android:id="@+id/admin_item"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/acc_title_admin" />
+        android:title="@string/acc_title_admin"
+        android:visible="false" />
 
 </menu>

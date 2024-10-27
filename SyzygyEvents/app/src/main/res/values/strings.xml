@@ -6,14 +6,29 @@
     <string name="title_entrant_qr">QR Scan</string>
     <string name="title_entrant_notifications">Notifications</string>
 
-    <string name="title_organizer_profile">Facility</string>
+    <string name="title_entrant_sec_event">Event Info</string>
+    <string name="title_entrant_sec_facility">Facility Info</string>
+    <string name="title_entrant_sec_edit">Edit Profile</string>
+
+    <string name="title_organizer_profile">My Facility</string>
     <string name="title_organizer_events">Events</string>
     <string name="title_organizer_create">Add Event</string>
+
+    <string name="title_organizer_sec_event">Event</string>
+    <string name="title_organizer_sec_facility">Edit Facility</string>
 
     <string name="title_admin_profiles">Browse Users</string>
     <string name="title_admin_events">Browse Events</string>
     <string name="title_admin_images">Browse Images</string>
 
+    <string name="title_admin_sec_event">Event</string>
+    <string name="title_admin_sec_facility">Facility</string>
+    <string name="title_admin_sec_user">User</string>
+
+    <string name="title_signup_organizer">Create Facility</string>
+
+    <string name="acc_title_entrant">My Account</string>
+    <string name="add_acc_title_organizer">Create Facility</string>
     <string name="acc_title_organizer">Facility</string>
     <string name="acc_title_admin">Admin</string>
 </resources>

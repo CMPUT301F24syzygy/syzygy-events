@@ -28,4 +28,31 @@
         android:name="com.syzygy.events.ui.entrant.EntrantNotificationsFragment"
         android:label="@string/title_entrant_notifications"
         tools:layout="@layout/fragment_entrant_notifications" />
+
+
+    <fragment
+        android:id="@+id/nav_entrant_event_secondary"
+        android:name="com.syzygy.events.ui.entrant.EntrantEventSecondaryFragment"
+        android:label="@string/title_entrant_sec_event"
+        tools:layout="@layout/secondary_entrant_event" />
+
+    <fragment
+        android:id="@+id/nav_entrant_facility_secondary"
+        android:name="com.syzygy.events.ui.entrant.EntrantFacilitySecondaryFragment"
+        android:label="@string/title_entrant_sec_facility"
+        tools:layout="@layout/secondary_entrant_facility" />
+
+    <fragment
+        android:id="@+id/nav_entrant_edit_secondary"
+        android:name="com.syzygy.events.ui.entrant.EntrantEditSecondaryFragment"
+        android:label="@string/title_entrant_sec_edit"
+        tools:layout="@layout/secondary_entrant_edit" />
+
+    <fragment
+        android:id="@+id/nav_signup_facility_secondary"
+        android:name="com.syzygy.events.ui.general.SignupFacilitySecondaryFragment"
+        android:label="@string/title_signup_organizer"
+        tools:layout="@layout/secondary_signup_facility" />
+
+
 </navigation>

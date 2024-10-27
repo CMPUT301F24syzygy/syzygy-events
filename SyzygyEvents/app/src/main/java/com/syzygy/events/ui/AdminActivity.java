@@ -65,6 +65,12 @@ public class AdminActivity extends SyzygyApplication.SyzygyActivity {
             PopupMenu m = new PopupMenu(AdminActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
+            SyzygyApplication app = (SyzygyApplication)getApplication();
+            if (app.getUser().getFacility() != null) {
+                m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
+                m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+            }
+            m.getMenu().findItem(R.id.admin_item).setVisible(true);
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
@@ -74,6 +80,8 @@ public class AdminActivity extends SyzygyApplication.SyzygyActivity {
                     } else if (menuItem.getItemId() == R.id.organizer_item) {
                         Intent intent = new Intent(AdminActivity.this, OrganizerActivity.class);
                         startActivity(intent);
+                    } else if (menuItem.getItemId() == R.id.add_organizer_item) {
+                        navController.navigate(R.id.nav_signup_facility_secondary);
                     }
                     return true;
                 }
