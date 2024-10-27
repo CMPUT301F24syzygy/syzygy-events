@@ -14,6 +14,6 @@
     <string name="title_admin_events">Browse Events</string>
     <string name="title_admin_images">Browse Images</string>
 
-    <string name="no_acc_title_organizer">Create Facility</string>
-    <string name="acc_title_admin">Create Facility</string>
+    <string name="acc_title_organizer">Facility</string>
+    <string name="acc_title_admin">Admin</string>
 </resources>
