@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -136,7 +137,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     ){
         Map<Integer,Object> map = createDataMap(eventID, location, status, userID, Timestamp.now());
 
-        if(!validateDataMap(map)){
+        if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
@@ -172,10 +173,10 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return The invalid ids
      * @see #createDataMap(String, GeoPoint, String, String, Timestamp)  
      */
-    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 

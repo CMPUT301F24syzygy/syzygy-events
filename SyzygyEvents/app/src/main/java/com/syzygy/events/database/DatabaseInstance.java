@@ -1,5 +1,6 @@
 package com.syzygy.events.database;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -95,7 +96,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * A set of listeners which are called when the instance is initialized
      * @see Database.InitializationListener
-     * @see #initializeData(Map, boolean)
+     * @see #initializeData(Map, boolean, Database.InitializationListener)
      */
     private final Set<Database.InitializationListener<T>> initializationListeners = new HashSet<>();
 
@@ -121,7 +122,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         this.db = db;
         this.documentID = documentID;
         this.collection = collection;
-        this.db.initializeFromDatabase(this);
         for(PropertyField<?,?> prop : properties){
             String name = db.constants.getString(prop.propertyNameID);
 
@@ -283,8 +283,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see #isLegalState()
      */
     protected final void assertNotIllegalState() throws IllegalStateException{
+        if(isDeleted) db.throwE(new IllegalStateException("This instance has been deleted. No methods should be called. Instance: " + toString()));
         if(isDereferenced) db.throwE(new IllegalStateException("This instance is unreferenced and not maintained. No methods should be called. Instance: " + toString()));
         if(!isInitialized) db.throwE(new IllegalStateException("This instance has not been initialized with data. No methods should be called. Instance: " + toString()));
+
     }
 
     /**
@@ -429,7 +431,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 if(!s){
                     setPropertyValue(prop.meta.propertyNameID, "");
                     return;
-
                 }
                 if(prop.instance != null){
                     prop.instance.dissolve();
@@ -440,6 +441,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }else {
             if (!prop.meta.loadsNullable)
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID + " - " + newID));
+            prop.value = newID;
         }
 
     }
@@ -483,14 +485,15 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
             if(prop == null) db.throwE(new IllegalArgumentException("Invalid property"));
-            if(Objects.equals(prop.value, ent.getValue())) continue;
+            if(Objects.equals(prop.value, ent.getValue())) {
+                continue;
+            };
             diff = true;
-            if(!isPropertyValid(prop, ent.getValue())) db.throwE(new IllegalArgumentException("Invalid value"));
             if(prop.meta.loads){
                 if(ent.getValue() instanceof DatabaseInstance){
                     exchangeInstance((InstancePropertyWrapper) prop, (DatabaseInstance)ent.getValue());
                 }else{
-                    exchangeInstance(prop, (String)ent.getValue());
+                    exchangeInstance(prop, String.valueOf(ent.getValue()));
                 }
             }else{
                 prop.setValue(ent.getValue());
@@ -666,16 +669,17 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Tests if the map is valid for this instance
      * @param map The property resID-value map where resID is the res ID of the property name
      * @param fields The set of propertyFields to test against
-     * @return {@code true} is the data is valid
+     * @return The set of all invalid ids
      */
-    public static boolean isDataValid(@Database.Observes Map<Integer, Object> map, PropertyField<?,?>[] fields){
-        Set<Integer> ids = map.keySet();
+    public static Set<Integer> isDataValid(@Database.Observes Map<Integer, Object> map, PropertyField<?,?>[] fields){
+        Set<Integer> ids = new HashSet<>(map.keySet());
         for(PropertyField<?,?> prop : fields){
             if(!map.containsKey(prop.propertyNameID)) continue;
-            ids.remove(prop.propertyNameID);
-            if(!prop.isValid.test(map.get(prop.propertyNameID))) return false;
+            if(prop.isValid.test(map.get(prop.propertyNameID))){
+                ids.remove(prop.propertyNameID);
+            }
         }
-        return !ids.isEmpty();
+        return ids;
     }
 
     /**
@@ -713,24 +717,27 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * </p>
      * @param data The property key-value mapping of the data
      * @param exists If the document exists in the database
+     * @param onComplete Called when initialization is complete before the any other initialization listeners
      * @throws IllegalStateException if the instance has already been initialized
      */
     @Database.AutoStir(when="Error or not exists")
-    final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists) throws IllegalStateException{
+    final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists, Database.InitializationListener<T> onComplete) throws IllegalStateException{
         if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
         if(!exists){
             fullDissolve();
             initializationListeners.forEach(l -> l.onInitialization(null, false));
             initializationListeners.clear();
+            onComplete.onInitialization(null, false);
             return;
         }
         modifyData(data);
         subInitialize((instance, success) -> {
             isInitialized = success;
-            initializationListeners.forEach(l -> l.onInitialization(cast(), exists && success));
+            onComplete.onInitialization(cast(), success);
+            initializationListeners.forEach(l -> l.onInitialization(cast(), success));
             initializationListeners.clear();
             notifyUpdate(Type.INIT);
-            if(!(exists && success)){
+            if(!success){
                 fullDissolve();
             }else{
                 snapshotListener = getDocumentReference().addSnapshotListener(db);

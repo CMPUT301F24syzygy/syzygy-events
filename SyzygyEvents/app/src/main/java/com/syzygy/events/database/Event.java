@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -649,7 +650,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
         Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, openRegistrationDate, closedRegistrationDate, eventDates,  now);
 
-        if(!validateDataMap(map)){
+        if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
@@ -710,10 +711,10 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return The invalid ids
      * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp, List, Timestamp)
      */
-    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

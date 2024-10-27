@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An instance of a notification database item
@@ -131,7 +132,7 @@ public class Notification extends DatabaseInstance<Notification> {
         Timestamp sentTime = Timestamp.now();
         Map<Integer,Object> map = createDataMap(subject, body, sentTime, false, eventID, receiverID, senderID);
 
-        if(!validateDataMap(map)){
+        if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
@@ -173,10 +174,10 @@ public class Notification extends DatabaseInstance<Notification> {
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return @return The invalid ids
      * @see #createDataMap(String, String, Timestamp, Boolean, String, String, String) 
      */
-    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

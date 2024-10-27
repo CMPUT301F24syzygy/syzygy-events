@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An instance of a facility database item
@@ -165,7 +166,7 @@ public class Facility extends DatabaseInstance<Facility> {
     ){
         Map<Integer,Object> map = createDataMap(name, location, description, imageID, organizerID);
 
-        if(!validateDataMap(map)){
+        if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
@@ -201,10 +202,10 @@ public class Facility extends DatabaseInstance<Facility> {
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return The invalid ids
      * @see #createDataMap(String, GeoPoint, String, String, String)
      */
-    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

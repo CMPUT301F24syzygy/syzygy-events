@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SignupActivity">
+    tools:context=".ui.SignupActivity">
 
     <EditText
         android:id="@+id/signup_name"
@@ -14,6 +14,8 @@
         android:hint="name"
         android:inputType="textPersonName"
         android:maxLength="40"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
     </EditText>
@@ -26,6 +28,8 @@
         android:hint="phone"
         android:inputType="phone"
         android:maxLength="10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/signup_name">
 
     </EditText>
@@ -38,14 +42,52 @@
         android:hint="email"
         android:inputType="textEmailAddress"
         android:maxLength="300"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/signup_phone">
 
     </EditText>
+
+    <EditText
+        android:id="@+id/signup_bio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="start|top"
+        android:hint="bio"
+        android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
+        android:lines="5"
+        android:maxLength="300"
+        android:scrollbars="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_email">
+
+    </EditText>
+
+    <CheckBox
+        android:id="@+id/signup_adminNotifications"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Admin Notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_bio" />
+
+    <CheckBox
+        android:id="@+id/signup_orgNotifications"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Organization Notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_adminNotifications" />
 
     <Button
         android:id="@+id/signup_button_submit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:onClick="openEntrant"
         android:text="Create Account"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -53,5 +95,23 @@
         app:layout_constraintStart_toStartOf="parent">
 
     </Button>
+
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:visibility="gone"
+        android:alpha="0.4"
+        android:background="#000000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

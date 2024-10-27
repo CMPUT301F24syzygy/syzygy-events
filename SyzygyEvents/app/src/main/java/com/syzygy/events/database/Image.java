@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An instance of an image database item
@@ -100,7 +101,7 @@ public class Image extends DatabaseInstance<Image> {
     ){
         Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
 
-        if(!validateDataMap(map)){
+        if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
@@ -136,10 +137,10 @@ public class Image extends DatabaseInstance<Image> {
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return The invalid ids
      * @see #createDataMap(String, String, String, String, Timestamp)
      */
-    public static boolean validateDataMap(Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 }

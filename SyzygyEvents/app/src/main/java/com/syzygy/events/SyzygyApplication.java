@@ -75,6 +75,14 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     }
 
     /**
+     * Gets the database
+     * @return the database
+     */
+    public Database getDatabase(){
+        return db;
+    }
+
+    /**
      * @return If permission has been granted to get location
      */
     private boolean canGetLocation(){
@@ -141,9 +149,16 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     /**
      * To be called by the Signup activity upon submission
      */
-    public void signupUser(@Database.Stirs @NonNull User user){
-        this.user = user;
-        switchToActivity(EntrantActivity.class);
+    public void signupUser(String name, String email, String phone, String bio, Boolean admin, Boolean org, Consumer<Boolean> listener){
+        User.NewInstance(db, deviceID, name, bio, "", "", email, phone, org, admin, false, (instance, success) -> {
+            if(success){
+                this.user = instance;
+                listener.accept(true);
+                switchToActivity(EntrantActivity.class);
+            }else{
+                listener.accept(false);
+            }
+        });
     }
 
     /**

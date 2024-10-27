@@ -1,5 +1,6 @@
 package com.syzygy.events.database;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An instance of a user database item
@@ -247,13 +249,12 @@ public class User extends DatabaseInstance<User> {
                                    Database.InitializationListener<User> listener
     ){
         Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, isAdmin, Timestamp.now());
-
-        if(!(validateDeviceID(deviceID) && validateDataMap(map))){
+        if(!(validateDeviceID(deviceID) && validateDataMap(map).isEmpty())){
             listener.onInitialization(null, false);
             return;
         }
-
-        db.createNewInstance(Database.Collections.USERS, deviceID, db.convertIDMapToNames(map), listener);
+        Map<String, Object> map2 = db.convertIDMapToNames(map);
+        db.createNewInstance(Database.Collections.USERS, deviceID, map2, listener);
     }
 
     public static boolean validateDeviceID(String deviceID){
@@ -302,10 +303,10 @@ public class User extends DatabaseInstance<User> {
     /**
      * Tests if the data is valid
      * @param dataMap The data map
-     * @return The
+     * @return The invalid ids
      * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Boolean, Timestamp)
      */
-    public static boolean validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
+    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);
     }
 

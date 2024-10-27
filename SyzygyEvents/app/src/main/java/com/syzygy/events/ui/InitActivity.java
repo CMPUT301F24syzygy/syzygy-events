@@ -6,6 +6,7 @@ import android.view.View;
 
 
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.databinding.FragmentLoginBinding;
 import com.syzygy.events.databinding.FragmentSignupBinding;
 
 public class InitActivity extends SyzygyApplication.SyzygyActivity {
@@ -15,7 +16,7 @@ public class InitActivity extends SyzygyApplication.SyzygyActivity {
 
         super.onCreate(savedInstanceState);
 
-        FragmentSignupBinding binding = FragmentSignupBinding.inflate(getLayoutInflater());
+        FragmentLoginBinding binding = FragmentLoginBinding.inflate(getLayoutInflater());
 
         setContentView(binding.getRoot());
 

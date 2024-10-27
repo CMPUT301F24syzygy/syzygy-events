@@ -1,6 +1,7 @@
 package com.syzygy.events.database;
 
 import android.content.res.Resources;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -143,14 +144,14 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param instance The database instance
      * @param <T> The instance type
      * @throws IllegalStateException if the instance is already initialized
-     * @see DatabaseInstance#initializeData(Map, boolean)
+     * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener) 
      * @see DatabaseInstance#getDocumentReference()
      */
     <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
         instance.getDocumentReference().get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()) return; // TODO error
             DocumentSnapshot doc = task.getResult();
-            instance.initializeData(doc.getData(), doc.exists());
+            instance.initializeData(doc.getData(), doc.exists(), (instance1, success) -> {});
         });
     }
 
@@ -161,11 +162,11 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param <T> The instance type
      * @throws IllegalStateException If the instance is already initialized
      * @throws IllegalArgumentException If the document does not match the instance
-     * @see DatabaseInstance#initializeData(Map, boolean)
+     * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener)
      */
     <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, DocumentSnapshot snapshot) throws IllegalStateException, IllegalArgumentException{
         if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
-        instance.initializeData(snapshot.getData(), snapshot.exists());
+        instance.initializeData(snapshot.getData(), snapshot.exists(), (instance1, success) -> {});
     }
 
     /**
@@ -277,7 +278,6 @@ public class Database implements EventListener<DocumentSnapshot> {
     @SuppressWarnings("unchecked")
     @MustStir()
     public <T extends DatabaseInstance<T>> void createNewInstance(Collections collection, String documentID, Map<String, Object> data, InitializationListener<T> listener){
-        //TODO deal with exists
         DatabaseInstance<T> instance = (DatabaseInstance<T>) cache.computeIfAbsent(collection.getDatabaseID(documentID), k -> collection.newInstance(this, documentID));
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -289,8 +289,11 @@ public class Database implements EventListener<DocumentSnapshot> {
                     listener.onInitialization(instance.cast(), false);
                 }else{
                     instance.addInitializationListener(listener);
-                    instance.initializeData(data, true);
-                    addToDatabase(instance);
+                    instance.initializeData(data, true, (instance1, success) -> {
+                        if(success)
+                            addToDatabase(instance);
+                        //TODO error
+                    });
                 }
             }
         });

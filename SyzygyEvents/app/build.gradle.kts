@@ -51,5 +51,4 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.android.gms:play-services-location:17.0.0")
-
 }
