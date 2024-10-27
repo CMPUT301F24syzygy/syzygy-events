@@ -45,7 +45,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     }
 
     public boolean setLocation(GeoPoint val){
-        return setPropertyValue(R.string.database_assoc_geo, val);
+        return setPropertyValue(R.string.database_assoc_geo, val, s -> {});
     }
 
     public String getEventID(){
@@ -57,11 +57,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     }
 
     public boolean setStatus(String val){
-        return setPropertyValue(R.string.database_assoc_status, val);
+        return setPropertyValue(R.string.database_assoc_status, val, s -> {});
     }
 
     public boolean setStatus(int resID){
-        return setPropertyValue(R.string.database_assoc_status, db.constants.getString(resID));
+        return setPropertyValue(R.string.database_assoc_status, db.constants.getString(resID), s -> {});
     }
 
     public String getUserID(){
@@ -92,7 +92,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_assoc_geo, location);
         map.put(R.string.database_assoc_status, status);
-        return updateDataFromMap(db.convertIDMapToNames(map));
+        return updateDataFromMap(db.convertIDMapToNames(map), s->{});
     }
 
     /**

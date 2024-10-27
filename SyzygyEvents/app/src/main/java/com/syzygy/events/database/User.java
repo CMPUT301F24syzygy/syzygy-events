@@ -50,7 +50,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setName(String val){
-        return setPropertyValue(R.string.database_user_name, val);
+        return setPropertyValue(R.string.database_user_name, val, s -> {});
     }
 
     public String getDescription(){
@@ -58,23 +58,23 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setDescription(String val){
-        return setPropertyValue(R.string.database_user_description, val);
+        return setPropertyValue(R.string.database_user_description, val, s -> {});
     }
 
     public String getProfileImageID(){
         return getPropertyValueI(R.string.database_user_profileID);
     }
 
-    public boolean setProfileImageID(@Database.Dilutes String val){
-        return setPropertyValue(R.string.database_user_profileID, val);
+    public boolean setProfileImageID(@Database.Dilutes String val, Database.Querrier.EmptyListener onComplete){
+        return setPropertyValue(R.string.database_user_profileID, val, onComplete);
     }
 
     public String getFacilityID(){
         return getPropertyValueI(R.string.database_user_facilityID);
     }
 
-    public boolean setFacilityID(@Database.Dilutes String val){
-        return setPropertyValue(R.string.database_user_facilityID, val);
+    public boolean setFacilityID(@Database.Dilutes String val, Database.Querrier.EmptyListener onComplete){
+        return setPropertyValue(R.string.database_user_facilityID, val, onComplete);
     }
 
     public String getEmail(){
@@ -82,7 +82,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setEmail(String val){
-        return setPropertyValue(R.string.database_user_email, val);
+        return setPropertyValue(R.string.database_user_email, val, s -> {});
     }
 
     public String getPhoneNumber(){
@@ -90,7 +90,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setPhoneNumber(String val){
-        return setPropertyValue(R.string.database_user_phoneNumber, val);
+        return setPropertyValue(R.string.database_user_phoneNumber, val, s -> {});
     }
 
     public Boolean getAdminNotifications(){
@@ -98,7 +98,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setAdminNotifications(Boolean val){
-        return setPropertyValue(R.string.database_user_adminNotifications, val);
+        return setPropertyValue(R.string.database_user_adminNotifications, val, s -> {});
     }
 
     public Boolean getOrganizerNotifications(){
@@ -106,7 +106,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean setOrganizerNotifications(Boolean val){
-        return setPropertyValue(R.string.database_user_orgNotifications, val);
+        return setPropertyValue(R.string.database_user_orgNotifications, val, s -> {});
     }
 
     public Boolean isAdmin(){
@@ -114,7 +114,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public boolean makeAdmin(Boolean val){
-        return setPropertyValue(R.string.database_user_isAdmin, val);
+        return setPropertyValue(R.string.database_user_isAdmin, val, s -> {});
     }
 
     public Timestamp getCreatedTime(){
@@ -146,6 +146,7 @@ public class User extends DatabaseInstance<User> {
      */
     @Database.StirsDeep(what = "The previous Image")
     public boolean setFacility(@Nullable @Database.Dilutes Facility val){
+        //Success will be called before return so no need
         return setPropertyInstance(R.string.database_user_facilityID, val);
     }
 
@@ -159,6 +160,7 @@ public class User extends DatabaseInstance<User> {
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
      * @param isAdmin If the user has admin privileges
+     * @param onComplete called once update is complete
      * @return If the user changed as a result
      */
     @Database.StirsDeep(what = "The previous image")
@@ -169,7 +171,8 @@ public class User extends DatabaseInstance<User> {
                           String phoneNumber,
                           Boolean organizerNotifications,
                           Boolean adminNotifications,
-                          Boolean isAdmin
+                          Boolean isAdmin,
+                          Database.Querrier.EmptyListener onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_user_name, name);
@@ -180,7 +183,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
         map.put(R.string.database_user_isAdmin, isAdmin);
-        return updateDataFromMap(db.convertIDMapToNames(map));
+        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
     }
 
 

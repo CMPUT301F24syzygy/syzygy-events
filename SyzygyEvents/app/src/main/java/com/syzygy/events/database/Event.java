@@ -369,7 +369,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     public boolean setTitle(String val){
-        return setPropertyValue(R.string.database_event_title, val);
+        return setPropertyValue(R.string.database_event_title, val, s -> {});
     }
 
     public String getPosterID(){
@@ -377,8 +377,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     @Database.StirsDeep(what = "The previous image")
-    public boolean setPosterID(@Database.Dilutes String val){
-        return setPropertyValue(R.string.database_event_posterID, val);
+    public boolean setPosterID(@Database.Dilutes String val, EmptyListener onComplete){
+        return setPropertyValue(R.string.database_event_posterID, val,onComplete);
     }
 
     public String getFacilityID(){
@@ -394,7 +394,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     public boolean setDescription(String val){
-        return setPropertyValue(R.string.database_event_description, val);
+        return setPropertyValue(R.string.database_event_description, val, s -> {});
     }
 
     public Integer getCapacity(){
@@ -410,7 +410,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     public boolean setQrHash(String val){
-        return setPropertyValue(R.string.database_event_qrHash, val);
+        return setPropertyValue(R.string.database_event_qrHash, val, s -> {});
     }
     
     public Timestamp getCreatedDate(){
@@ -450,7 +450,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     public boolean setEventDates(List<Timestamp> val){
-        return setPropertyValue(R.string.database_event_dates, val);
+        return setPropertyValue(R.string.database_event_dates, val, s -> {});
     }
 
     public Double getPrice(){
@@ -458,7 +458,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     public boolean setPrice(Double val){
-        return setPropertyValue(R.string.database_event_price, val);
+        return setPropertyValue(R.string.database_event_price, val, s -> {});
     }
 
     /**
@@ -560,6 +560,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param qrHash the cashed qr code data for the event
      * @param price The price of the event
      * @param eventDates The dates that the event occurs
+     * @param onComplete called on completion
      * @return If the event changed as a result
      */
     @Database.StirsDeep(what = "The previous image")
@@ -568,7 +569,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                           String description,
                           String qrHash,
                           Double price,
-                          List<Timestamp> eventDates
+                          List<Timestamp> eventDates,
+                          EmptyListener onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_event_title, title);
@@ -577,7 +579,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         map.put(R.string.database_event_qrHash, qrHash);
         map.put(R.string.database_event_price, price);
         map.put(R.string.database_event_dates, eventDates);
-        return updateDataFromMap(db.convertIDMapToNames(map));
+        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
     }
 
     /**

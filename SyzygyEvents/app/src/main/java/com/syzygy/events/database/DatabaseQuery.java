@@ -357,6 +357,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                     return;
                 }
                 DocumentSnapshot doc = newInstanceDocuments.get(count);
+                Log.println(Log.DEBUG, "init", doc.getId());
                 db.getInstance(collection, doc.getId(), this, doc);
             }
         };

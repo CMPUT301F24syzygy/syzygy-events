@@ -47,7 +47,7 @@ public class Facility extends DatabaseInstance<Facility> {
     }
 
     public boolean setName(String val){
-        return setPropertyValue(R.string.database_fac_name, val);
+        return setPropertyValue(R.string.database_fac_name, val, s -> {});
     }
 
     public GeoPoint getLocation(){
@@ -55,7 +55,7 @@ public class Facility extends DatabaseInstance<Facility> {
     }
 
     public boolean setLocation(GeoPoint val){
-        return setPropertyValue(R.string.database_fac_location, val);
+        return setPropertyValue(R.string.database_fac_location, val, s -> {});
     }
 
     public String getDescription(){
@@ -63,15 +63,15 @@ public class Facility extends DatabaseInstance<Facility> {
     }
 
     public boolean setDescription(String val){
-        return setPropertyValue(R.string.database_fac_description, val);
+        return setPropertyValue(R.string.database_fac_description, val, s -> {});
     }
 
     public String getImageID(){
         return getPropertyValueI(R.string.database_fac_imageID);
     }
 
-    public boolean setImageID(String val){
-        return setPropertyValue(R.string.database_fac_imageID, val);
+    public boolean setImageID(String val, Database.Querrier.EmptyListener onComplete){
+        return setPropertyValue(R.string.database_fac_imageID, val, onComplete);
     }
 
     public String getOrganizerID(){
@@ -116,7 +116,7 @@ public class Facility extends DatabaseInstance<Facility> {
         map.put(R.string.database_fac_location, location);
         map.put(R.string.database_fac_description, description);
         map.put(R.string.database_fac_imageID, imageID);
-        return updateDataFromMap(db.convertIDMapToNames(map));
+        return updateDataFromMap(db.convertIDMapToNames(map), s->{});
     }
 
     /**

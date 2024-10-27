@@ -1,6 +1,8 @@
 package com.syzygy.events.database;
 
+import android.util.Log;
 import android.util.Pair;
+import android.util.Property;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -413,34 +415,50 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param p The property to edit
      * @param newID The ID of the new instance
      * @param <W> The type of the instance
+     * @param onComplete called on completion, true if no errors occurred, might not be called before return
      * @throws IllegalArgumentException If the property is not an instance property
      * @throws ClassCastException If the type does not match the properties type
      */
     @SuppressWarnings("unchecked")
     @Database.StirsDeep(what="Previous Instance")
-    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID) throws IllegalArgumentException, ClassCastException{
+    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, ClassCastException{
         if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
         InstancePropertyWrapper<W> prop = (InstancePropertyWrapper<W>) p;
-        if(Objects.equals(newID, prop.value)) return;
 
-        W newInstance = null;
+        if(Objects.equals(newID, prop.value)) {
+            onComplete.onCompletion(true);
+            return;
+        }
+        Log.println(Log.DEBUG, "modPropExchange", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
 
         if(!newID.isBlank()){
-            db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {
+            Log.println(Log.DEBUG, "modPropLoading", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+            db.<W>getInstance(prop.meta.loadsCollection, newID, (i, s) -> {
                 if(!s){
-                    setPropertyValue(prop.meta.propertyNameID, "");
+                    Log.println(Log.DEBUG, "modPropLoadFail", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+                    setPropertyValue(prop.meta.propertyNameID, "", $ -> {
+                        onComplete.onCompletion(false);
+                    });
                     return;
                 }
+                Log.println(Log.DEBUG, "modPropLoadSuccess", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
                 if(prop.instance != null){
                     prop.instance.dissolve();
                 }
-                prop.instance = newInstance;
+                prop.instance = i;
                 prop.value = newID;
+                onComplete.onCompletion(true);
             });
         }else {
+            Log.println(Log.DEBUG, "modPropNulling", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
             if (!prop.meta.loadsNullable)
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID + " - " + newID));
+            if(prop.instance != null){
+                prop.instance.dissolve();
+            }
+            prop.instance = null;
             prop.value = newID;
+            onComplete.onCompletion(true);
         }
 
     }
@@ -456,11 +474,16 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Previous Instance")
     private <W extends DatabaseInstance<W>> void exchangeInstance(InstancePropertyWrapper<W> prop, @Database.Dilutes W newInstance) throws ClassCastException{
-        if(Objects.equals(newInstance, prop.instance)) return;
+        if(Objects.equals(newInstance, prop.instance)){
+            return;
+        }
+        if (!prop.meta.loadsNullable && newInstance == null)
+            db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID));
         if(newInstance!=null)newInstance.fetch();
         if(prop.instance != null){
             prop.instance.dissolve();
         }
+
         prop.instance = newInstance;
         prop.value = newInstance == null?"":newInstance.getDocumentID();
     }
@@ -473,32 +496,61 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Ignores if the field can edit
      *
      * @param data The property key-value set
+     * @param onComplete called on completion. true if no errors. If none of the properties are setting an instance id, will be called before return.
      * @return {@code true} if the instance was changed as a result
      * @throws IllegalArgumentException if a key is not one of the available properties, or if the value is not valid
      * @throws ClassCastException if a value does not match an properties type
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Database.StirsDeep(what="Old Instances of Instance properties that are modified")
-    protected final boolean modifyData(@Database.Dilutes Map<String, Object> data) throws IllegalArgumentException, ClassCastException{
+    protected final boolean modifyData(@Database.Dilutes Map<String, Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, ClassCastException{
         boolean diff = false;
+
+        List<Pair<PropertyWrapper<?,?>, String>> loadIds = new ArrayList<>();
+
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
             if(prop == null) db.throwE(new IllegalArgumentException("Invalid property"));
+            Log.println(Log.DEBUG, "modProp", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
             if(Objects.equals(prop.value, ent.getValue())) {
+                Log.println(Log.DEBUG, "modEqual", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                 continue;
             };
             diff = true;
             if(prop.meta.loads){
+                Log.println(Log.DEBUG, "modPropLoads", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                 if(ent.getValue() instanceof DatabaseInstance){
                     exchangeInstance((InstancePropertyWrapper) prop, (DatabaseInstance)ent.getValue());
                 }else{
-                    exchangeInstance(prop, String.valueOf(ent.getValue()));
+                    loadIds.add(new Pair<>(prop, String.valueOf(ent.getValue())));
                 }
             }else{
+                Log.println(Log.DEBUG, "modPropVal", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                 prop.setValue(ent.getValue());
             }
 
         }
+        if(loadIds.isEmpty()){
+            onComplete.onCompletion(true);
+            return diff;
+        }
+
+        Database.Querrier.EmptyListener l = new Database.Querrier.EmptyListener() {
+            private int i = -1;
+            private boolean s = true;
+            @Override
+            public void onCompletion(boolean success) {
+                i ++;
+                s = s || success;
+                if(i >= loadIds.size()){
+                    onComplete.onCompletion(s);
+                    return;
+                }
+                Pair<PropertyWrapper<?,?>, String> instance = loadIds.get(i);
+                exchangeInstance(instance.first, instance.second, this);
+            }
+        };
+        l.onCompletion(true);
         return diff;
     }
 
@@ -508,26 +560,32 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Edits the value of a property. If the property is an instance, loads the property and fetches the reference
      * @param resID The res id of the property name
      * @param newValue the new value of the property
+     * @param onComplete called on completion, true if no errors occurred. Will be called before return if setting a non loading property
+     *                   or if setting a loading property with an already instantiated instance
      * @return if the property was changed
      * @throws IllegalArgumentException if the property does not exist or if the property cannot be edited or the new value is invalid
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws ClassCastException if the value type does not match the properties type
      */
     @Database.StirsDeep(what="The previous instance", when="Modifying an instance property")
-    public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue) throws IllegalArgumentException, IllegalStateException{
+    public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
         if(prop==null) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
         if(!isPropertyValid(prop, newValue)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString()));
-        if(Objects.equals(prop.value, newValue)) return false;
+        if(Objects.equals(prop.value, newValue)) {
+            onComplete.onCompletion(true);
+            return false;
+        }
         if(prop.meta.loads){
-            exchangeInstance(prop, (String)newValue);
+            exchangeInstance(prop, (String)newValue, onComplete);
         }else{
             prop.setValue(newValue);
         }
         processUpdate();
+        onComplete.onCompletion(true);
         return true;
     }
 
@@ -553,8 +611,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         String id = instance == null? "": instance.getDocumentID();
         if(!isPropertyValid(prop, id)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + instance.toString()));
         InstancePropertyWrapper<W> iprop = (InstancePropertyWrapper<W>) prop;
-        if(Objects.equals(iprop.instance, instance)) return false;
-        exchangeInstance(iprop, instance);
+        if(Objects.equals(iprop.instance, instance)) {
+            return false;
+        }
         processUpdate();
         return true;
     }
@@ -722,26 +781,40 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir(when="Error or not exists")
     final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists, Database.InitializationListener<T> onComplete) throws IllegalStateException{
         if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
+        Log.println(Log.DEBUG, "initData", getDocumentID()+" "+exists);
         if(!exists){
+            Log.println(Log.DEBUG, "initDataFail", getDocumentID());
             fullDissolve();
+            onComplete.onInitialization(null, false);
             initializationListeners.forEach(l -> l.onInitialization(null, false));
             initializationListeners.clear();
-            onComplete.onInitialization(null, false);
             return;
         }
-        modifyData(data);
-        subInitialize((instance, success) -> {
-            isInitialized = success;
-            onComplete.onInitialization(cast(), success);
-            initializationListeners.forEach(l -> l.onInitialization(cast(), success));
-            initializationListeners.clear();
-            notifyUpdate(Type.INIT);
-            if(!success){
+        Log.println(Log.DEBUG, "initDataGood", getDocumentID());
+        modifyData(data, successmod -> {
+            if(!successmod){
+                Log.println(Log.DEBUG, "initDataModifyFail", getDocumentID());
                 fullDissolve();
-            }else{
-                snapshotListener = getDocumentReference().addSnapshotListener(db);
+                onComplete.onInitialization(null, false);
+                initializationListeners.forEach(l -> l.onInitialization(null, false));
+                initializationListeners.clear();
+                return;
             }
-        }, 0);
+            Log.println(Log.DEBUG, "initDataModified", getDocumentID());
+            subInitialize((instance, success) -> {
+                isInitialized = success;
+                onComplete.onInitialization(cast(), success);
+                initializationListeners.forEach(l -> l.onInitialization(cast(), success));
+                initializationListeners.clear();
+                notifyUpdate(Type.INIT);
+                if(!success){
+                    fullDissolve();
+                }else{
+                    snapshotListener = getDocumentReference().addSnapshotListener(db);
+                }
+            }, 0);
+        });
+
     }
 
     /**
@@ -787,32 +860,35 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Modifies the properties of the object given the data set and notifies all listeners if the
      * instance was changed.
      * @param data The property key-value set
+     * @param onComplete called once complete, true if no errors. If not modifying any instance ids, will be called before return
      * @return {@code true} if the instance was changed as a result
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
-    final boolean updateDataFromDatabase(@Database.Dilutes Map<String, Object> data) throws IllegalStateException{
+    final boolean updateDataFromDatabase(@Database.Dilutes Map<String, Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalStateException{
         assertNotIllegalState();
-        boolean mod = modifyData(data);
-        if(mod){
-            notifyUpdate(Database.UpdateListener.Type.UPDATE);
-        }
-        return mod;
+        return modifyData(data, success -> {
+            notifyUpdate(Type.UPDATE);
+            onComplete.onCompletion(success);
+        });
     }
 
     /**
      * Updates multiple values and notifies listeners. Then updates the database.
      * @param data The property name -> value mapping of all fields to be edited
+     * @param onComplete called once complete, true if no errors. If not modifying any instance ids, will be called before return
      * @return If the data was changed as a result
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws IllegalArgumentException if a key is not one of the available properties to edit or a value is not valid
      * @throws ClassCastException If a value's type does not match the property type
      */
     @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
-    public final boolean updateDataFromMap(@Database.Dilutes Map<String,Object> data) throws IllegalStateException, IllegalArgumentException, ClassCastException{
+    public final boolean updateDataFromMap(@Database.Dilutes Map<String,Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalStateException, IllegalArgumentException, ClassCastException{
         assertNotIllegalState();
-        if(!modifyData(data)) return false;
-        processUpdate();
+        if(!modifyData(data, success -> {
+            processUpdate();
+            onComplete.onCompletion(success);
+        })) return false;
         return true;
     }
 

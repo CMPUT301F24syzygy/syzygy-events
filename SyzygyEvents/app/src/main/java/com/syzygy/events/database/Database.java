@@ -133,7 +133,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param instance The database instance
      * @param <T> The instance type
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
-     * @see DatabaseInstance#updateDataFromDatabase(Map)
+     * @see DatabaseInstance#updateDataFromDatabase(Map, Querrier.EmptyListener)
      * @see DatabaseInstance#getDocumentReference()
      */
     <T extends DatabaseInstance<T>> void updateFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
@@ -143,7 +143,11 @@ public class Database implements EventListener<DocumentSnapshot> {
                 if(!task.isSuccessful()) return; // TODO error
                 DocumentSnapshot doc = task.getResult();
                 if(!doc.exists()) return; //TODO error
-                instance.updateDataFromDatabase(task.getResult().getData());
+                instance.updateDataFromDatabase(task.getResult().getData(), s ->{
+                    if(!s){
+                        return; // TODO error
+                    }
+                });
             }
         });
     }
@@ -152,15 +156,21 @@ public class Database implements EventListener<DocumentSnapshot> {
      * Retrieves the document properties of the instance and sets the instance to match
      * @param instance The database instance
      * @param <T> The instance type
+     * @param onComplete called when complete
      * @throws IllegalStateException if the instance is already initialized
      * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener) 
      * @see DatabaseInstance#getDocumentReference()
      */
-    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
+    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, InitializationListener<T> onComplete) throws IllegalStateException{
         instance.getDocumentReference().get().addOnCompleteListener(task -> {
-            if(!task.isSuccessful()) return; // TODO error
+            if(!task.isSuccessful()) {
+                Log.println(Log.DEBUG, "failedGet", instance.getDocumentID());
+                onComplete.onInitialization(null, false);
+                return; // TODO error
+            }
+            Log.println(Log.DEBUG, "successGet", instance.getDocumentID());
             DocumentSnapshot doc = task.getResult();
-            instance.initializeData(doc.getData(), doc.exists(), (instance1, success) -> {});
+            instance.initializeData(doc.getData(), doc.exists(), onComplete);
         });
     }
 
@@ -169,13 +179,14 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param instance The instance
      * @param snapshot The document snapshot
      * @param <T> The instance type
+     * @param onComplete called when complete
      * @throws IllegalStateException If the instance is already initialized
      * @throws IllegalArgumentException If the document does not match the instance
      * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener)
      */
-    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, DocumentSnapshot snapshot) throws IllegalStateException, IllegalArgumentException{
+    <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, DocumentSnapshot snapshot, InitializationListener<T> onComplete) throws IllegalStateException, IllegalArgumentException{
         if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
-        instance.initializeData(snapshot.getData(), snapshot.exists(), (instance1, success) -> {});
+        instance.initializeData(snapshot.getData(), snapshot.exists(), onComplete);
     }
 
     /**
@@ -238,16 +249,44 @@ public class Database implements EventListener<DocumentSnapshot> {
     @MustStir
     public <T extends DatabaseInstance<T>> void getInstance(Collections collection, String documentID, InitializationListener<T> listener, @Nullable DocumentSnapshot document) throws IllegalArgumentException{
         //TODO deal with no exists
-        DatabaseInstance<T> instance = (DatabaseInstance<T>)(cache.computeIfAbsent(collection.getDatabaseID(documentID), k->{
-            DatabaseInstance<T> i = collection.newInstance(this, documentID);
-            if (document != null) {
-                initializeFromDatabase(i,document);
-            }else{
-                initializeFromDatabase(i);
-            }
-            return i;
-        }));
-        instance.addInitializationListener(listener);
+        String databaseId = collection.getDatabaseID(documentID);
+
+        DatabaseInstance<T> instance = (DatabaseInstance<T>)cache.get(databaseId);
+        if(instance!=null){
+            Log.println(Log.DEBUG, "foundInstance", documentID + " " + collection.toString());
+            instance.addInitializationListener(listener);
+            return;
+        }
+        Log.println(Log.DEBUG, "computeNewInstance", documentID + " " + collection.toString());
+        DatabaseInstance<T> inst = collection.newInstance(this, documentID);
+        cache.put(databaseId, inst);
+
+        if(document != null){
+            Log.println(Log.DEBUG, "computeFromSnapshot", documentID + " " + collection.toString());
+
+            initializeFromDatabase(inst,document, (i, s) -> {
+                if(!s){
+                    Log.println(Log.DEBUG, "failedCompute", documentID + " " + collection.toString());
+                    cache.remove(databaseId);
+                    listener.onInitialization(null, false);
+                    return;
+                }
+                Log.println(Log.DEBUG, "goodCompute", documentID + " " + collection.toString());
+                inst.addInitializationListener(listener);
+            });
+        }else{
+            Log.println(Log.DEBUG, "computeFromDatabase", documentID + " " + collection.toString());
+            initializeFromDatabase(inst, (i,s)->{
+                if(!s){
+                    Log.println(Log.DEBUG, "failedCompute", documentID + " " + collection.toString());
+                    cache.remove(databaseId);
+                    listener.onInitialization(null, false);
+                    return;
+                }
+                Log.println(Log.DEBUG, "goodCompute", documentID + " " + collection.toString());
+                inst.addInitializationListener(listener);
+            });
+        }
     };
 
     /**
@@ -376,7 +415,9 @@ public class Database implements EventListener<DocumentSnapshot> {
             return;
         }
 
-        instance.updateDataFromDatabase(value.getData());
+        instance.updateDataFromDatabase(value.getData(), s->{
+            //TODO on error
+        });
     }
 
     /**
@@ -540,7 +581,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @version 1.0
      * @since 19oct24
      * @param <T> The class of the instance
-     * @see DatabaseInstance#initializeData(Map, boolean)
+     * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener) 
      */
     public interface InitializationListener<T extends DatabaseInstance<T>> {
         /**
@@ -549,7 +590,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param success {@code true} if the instance was successfully initialized. {@code false}
          *                            if the document for the instance did not exists or other errors
          *                            occurred.
-         * @see DatabaseInstance#initializeData(Map, boolean)
+         * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener) 
          */
         public void onInitialization(@MustStir T instance, boolean success);
     }
