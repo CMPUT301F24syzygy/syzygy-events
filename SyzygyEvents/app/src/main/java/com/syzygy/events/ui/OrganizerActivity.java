@@ -1,4 +1,4 @@
-package com.syzygy.events;
+package com.syzygy.events.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,10 +14,12 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.syzygy.events.R;
+import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
-public class OrganizerActivity extends AppCompatActivity {
+public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
 
     private ActivityOrganizerBinding organizerBinding;
     private NavController navController;

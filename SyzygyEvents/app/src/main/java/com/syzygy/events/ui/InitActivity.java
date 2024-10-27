@@ -1,23 +1,19 @@
-package com.syzygy.events;
+package com.syzygy.events.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.syzygy.events.database.Database;
-import com.syzygy.events.databinding.ActivityEntrantBinding;
+import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.databinding.FragmentSignupBinding;
 
-public class MainActivity extends AppCompatActivity {
+public class InitActivity extends SyzygyApplication.SyzygyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
-        Database database = new Database(getResources());
 
         FragmentSignupBinding binding = FragmentSignupBinding.inflate(getLayoutInflater());
 
@@ -26,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openEntrant(View v) {
-        Intent intent = new Intent(MainActivity.this, EntrantActivity.class);
+        Intent intent = new Intent(InitActivity.this, EntrantActivity.class);
         startActivity(intent);
     }
 

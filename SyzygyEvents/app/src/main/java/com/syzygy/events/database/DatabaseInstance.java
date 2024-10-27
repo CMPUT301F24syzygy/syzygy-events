@@ -191,7 +191,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     protected final void notifyUpdate(Database.UpdateListener.Type type) throws IllegalStateException{
-        assertNotIllegalState();
         updateListeners.forEach(l -> l.onUpdate(cast(), type));
     }
 
@@ -296,7 +295,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     protected final void dereferenceInstance() {
         if (isReferenced()) return;
         if (isDereferenced) return; // already dereferenced
-        subDereferenceInstance();
+        if(isInitialized) subDereferenceInstance();
         db.returnInstance(this);
         notifyUpdate(Database.UpdateListener.Type.DEREFERENCED);
         updateListeners.clear();
@@ -376,7 +375,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @NonNull
     @Override
     public String toString() throws IllegalStateException{
-        assertNotIllegalState();
+        //assertNotIllegalState();
         return collection.toString() + " Instance";
     }
 
@@ -386,7 +385,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     final String getDocumentID() throws IllegalStateException{
-        assertNotIllegalState();
         return this.documentID;
     }
 
@@ -396,7 +394,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     public final String getIdentifier() throws IllegalStateException{
-        assertNotIllegalState();
         return this.documentID;
     }
 
@@ -407,7 +404,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     final String getDatabaseID() throws IllegalStateException{
-        assertNotIllegalState();
         return collection.getDatabaseID(this);
     }
 
@@ -429,17 +425,23 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         W newInstance = null;
 
         if(!newID.isBlank()){
-            newInstance = db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {if(!s)setPropertyValue(prop.meta.propertyNameID, "");}); //TODO on error
+            db.getInstance(prop.meta.loadsCollection, newID, (i, s) -> {
+                if(!s){
+                    setPropertyValue(prop.meta.propertyNameID, "");
+                    return;
+
+                }
+                if(prop.instance != null){
+                    prop.instance.dissolve();
+                }
+                prop.instance = newInstance;
+                prop.value = newID;
+            });
         }else {
             if (!prop.meta.loadsNullable)
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID + " - " + newID));
         }
-        if(prop.instance != null){
-            prop.instance.dissolve();
-        }
 
-        prop.instance = newInstance;
-        prop.value = newID;
     }
 
     /**
@@ -706,26 +708,32 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      *     Then it notifies all initialization listeners and update listeners.
      *     Finally it adds the snapshot listener to the document
      * </p>
+     * <p>
+     *     If it does not exist, full dissolves and notifies all listeners with null
+     * </p>
      * @param data The property key-value mapping of the data
      * @param exists If the document exists in the database
      * @throws IllegalStateException if the instance has already been initialized
      */
-    @Database.AutoStir(when="Error")
+    @Database.AutoStir(when="Error or not exists")
     final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists) throws IllegalStateException{
         if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
+        if(!exists){
+            fullDissolve();
+            initializationListeners.forEach(l -> l.onInitialization(null, false));
+            initializationListeners.clear();
+            return;
+        }
         modifyData(data);
-        subInitialize(new Database.InitializationListener<T>() {
-            @Override
-            public void onInitialization(T instance, boolean success) {
-                isInitialized = success;
-                initializationListeners.forEach(l -> l.onInitialization(cast(), exists && success));
-                initializationListeners.clear();
-                notifyUpdate(Database.UpdateListener.Type.INIT);
-                if(!(exists && success)){
-                    fullDissolve();
-                }else{
-                    snapshotListener = getDocumentReference().addSnapshotListener(db);
-                }
+        subInitialize((instance, success) -> {
+            isInitialized = success;
+            initializationListeners.forEach(l -> l.onInitialization(cast(), exists && success));
+            initializationListeners.clear();
+            notifyUpdate(Type.INIT);
+            if(!(exists && success)){
+                fullDissolve();
+            }else{
+                snapshotListener = getDocumentReference().addSnapshotListener(db);
             }
         }, 0);
     }
@@ -739,29 +747,32 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * by their own initializers)
      * @param listener The listener that should be called once all initialization is complete
      * @throws IllegalArgumentException If the value is empty but the property is not nullable
+     * TODO does this X hack work?
      */
     @Database.Titrates(what="Sub instances")
-    protected void subInitialize(Database.InitializationListener<T> listener, int count) throws IllegalArgumentException{
+    @SuppressWarnings("unchecked")
+    protected <X extends DatabaseInstance<X>>  void subInitialize(Database.InitializationListener<T> listener, int count) throws IllegalArgumentException{
         if(count >= iproperties.size()) {
             listener.onInitialization(this.cast(), true);
             return;
         }
         PropertyWrapper<?,?> prop = properties.get(iproperties.get(count));
         assert prop != null;
-        InstancePropertyWrapper<?> iprop = prop.iS();
+        InstancePropertyWrapper<X> iprop = (InstancePropertyWrapper<X>) prop.iS();
         if(iprop.value.isBlank()){
             if(!prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID));
             subInitialize(listener, count+1);
             return;
         }
         Database.Collections collection = prop.meta.loadsCollection;
-        iprop.instance = db.getInstance(collection, iprop.value, (instance, success) -> {
+        db.<X>getInstance(collection, iprop.value, (instance, success) -> {
             if(!success){
                 iprop.value = "";
                 iprop.instance = null;
                 listener.onInitialization(this.cast(), false);
                 return;
             }
+            iprop.instance = instance;
             subInitialize(listener, count+1);
         });
     }
@@ -931,7 +942,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @see Database.Collections#getCollection(Database)
      */
     final DocumentReference getDocumentReference() throws IllegalStateException{
-        assertNotIllegalState();
         return collection.getDocument(db, documentID);
     }
 

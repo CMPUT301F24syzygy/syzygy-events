@@ -1,4 +1,4 @@
-package com.syzygy.events;
+package com.syzygy.events.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,10 +15,12 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.syzygy.events.R;
+import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
-public class EntrantActivity extends AppCompatActivity {
+public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     private ActivityEntrantBinding entrantBinding;
     private NavController navController;
     private Database database;

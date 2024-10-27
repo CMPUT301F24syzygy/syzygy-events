@@ -130,7 +130,9 @@ public class Database implements EventListener<DocumentSnapshot> {
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(!testTaskSuccessful(task)) return;
+                if(!task.isSuccessful()) return; // TODO error
+                DocumentSnapshot doc = task.getResult();
+                if(!doc.exists()) return; //TODO error
                 instance.updateDataFromDatabase(task.getResult().getData());
             }
         });
@@ -145,13 +147,10 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @see DatabaseInstance#getDocumentReference()
      */
     <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
-        instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(!testTaskSuccessful(task)) return;
-                DocumentSnapshot doc = task.getResult();
-                instance.initializeData(doc.getData(), doc.exists());
-            }
+        instance.getDocumentReference().get().addOnCompleteListener(task -> {
+            if(!task.isSuccessful()) return; // TODO error
+            DocumentSnapshot doc = task.getResult();
+            instance.initializeData(doc.getData(), doc.exists());
         });
     }
 
@@ -190,15 +189,13 @@ public class Database implements EventListener<DocumentSnapshot> {
      * </p>
      * @param collection The collection that this instance resides in
      * @param documentID The id of the instance within the collection
-     * @return The instance in an illegal state
      * @param <T> The type of instance
      * @see InitializationListener
      * @see Collections#newInstance(Database, String)
      */
-    @SuppressWarnings("unchecked")
     @MustStir
-    public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener){
-        return getInstance(collection, documentID, listener, null);
+    public <T extends DatabaseInstance<T>> void getInstance(Collections collection, String documentID, InitializationListener<T> listener){
+        getInstance(collection, documentID, listener, null);
     };
 
     /**
@@ -222,7 +219,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * </p>
      * @param collection The collection that this instance resides in
      * @param documentID The id of the instance within the collection
-     * @return The instance in an illegal state
      * @param <T> The type of instance
      * @throws IllegalArgumentException if the instance must be created and the document does not match the instance
      * @see InitializationListener
@@ -230,7 +226,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      */
     @SuppressWarnings("unchecked")
     @MustStir
-    public <T extends DatabaseInstance<T>> T getInstance(Collections collection, String documentID, InitializationListener<T> listener, @Nullable DocumentSnapshot document) throws IllegalArgumentException{
+    public <T extends DatabaseInstance<T>> void getInstance(Collections collection, String documentID, InitializationListener<T> listener, @Nullable DocumentSnapshot document) throws IllegalArgumentException{
         //TODO deal with no exists
         DatabaseInstance<T> instance = (DatabaseInstance<T>)(cache.computeIfAbsent(collection.getDatabaseID(documentID), k->{
             DatabaseInstance<T> i = collection.newInstance(this, documentID);
@@ -242,7 +238,6 @@ public class Database implements EventListener<DocumentSnapshot> {
             return i;
         }));
         instance.addInitializationListener(listener);
-        return instance.fetch();
     };
 
     /**
@@ -287,7 +282,7 @@ public class Database implements EventListener<DocumentSnapshot> {
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(!testTaskSuccessful(task)) return;
+                if(!task.isSuccessful()) return;
                 DocumentSnapshot doc = task.getResult();
                 if(doc.exists()){
                     instance.fullDissolve();
@@ -314,20 +309,6 @@ public class Database implements EventListener<DocumentSnapshot> {
         return map;
     }
 
-
-    /**
-     * Tests if a task returned successfully. Handles any errors
-     * @param task The Firestore task
-     * @return {@code true} if successful
-     * @param <T> The task type
-     */
-    private <T> boolean testTaskSuccessful(Task<T> task){
-        if(!task.isSuccessful()){
-            //todo
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -362,6 +343,11 @@ public class Database implements EventListener<DocumentSnapshot> {
     public void addErrorListener(Consumer<RuntimeException> listener){
         this.errorListeners.add(listener);
     }
+
+    /**
+     * Called to cleanup the database
+     */
+    public void cleanup(){};
 
 
     /**
