@@ -325,7 +325,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                     if(!success){
                         failedNotifications.add(instance);
                     }else{
-                        successNotifications.add(instance);
+                        if(i >= 0) successNotifications.add(instance);
                     }
                     ++i;
                     if(i >= result.size()){

@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -108,13 +110,13 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                 listener.onCompletion(this, false);
                 return;
             }
-            QuerySnapshot snap = task.getResult();
+            snapshot = task.getResult();
             if(resultsPerPage != null){
-                if(thisPage == Page.NEXT && snap.size() < resultsPerPage) {
+                if(thisPage == Page.NEXT && snapshot.size() < resultsPerPage) {
                     thisPage = Page.LAST;
-                }else if(thisPage == Page.PREVIOUS && snap.size() < resultsPerPage){
+                }else if(thisPage == Page.PREVIOUS && snapshot.size() < resultsPerPage){
                     thisPage = Page.FIRST;
-                }else if(thisPage == Page.FIRST && snap.size() < resultsPerPage){
+                }else if(thisPage == Page.FIRST && snapshot.size() < resultsPerPage){
                     thisPage = Page.FIRST_LAST;
                 }
             }else{
@@ -330,7 +332,10 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     @Database.StirsDeep(what = "Previous Instances", when = "All success")
     @Database.Observes
     private void loadFromSnapshot(Listener<DatabaseQuery<T>> listener){
-        if(snapshot == null) return;
+        if(snapshot == null) {
+            listener.onCompletion(this, false);
+            return;
+        }
         List<DocumentSnapshot> newInstanceDocuments = snapshot.getDocuments();
         final List<T> newInstances = new ArrayList<>();
         Database.InitializationListener<T> l = new Database.InitializationListener<T>() {
@@ -344,7 +349,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
                     listener.onCompletion(DatabaseQuery.this, false);
                     return;
                 }
-                newInstances.add(instance);
+                if(count >= 0) newInstances.add(instance);
                 count ++;
                 if(count >= newInstanceDocuments.size()){
                     setNewInstances(newInstances);
@@ -364,9 +369,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     @Database.StirsDeep(what = "Previous Instances")
     private void setNewInstances(@Database.Dilutes List<T> newInstances){
-
-        dissolve();
         List<T> previous = new ArrayList<>(currentInstances);
+        currentInstances.clear();
         currentInstances.addAll(newInstances);
         currentInstances.forEach(i -> i.fetch(this));
         previous.forEach(DatabaseInstance::dissolve);
