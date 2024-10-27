@@ -72,8 +72,9 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
                     if (menuItem.getItemId() == R.id.entrant_item) {
                         Intent intent = new Intent(OrganizerActivity.this, EntrantActivity.class);
                         startActivity(intent);
-                    } else if (menuItem.getItemId() == R.id.organizer_item) {
-                        return true;
+                    } else if (menuItem.getItemId() == R.id.admin_item) {
+                        Intent intent = new Intent(OrganizerActivity.this, AdminActivity.class);
+                        startActivity(intent);
                     }
                     return true;
                 }

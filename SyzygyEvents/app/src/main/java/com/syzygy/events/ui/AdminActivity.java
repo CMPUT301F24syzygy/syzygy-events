@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
@@ -15,13 +13,15 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.databinding.ActivityEntrantBinding;
+import com.syzygy.events.databinding.ActivityAdminBinding;
 
-public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
-    private ActivityEntrantBinding entrantBinding;
+public class AdminActivity extends SyzygyApplication.SyzygyActivity {
+
+    private ActivityAdminBinding adminBinding;
     private NavController navController;
     private Database database;
 
@@ -30,21 +30,20 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
 
         super.onCreate(savedInstanceState);
 
-        entrantBinding = ActivityEntrantBinding.inflate(getLayoutInflater());
-
-        setContentView(entrantBinding.getRoot());
+        adminBinding = ActivityAdminBinding.inflate(getLayoutInflater());
+        setContentView(adminBinding.getRoot());
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_entrant_profile, R.id.nav_entrant_events, R.id.nav_entrant_qr, R.id.nav_entrant_notifications)
+                R.id.nav_admin_profiles, R.id.nav_admin_events, R.id.nav_admin_images)
                 .build();
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_entrant);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_admin);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(entrantBinding.navView, navController);
+        NavigationUI.setupWithNavController(adminBinding.adminNavView, navController);
 
-        entrantBinding.navView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
+        adminBinding.adminNavView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                for(;navController.navigateUp(););
+                for (; navController.navigateUp(); ) ;
                 NavigationUI.onNavDestinationSelected(item, navController);
                 return true;
             }
@@ -62,19 +61,18 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             navController.navigateUp();
-        }
-        else {
-            PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
+        } else {
+            PopupMenu m = new PopupMenu(AdminActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-                    if (menuItem.getItemId() == R.id.organizer_item) {
-                        Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
+                    if (menuItem.getItemId() == R.id.entrant_item) {
+                        Intent intent = new Intent(AdminActivity.this, EntrantActivity.class);
                         startActivity(intent);
-                    } else if (menuItem.getItemId() == R.id.admin_item) {
-                        Intent intent = new Intent(EntrantActivity.this, AdminActivity.class);
+                    } else if (menuItem.getItemId() == R.id.organizer_item) {
+                        Intent intent = new Intent(AdminActivity.this, OrganizerActivity.class);
                         startActivity(intent);
                     }
                     return true;
@@ -84,6 +82,5 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         }
         return true;
     }
-
 
 }
