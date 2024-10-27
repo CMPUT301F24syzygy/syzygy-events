@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.syzygy.events.R;
+import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
 
 import java.util.ArrayList;
@@ -21,10 +23,15 @@ public class EntrantNotificationsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentEntrantNotificationsBinding.inflate(inflater, container, false);
 
-        String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
-        ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_entrant_notifications, dataList);
-        binding.entrantNotificationsList.setAdapter(adapter);
+
+        ArrayList<Notification> dataList = new ArrayList<Notification>();
+
+        ////
+        ////
+        ////
+
+        EntrantNotificationsAdapter a = new EntrantNotificationsAdapter(this.getContext(), dataList);
+        binding.entrantNotificationsList.setAdapter(a);
 
         return binding.getRoot();
     }
