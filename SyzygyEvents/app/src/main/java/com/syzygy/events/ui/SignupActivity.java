@@ -1,6 +1,8 @@
 package com.syzygy.events.ui;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +14,7 @@ import com.google.firebase.Timestamp;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragmentSignupBinding;
 
@@ -20,6 +23,7 @@ import java.util.Set;
 public class SignupActivity extends SyzygyApplication.SyzygyActivity {
 
     private FragmentSignupBinding binding;
+    private Uri image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +35,27 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         setContentView(binding.getRoot());
 
         binding.signupButtonSubmit.setOnClickListener(view -> submitData());
+        binding.signupEditImage.setOnClickListener(view -> choosePhoto());
+        binding.signupRemoveImage.setOnClickListener(view -> removePhoto());
 
+    }
+
+    private void removePhoto(){
+        image = null;
+        binding.signupProfile.setImageURI(null);
+        binding.signupRemoveImage.setVisibility(View.INVISIBLE);
+    }
+
+    private void choosePhoto(){
+        ((SyzygyApplication)getApplication()).getImage(uri -> {
+            if(uri == null){
+                Toast.makeText(this, "Failed to get image", Toast.LENGTH_LONG).show();
+                return;
+            }
+            image = uri;
+            binding.signupProfile.setImageURI(uri);
+            binding.signupRemoveImage.setVisibility(View.VISIBLE);
+        });
     }
 
     private void submitData(){
@@ -43,11 +67,40 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         Boolean org = binding.signupOrgNotifications.isChecked();
         Set<Integer> invalidIds = User.validateDataMap(User.createDataMap(name, bio, "", "", email, phone, org, admin, false, Timestamp.now()));
         if(invalidIds.isEmpty()){
+            Log.println(Log.DEBUG, "signup", "valid");
             binding.progressBar.setVisibility(View.VISIBLE);
-            ((SyzygyApplication)getApplication()).signupUser(name, email, phone, bio, admin, org, success -> {
+            SyzygyApplication app = (SyzygyApplication) getApplication();
+            if(image != null){
+                Log.println(Log.DEBUG, "signup", "image");
+                Image.NewInstance(app.getDatabase(), name, Database.Collections.USERS, "testingLocID", image, (instance, success) -> {
+                    if(!success){
+                        Log.println(Log.DEBUG, "signup", "image fail");
+                        Toast.makeText(this, "An error occurred: Image", Toast.LENGTH_LONG).show();
+                        binding.progressBar.setVisibility(View.GONE);
+                        return;
+                    }
+                    Log.println(Log.DEBUG, "signup", "image good");
+                    app.signupUser(name, email, phone, bio, admin, org, instance, success2 -> {
+                        //Errored here but took me to my profile
+                        instance.dissolve();
+                        if(success2){
+                            Log.println(Log.DEBUG, "signup", "user good");
+                            return;
+                        };
+                        Log.println(Log.DEBUG, "signup", "user fail");
+                        Toast.makeText(this, "An error occurred", Toast.LENGTH_LONG).show();
+                        binding.progressBar.setVisibility(View.GONE);
+                    });
+                });
+                return;
+            }
+            Log.println(Log.DEBUG, "signup", "no image");
+            app.signupUser(name, email, phone, bio, admin, org, null, success -> {
                 if(success){
+                    Log.println(Log.DEBUG, "signup", "user good");
                     return;
                 };
+                Log.println(Log.DEBUG, "signup", "user fail");
                 Toast.makeText(this, "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
             });
@@ -73,5 +126,8 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         startActivity(intent);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

@@ -367,6 +367,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param listener Called on completion. true if upload was successful
      */
     public void addImageToStorage(String fileName, Uri image, Consumer<Boolean> listener){
+        Log.println(Log.DEBUG, "add image", fileName);
         StorageReference ref = storage.child(fileName);
         ref.putFile(image).addOnCompleteListener(task -> {
             listener.accept(task.isSuccessful());

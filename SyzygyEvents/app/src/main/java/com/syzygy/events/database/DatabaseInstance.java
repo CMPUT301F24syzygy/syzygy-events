@@ -406,7 +406,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Returns the document ID
      * @return the unique identifier of the instance within the collection
      */
-    final String getDocumentID(){
+    public final String getDocumentID(){
         return this.documentID;
     }
 

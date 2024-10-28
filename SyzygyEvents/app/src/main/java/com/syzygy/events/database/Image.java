@@ -43,8 +43,8 @@ public class Image extends DatabaseInstance<Image> {
         return this;
     }
 
-    public String getLocType(){
-        return getPropertyValueI(R.string.database_img_locType);
+    public Database.Collections getLocType(){
+        return Database.Collections.valueOf((String)getPropertyValue(R.string.database_img_locType));
     }
 
     public String getLocName(){
@@ -53,6 +53,18 @@ public class Image extends DatabaseInstance<Image> {
 
     public String getLocID(){
         return getPropertyValueI(R.string.database_img_locID);
+    }
+
+    public boolean setLocID(String val){
+        return setPropertyValue(R.string.database_img_locID, val, s -> {});
+    }
+
+    public boolean setLocName(String val){
+        return setPropertyValue(R.string.database_img_locID, val, s -> {});
+    }
+
+    public boolean setLocType(Database.Collections val){
+        return setPropertyValue(R.string.database_img_locID, val.toString(), s -> {});
     }
 
     public String getAddress(){
@@ -73,9 +85,9 @@ public class Image extends DatabaseInstance<Image> {
      */
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locType, o -> o instanceof String && !((String) o).isBlank(), false),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String, true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locType, o -> o instanceof String && !((String)o).isBlank(), true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_img_uploadTime, o -> o instanceof Timestamp, false)
     };
 
@@ -108,7 +120,7 @@ public class Image extends DatabaseInstance<Image> {
     @Database.MustStir
     public static void NewInstance(Database db,
                                    String locName,
-                                   String locType,
+                                   Database.Collections locType,
                                    String locID,
                                    Uri image,
                                    Database.InitializationListener<Image> listener
@@ -136,7 +148,7 @@ public class Image extends DatabaseInstance<Image> {
 
                 String address = uri.toString();
 
-                Map<Integer,Object> map = createDataMap(locName, locType, locID, address, Timestamp.now());
+                Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, address, Timestamp.now());
 
                 if(!validateDataMap(map).isEmpty()){
                     db.deleteImage(locID, success2 -> {
