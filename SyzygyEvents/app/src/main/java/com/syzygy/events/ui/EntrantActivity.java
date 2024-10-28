@@ -20,6 +20,8 @@ import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
+import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
@@ -113,8 +115,9 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (intentResult != null && intentResult.getContents() != null) {
             String str = intentResult.getContents();
-            ///
-            navController.navigate(R.id.nav_entrant_events);
+            SyzygyApplication app = (SyzygyApplication)getApplication();
+            ///Event e = ...str...
+            ///openEvent(e)
             ///
         }
     }

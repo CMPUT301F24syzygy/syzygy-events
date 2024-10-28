@@ -32,7 +32,7 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
                     R.layout.item_entrant_events, parent, false);
         }
 
-        TextView title = view.findViewById(R.id.title);
+        TextView title = view.findViewById(R.id.entrant_events_item_title_text);
         title.setText(event.getEvent().getTitle());
 
         ///

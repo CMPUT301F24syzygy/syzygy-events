@@ -6,26 +6,26 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/entrant_events_item_title_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/poster_img"
+        app:layout_constraintStart_toEndOf="@+id/entrant_events_item_poster_img"
         app:layout_constraintTop_toTopOf="parent">
 
     </TextView>
 
     <TextView
-        android:id="@+id/location"
+        android:id="@+id/entrant_events_item_location_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/poster_img"
-        app:layout_constraintTop_toBottomOf="@+id/title">
+        app:layout_constraintStart_toEndOf="@+id/entrant_events_item_poster_img"
+        app:layout_constraintTop_toBottomOf="@+id/entrant_events_item_title_text">
     </TextView>
 
     <ImageView
-        android:id="@+id/poster_img"
+        android:id="@+id/entrant_events_item_poster_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/ic_launcher_background"
