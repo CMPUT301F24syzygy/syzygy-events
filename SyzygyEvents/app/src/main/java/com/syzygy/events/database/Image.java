@@ -99,11 +99,11 @@ public class Image extends DatabaseInstance<Image> {
      * Loads the image into a picasso request and formats it based on the collection type
      * @param option How to format the image
      * @return The picasso creator with this image formated
-     * @see #formatImage(RequestCreator, Database.Collections, Options)
+     * @see #formatImage(RequestCreator, Options)
      */
     public RequestCreator loadAndFormatImage(Options option){
-        RequestCreator req = Picasso.get().load(getAddress()).placeholder(R.drawable.two_apples).error(R.drawable.two_apples);
-        return formatImage(req, getCollection(), option);
+        RequestCreator req = Picasso.get().load(getAddress());
+        return formatImage(req, option);
     }
 
 
@@ -227,19 +227,17 @@ public class Image extends DatabaseInstance<Image> {
      * If the associated image is null, uses a default image for the instances collection.
      * @param instance The instance whos image should be loaded
      * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
-     * @see #formatImage(RequestCreator, Database.Collections, Options)
+     * @see #formatImageOrDefault(RequestCreator, Database.Collections, Options) 
      * @see #getDefaultImage(Database.Collections)
      */
     public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option){
-        Picasso pic = Picasso.get();
-        RequestCreator loadedPic;
         if(instance == null){
-            return formatImage(null, null, option);
+            return formatDefaultImage(null, option);
         }
         Image img = instance.getAssociatedImage();
         Database.Collections coll = instance.getCollection();
         if(img == null){
-            return formatImage(null, coll, option);
+            return formatDefaultImage(null, option);
         }
         return img.loadAndFormatImage(option);
     }
@@ -260,13 +258,43 @@ public class Image extends DatabaseInstance<Image> {
      * @param collection The collection to base the default on if the loaded is null
      * @param option How to format the image
      * @return The loaded picasso after formatting
+     * @see #formatDefaultImage(Database.Collections, Options)
+     * @see #formatImage(RequestCreator, Options)
      * @see #getDefaultImage(Database.Collections)
      */
-    public static RequestCreator formatImage(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull Options option){
-        RequestCreator pic = loadedPicasso == null ? getDefaultImage(collection) : loadedPicasso;
+    public static RequestCreator formatImageOrDefault(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull Options option){
+        if(loadedPicasso == null){
+            return formatDefaultImage(collection, option);
+        }else{
+            return formatImage(loadedPicasso, option);
+        }
+    }
+
+    /**
+     * Formats a default image based on the collection
+     * @param collection The collection to base the default on
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #formatImage(RequestCreator, Options) 
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatDefaultImage(@Nullable Database.Collections collection, @NonNull Options option){
+        RequestCreator pic = getDefaultImage(collection);
+        return formatImage(getDefaultImage(collection), option);
+    }
+
+    /**
+     * Formats the loaded image based on the collection
+     * @param loadedPicasso The picasso element that is loaded with the image.
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
-        option.modifyImage(pic);
-        return pic;
+        loadedPicasso.placeholder(R.drawable.two_apples).error(R.drawable.two_apples);
+        option.modifyImage(loadedPicasso);
+        return loadedPicasso;
     }
 
     public enum Options {
