@@ -53,4 +53,5 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.android.gms:play-services-location:17.0.0")
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
+    implementation("com.squareup.picasso:picasso:2.8")
 }

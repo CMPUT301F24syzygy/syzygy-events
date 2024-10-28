@@ -146,6 +146,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     protected abstract T cast();
 
     /**
+     * Returns the image associated with this instance. Null if no image
+     */
+    @Database.Observes
+    public abstract Image getAssociatedImage();
+
+    /**
      * Adds a new update listener to this instance
      * <p>
      * If the same listener is added twice, the listener will only be notified of an update once
@@ -1188,6 +1194,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             private NullInstance(Database db, String documentID, Database.Collections collection, @NonNull PropertyField<?, ?>[] properties) throws ClassCastException, IllegalArgumentException {
                 super(db, documentID, collection, properties);
                 throw new UnsupportedOperationException("No");
+            }
+
+            @Override
+            public Image getAssociatedImage() {
+                return null;
             }
 
             @Override

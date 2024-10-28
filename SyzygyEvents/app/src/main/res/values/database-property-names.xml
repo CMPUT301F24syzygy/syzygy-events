@@ -13,8 +13,8 @@
     <string name="database_img_locName">LocationName</string>
     <string name="database_img_locType">LocationType</string>
     <string name="database_img_locID">LocationID</string>
-    <string name="database_img_imgid">Address</string>
-    <string name="database_img_address">Address</string>
+    <string name="database_img_imgid">ImageID</string>
+    <string name="database_img_address">DownloadUrl</string>
     <string name="database_img_uploadTime">UploadTime</string>
     <string name="database_fac_location">Location</string>
     <string name="database_fac_description">Description</string>

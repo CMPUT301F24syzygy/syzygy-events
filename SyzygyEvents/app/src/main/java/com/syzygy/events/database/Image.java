@@ -1,20 +1,27 @@
 package com.syzygy.events.database;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Pair;
+import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 import com.syzygy.events.R;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * An instance of an image database item
@@ -71,16 +78,29 @@ public class Image extends DatabaseInstance<Image> {
         return getPropertyValueI(R.string.database_img_imgid);
     }
 
+    public Timestamp getUploadTime(){
+        return getPropertyValueI(R.string.database_img_uploadTime);
+    }
+
     public String getAddress(){
         return getPropertyValueI(R.string.database_img_address);
     }
 
-    public Uri getImage()  {
-        return Uri.parse(getAddress());
+    @Override
+    @Database.Observes
+    public Image getAssociatedImage() {
+        return this;
     }
 
-    public Timestamp getUploadTime(){
-        return getPropertyValueI(R.string.database_img_uploadTime);
+    /**
+     * Loads the image into a picasso request and formats it based on the collection type
+     * @param option How to format the image
+     * @return The picasso creator with this image formated
+     * @see #formatImage(RequestCreator, Database.Collections, FormattingOptions)
+     */
+    public RequestCreator loadAndFormatImage(FormattingOptions option){
+        RequestCreator req = Picasso.get().load(getAddress()).placeholder(R.drawable.ic_launcher_background).error(R.drawable.ic_home_black_24dp);
+        return formatImage(req, getCollection(), option);
     }
 
 
@@ -88,8 +108,8 @@ public class Image extends DatabaseInstance<Image> {
      * The list of the fields defined for a User
      */
     private static final PropertyField<?, ?>[] fields = {
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_imgid, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locType, o -> o instanceof String && !((String)o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String, true),
@@ -136,39 +156,26 @@ public class Image extends DatabaseInstance<Image> {
         }
 
         String docID = Database.Collections.IMAGES.getNewID(db);
+
         String imageID = locType.toString() + "/" + docID;
 
-        db.addImageToStorage(imageID, image, success -> {
-            if(!success){
+        db.addFileToStorage(imageID, image, address -> {
+            if(address == null){
                 listener.onInitialization(null, false);
                 return;
             }
-            db.getImageURL(imageID, uri -> {
-                if(uri == null){
-                    db.deleteImage(imageID, success2 -> {
-                        if(!success2){
-                            db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, failed to get uri, failed to delete"));
-                        }
-                        listener.onInitialization(null, false);
-                    });
-                    return;
-                }
+            Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, imageID, address.toString(), Timestamp.now());
 
-                String address = uri.toString();
-
-                Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, address, imageID, Timestamp.now());
-
-                if(!validateDataMap(map).isEmpty()){
-                    db.deleteImage(imageID, success2 -> {
-                        if(!success2){
-                            db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
-                        }
-                        listener.onInitialization(null, false);
-                    });
-                    return;
-                }
-                db.createNewInstance(Database.Collections.IMAGES, docID, db.convertIDMapToNames(map), listener);
-            });
+            if(!validateDataMap(map).isEmpty()){
+                db.deleteImage(imageID, success2 -> {
+                    if(!success2){
+                        db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
+                    }
+                    listener.onInitialization(null, false);
+                });
+                return;
+            }
+            db.createNewInstance(Database.Collections.IMAGES, docID, db.convertIDMapToNames(map), listener);
         });
     }
 
@@ -178,16 +185,16 @@ public class Image extends DatabaseInstance<Image> {
      * @param locName the Name of where the image is stored
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
-     * @param address The address of the ID
      * @param imgid The id of the image with the storage
+     * @param address The download url of the image
      * @param uploadTime The time when the image was uploaded
      * @return The map
      */
     public static Map<Integer, Object> createDataMap(String locName,
                                                      String locType,
                                                      String locID,
-                                                     String address,
                                                      String imgid,
+                                                     String address,
                                                      Timestamp uploadTime
 
     ){
@@ -195,8 +202,8 @@ public class Image extends DatabaseInstance<Image> {
         map.put(R.string.database_img_locType, locType);
         map.put(R.string.database_img_locName, locName);
         map.put(R.string.database_img_locID, locID);
-        map.put(R.string.database_img_address, address);
         map.put(R.string.database_img_imgid, imgid);
+        map.put(R.string.database_img_address, address);
         map.put(R.string.database_img_uploadTime, uploadTime);
         return map;
     }
@@ -208,6 +215,76 @@ public class Image extends DatabaseInstance<Image> {
      * @see #createDataMap(String, String, String, String, String, Timestamp) 
      */
     public static Set<Integer> validateDataMap(Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
+        return com.syzygy.events.database.DatabaseInstance.isDataValid(dataMap, fields);
     }
+
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
+     * @see #formatImage(RequestCreator, Database.Collections, FormattingOptions)
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, FormattingOptions option){
+        Picasso pic = Picasso.get();
+        RequestCreator loadedPic;
+        if(instance == null){
+            return formatImage(null, null, option);
+        }
+        Image img = instance.getAssociatedImage();
+        Database.Collections coll = instance.getCollection();
+        if(img == null){
+            return formatImage(null, coll, option);
+        }
+        return img.loadAndFormatImage(option);
+    }
+
+    /**
+     * Gets and loads a default image for the collection
+     * @param collection The collection
+     * @return The loaded request creator for the image
+     */
+    public static RequestCreator getDefaultImage(@Nullable Database.Collections collection){
+        return Picasso.get().load(R.drawable.ic_launcher_background);
+    }
+
+    /**
+     * Formats the loaded image based on the collection
+     * @param loadedPicasso The picasso element that is loaded with the image. If null, gets a default image for the collection
+     * @param collection The collection to base styles on
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatImage(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull FormattingOptions option){
+        RequestCreator pic = loadedPicasso == null ? getDefaultImage(collection) : loadedPicasso;
+        switch(option){
+            case AS_IS:
+                break;
+            case LIST_ITEM:
+                pic.resize(64,64);
+            case PROFILE_PAGE:
+                pic.resize(256,256);
+        }
+
+        return loadedPicasso;
+    }
+
+    public enum FormattingOptions {
+        /**
+         * Returns the image as retrieved from the database
+         */
+        AS_IS,
+        /**
+         * Returns the image as a big avatar
+         */
+        PROFILE_PAGE,
+        /**
+         * Returns the image as a small avatar
+         */
+        LIST_ITEM
+    }
+
 }

@@ -397,6 +397,12 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return setPropertyValue(R.string.database_event_description, val, s -> {});
     }
 
+    @Database.Observes
+    @Override
+    public Image getAssociatedImage() {
+        return getPoster();
+    }
+
     public Integer getCapacity(){
         return getPropertyValueI(R.string.database_event_capacity);
     }

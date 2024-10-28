@@ -1,8 +1,12 @@
 package com.syzygy.events.database;
 
+import android.content.ContentResolver;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +27,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -320,7 +323,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      *                 already exists in the database, the listener is called with {@code success = false}
      *                 and the instance in an illegal state.
      *                 The listener is called before the database is updated with information
-     * @return The instance in a illegal state
      * @param <T> The type of instance
      */
     @SuppressWarnings("unchecked")
@@ -361,34 +363,34 @@ public class Database implements EventListener<DocumentSnapshot> {
     }
 
     /**
-     * Adds the image to the database;
-     * @param fileName The filename including extension (e.g. `folder/image.jpg`)
-     * @param image The image file
-     * @param listener Called on completion. true if upload was successful
+     * Adds the file to the database;
+     * @param fileName The filename
+     * @param file The file
+     * @param listener Called on completion. null if upload failed, otherwise download url
      */
-    public void addImageToStorage(String fileName, Uri image, Consumer<Boolean> listener){
-        Log.println(Log.DEBUG, "add image", fileName);
+    public void addFileToStorage(String fileName, Uri file, Consumer<Uri> listener){
+        Log.println(Log.DEBUG, "add file", fileName);
         StorageReference ref = storage.child(fileName);
-        ref.putFile(image).addOnCompleteListener(task -> {
-            listener.accept(task.isSuccessful());
-        });
-    }
-
-    /**
-     * Gets the shareable/downloadable url to the image
-     * @param fileName The filename including extension (e.g. `folder/image.jpg`)
-     * @param listener Called on completion with the download address of the image.
-     *                 If the url failed to be retrieved, null is returned.
-     */
-    public void getImageURL(String fileName, Consumer<Uri> listener){
-        StorageReference ref = storage.child(fileName);
-        ref.getDownloadUrl().addOnCompleteListener(task -> {
+        ref.putFile(file).addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
                 listener.accept(null);
                 return;
             }
-            listener.accept(task.getResult());
+            ref.getDownloadUrl().addOnCompleteListener(task1 -> {
+                if(!task.isSuccessful()){
+                    ref.delete().addOnFailureListener(task2 -> {
+                        Log.println(Log.ERROR, "image", "hanging image " + fileName);
+                    });
+                    listener.accept(null);
+                }
+                listener.accept(task1.getResult());
+            });
         });
+    }
+    @Deprecated
+    private String getFileExtension(Uri fileUri, ContentResolver contentResolver){
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(contentResolver.getType(fileUri));
     }
 
     /**

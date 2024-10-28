@@ -83,6 +83,12 @@ public class Facility extends DatabaseInstance<Facility> {
         return getPropertyInstanceI(R.string.database_fac_imageID);
     }
 
+    @Override
+    @Database.Observes
+    public Image getAssociatedImage() {
+        return getImage();
+    }
+
     /**
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param val The new instance

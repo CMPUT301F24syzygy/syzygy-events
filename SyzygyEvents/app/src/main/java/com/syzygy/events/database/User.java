@@ -126,6 +126,12 @@ public class User extends DatabaseInstance<User> {
         return getPropertyInstanceI(R.string.database_user_profileID);
     }
 
+    @Override
+    @Database.Observes
+    public Image getAssociatedImage() {
+        return getProfileImage();
+    }
+
     /**
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param val The new instance

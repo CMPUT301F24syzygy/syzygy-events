@@ -78,6 +78,12 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         return getPropertyInstanceI(R.string.database_assoc_event);
     }
 
+    @Override
+    @Database.Observes
+    public Image getAssociatedImage() {
+        return null;
+    }
+
     public Timestamp getJoinTime(){
         return getPropertyValueI(R.string.database_assoc_time);
     }
