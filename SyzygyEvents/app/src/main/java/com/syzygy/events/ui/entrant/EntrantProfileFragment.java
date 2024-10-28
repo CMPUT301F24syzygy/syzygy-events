@@ -1,6 +1,5 @@
 package com.syzygy.events.ui.entrant;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,15 +8,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragmentEntrantProfileBinding;
-
-import java.net.URL;
 
 public class EntrantProfileFragment extends Fragment implements Database.UpdateListener {
     private FragmentEntrantProfileBinding binding;
@@ -37,7 +33,7 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         binding.entrantProfileEmail.setText(user.getEmail());
         binding.entrantProfileName.setText(user.getName());
         binding.entrantProfilePhone.setText(user.getPhoneNumber());
-        Image.getFormatedAssociatedImage(user, Image.FormattingOptions.PROFILE_PAGE).into(binding.entrantProfileImage);
+        Image.getFormatedAssociatedImage(user, Image.Options.BIG_AVATAR).into(binding.entrantProfileImage);
     }
 
     @Override
