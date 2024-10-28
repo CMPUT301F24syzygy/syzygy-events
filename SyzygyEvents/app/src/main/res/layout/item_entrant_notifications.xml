@@ -6,44 +6,44 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/subject"
+        android:id="@+id/notification_item_subject_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/sender_profile_img"
+        app:layout_constraintStart_toEndOf="@+id/notification_item_sender_profile_img"
         app:layout_constraintTop_toTopOf="parent">
 
     </TextView>
 
     <TextView
-        android:id="@+id/body"
+        android:id="@+id/notification_item_body_preview_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/sender_profile_img"
-        app:layout_constraintTop_toBottomOf="@+id/subject">
+        app:layout_constraintStart_toEndOf="@+id/notification_item_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/notification_item_subject_text">
     </TextView>
 
     <TextView
-        android:id="@+id/sender"
+        android:id="@+id/notification_item_sender_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/sender_profile_img"
-        app:layout_constraintTop_toBottomOf="@+id/body">
+        app:layout_constraintStart_toEndOf="@+id/notification_item_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/notification_item_body_preview_text">
     </TextView>
 
     <TextView
-        android:id="@+id/sent_date"
+        android:id="@+id/notification_item_sent_date_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/sender_profile_img"
-        app:layout_constraintTop_toBottomOf="@+id/sender">
+        app:layout_constraintStart_toEndOf="@+id/notification_item_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/notification_item_sender_text">
     </TextView>
 
     <ImageView
-        android:id="@+id/sender_profile_img"
+        android:id="@+id/notification_item_sender_profile_img"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/ic_launcher_foreground"

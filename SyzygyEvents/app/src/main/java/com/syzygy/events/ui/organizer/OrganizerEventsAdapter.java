@@ -1,4 +1,4 @@
-package com.syzygy.events.ui.entrant;
+package com.syzygy.events.ui.organizer;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,14 +11,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.syzygy.events.R;
-import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 
 import java.util.List;
 
-public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
+public class OrganizerEventsAdapter extends ArrayAdapter<EventAssociation> {
 
-    public EntrantEventsAdapter(Context context, List<EventAssociation> dataList) {
+    public OrganizerEventsAdapter(Context context, List<EventAssociation> dataList) {
         super(context, 0, dataList);
     }
 
@@ -29,12 +28,12 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
 
         if (view == null) {
             view = LayoutInflater.from(getContext()).inflate(
-                    R.layout.item_entrant_events, parent, false);
+                    R.layout.item_organizer_events, parent, false);
         }
 
-        TextView title = view.findViewById(R.id.entrant_events_item_title_text);
+        TextView title = view.findViewById(R.id.organizer_events_item_title_text);
         title.setText(association.getEvent().getTitle());
-
+        ///
         ///
         ///
 
