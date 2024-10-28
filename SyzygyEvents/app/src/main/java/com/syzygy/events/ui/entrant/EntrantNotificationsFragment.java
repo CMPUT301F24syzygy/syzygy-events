@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
+import com.syzygy.events.ui.EntrantActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +47,14 @@ public class EntrantNotificationsFragment extends Fragment {
         });
 
         binding.entrantNotificationsList.setAdapter(a);
+
+        binding.entrantNotificationsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                EntrantActivity activity = (EntrantActivity)getActivity();
+                ///
+            }
+        });
 
         return binding.getRoot();
     }

@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.SecondaryEntrantEventBinding;
+import com.syzygy.events.ui.EntrantActivity;
 
 public class EntrantEventSecondaryFragment extends Fragment {
 
@@ -16,6 +18,14 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = SecondaryEntrantEventBinding.inflate(inflater, container, false);
+
+        EntrantActivity activity = (EntrantActivity)getActivity();
+        Event event = activity.getEvent();
+
+        binding.entrantEventTitle.setText(event.getTitle());
+        ///binding.
+        ///
+
         return binding.getRoot();
     }
 
