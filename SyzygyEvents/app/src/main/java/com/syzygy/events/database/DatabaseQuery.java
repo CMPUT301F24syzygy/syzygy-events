@@ -368,12 +368,13 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * Sets the new instances. Dissolves all previous instances and clears updates/deletions
      * @param newInstances the new instances
      */
+    @Database.Titrates(what = "New Instances")
     @Database.StirsDeep(what = "Previous Instances")
     private void setNewInstances(@Database.Dilutes List<T> newInstances){
         List<T> previous = new ArrayList<>(currentInstances);
         currentInstances.clear();
         currentInstances.addAll(newInstances);
-        currentInstances.forEach(i -> i.fetch(this));
+        //currentInstances.forEach(i -> i.fetch(this)); already fetched by initializer
         previous.forEach(DatabaseInstance::dissolve);
         updates = false;
         deletes = false;

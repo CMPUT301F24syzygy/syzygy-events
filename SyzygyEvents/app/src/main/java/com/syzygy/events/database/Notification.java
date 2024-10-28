@@ -30,7 +30,7 @@ public class Notification extends DatabaseInstance<Notification> {
      */
     @Database.Salty
     protected Notification(Database db, String id) throws ClassCastException {
-        super(db, id, Database.Collections.FACILITIES, fields);
+        super(db, id, Database.Collections.NOTIFICATIONS, fields);
     }
 
     @Override

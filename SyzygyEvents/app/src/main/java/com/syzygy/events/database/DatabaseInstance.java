@@ -203,6 +203,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.MustStir
     public T fetch() throws IllegalStateException{
         assertNotIllegalState();
+        Log.println(Log.DEBUG, "reference", getDocumentID() + " " + getCollection());
         referenceCount ++;
         return cast();
     }
@@ -216,7 +217,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.MustStir
     public T fetch(Database.UpdateListener listener) throws IllegalStateException{
         assertNotIllegalState();
-        referenceCount ++;
+        fetch();
         addListener(listener);
         return cast();
     }
@@ -227,8 +228,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Property Instances", when="No Longer Referenced")
     public void dissolve(){
-        referenceCount = Math.min(referenceCount - 1, 0);
-        dereferenceInstance();
+        referenceCount = Math.max(referenceCount - 1, 0);
+        Log.println(Log.DEBUG, "dissolve", getDocumentID() + " " + getCollection().toString() + " " + referenceCount);
+        if(!isReferenced()) dereferenceInstance();
     }
 
     /**
@@ -298,6 +300,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     protected final void dereferenceInstance() {
         if (isReferenced()) return;
         if (isDereferenced) return; // already dereferenced
+        Log.println(Log.DEBUG, "dereference", getDocumentID() + " " + getCollection().toString());
         if(isInitialized) subDereferenceInstance();
         db.returnInstance(this);
         notifyUpdate(Database.UpdateListener.Type.DEREFERENCED);
@@ -429,19 +432,19 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             onComplete.onCompletion(true);
             return;
         }
-        Log.println(Log.DEBUG, "modPropExchange", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+        Log.println(Log.DEBUG, "modPropExchange", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
 
         if(!newID.isBlank()){
-            Log.println(Log.DEBUG, "modPropLoading", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+            Log.println(Log.DEBUG, "modPropLoading", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
             db.<W>getInstance(prop.meta.loadsCollection, newID, (i, s) -> {
                 if(!s){
-                    Log.println(Log.DEBUG, "modPropLoadFail", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+                    Log.println(Log.DEBUG, "modPropLoadFail", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
                     setPropertyValue(prop.meta.propertyNameID, "", $ -> {
                         onComplete.onCompletion(false);
                     });
                     return;
                 }
-                Log.println(Log.DEBUG, "modPropLoadSuccess", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+                Log.println(Log.DEBUG, "modPropLoadSuccess", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
                 if(prop.instance != null){
                     prop.instance.dissolve();
                 }
@@ -450,9 +453,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 onComplete.onCompletion(true);
             });
         }else {
-            Log.println(Log.DEBUG, "modPropNulling", getDocumentID() + " " + prop.meta.propertyNameID + " " + String.valueOf(newID));
+            Log.println(Log.DEBUG, "modPropNulling", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
             if (!prop.meta.loadsNullable)
-                db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID + " - " + newID));
+                db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + db.constants.getString(prop.meta.propertyNameID) + " - " + newID));
             if(prop.instance != null){
                 prop.instance.dissolve();
             }
@@ -518,10 +521,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             };
             diff = true;
             if(prop.meta.loads){
-                Log.println(Log.DEBUG, "modPropLoads", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                 if(ent.getValue() instanceof DatabaseInstance){
+                    Log.println(Log.DEBUG, "modPropLoadsI", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                     exchangeInstance((InstancePropertyWrapper) prop, (DatabaseInstance)ent.getValue());
                 }else{
+                    Log.println(Log.DEBUG, "modPropLoadsId", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                     loadIds.add(new Pair<>(prop, String.valueOf(ent.getValue())));
                 }
             }else{
@@ -547,6 +551,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                     return;
                 }
                 Pair<PropertyWrapper<?,?>, String> instance = loadIds.get(i);
+                Log.println(Log.DEBUG, "modPropExchangeAsync", getDocumentID() + " " + db.constants.getString(instance.first.meta.propertyNameID) + " " + instance.second);
                 exchangeInstance(instance.first, instance.second, this);
             }
         };
@@ -791,6 +796,25 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             return;
         }
         Log.println(Log.DEBUG, "initDataGood", getDocumentID());
+
+        modifyData(data, success -> {
+            if(!success){
+                Log.println(Log.DEBUG, "initDataModifyFail", getDocumentID());
+                fullDissolve();
+                onComplete.onInitialization(null, false);
+                initializationListeners.forEach(l -> l.onInitialization(null, false));
+                initializationListeners.clear();
+                return;
+            }
+            Log.println(Log.DEBUG, "initDataModified", getDocumentID());
+            isInitialized = true;
+            onComplete.onInitialization(cast(), true);
+            initializationListeners.forEach(l -> l.onInitialization(cast(), true));
+            initializationListeners.clear();
+            notifyUpdate(Type.INIT);
+            snapshotListener = getDocumentReference().addSnapshotListener(db);
+        });
+        /*
         modifyData(data, successmod -> {
             if(!successmod){
                 Log.println(Log.DEBUG, "initDataModifyFail", getDocumentID());
@@ -801,6 +825,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 return;
             }
             Log.println(Log.DEBUG, "initDataModified", getDocumentID());
+            Log.println(Log.DEBUG, "subInitStart", "start");
             subInitialize((instance, success) -> {
                 isInitialized = success;
                 onComplete.onInitialization(cast(), success);
@@ -814,7 +839,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 }
             }, 0);
         });
-
+        */
     }
 
     /**
@@ -827,11 +852,14 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param listener The listener that should be called once all initialization is complete
      * @throws IllegalArgumentException If the value is empty but the property is not nullable
      * TODO does this X hack work?
+     * @deprecated Modify data already does this, this is never called without modify data being called first
      */
     @Database.Titrates(what="Sub instances")
     @SuppressWarnings("unchecked")
+    @Deprecated
     protected <X extends DatabaseInstance<X>>  void subInitialize(Database.InitializationListener<T> listener, int count) throws IllegalArgumentException{
         if(count >= iproperties.size()) {
+            Log.println(Log.DEBUG, "subInitEnd", "endCount");
             listener.onInitialization(this.cast(), true);
             return;
         }
@@ -848,6 +876,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             if(!success){
                 iprop.value = "";
                 iprop.instance = null;
+                Log.println(Log.DEBUG, "subInitEnd", "endSuccess");
                 listener.onInitialization(this.cast(), false);
                 return;
             }

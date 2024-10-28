@@ -53,6 +53,7 @@ public class EntrantEventsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        query.dissolve();
     }
 
 }
