@@ -209,8 +209,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @Database.MustStir
     private T fetchWithoutThrow() {
-        Log.println(Log.DEBUG, "reference", getDocumentID() + " " + getCollection());
         referenceCount ++;
+        Log.println(Log.DEBUG, "reference", getDocumentID() + " " + getCollection() + " " + referenceCount);
         return cast();
     }
 
@@ -795,10 +795,13 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * </p>
      * @param data The property key-value mapping of the data
      * @param exists If the document exists in the database
-     * @param onComplete Called when initialization is complete before the any other initialization listeners
+     * @param onComplete Called when initialization is complete before the any other initialization listeners.
+     *                   This listener will <b>not</b> return a fetched instance, all other initialization listeners
+     *                   attached to the object will return a fetch instance.
      * @throws IllegalStateException if the instance has already been initialized
      */
     @Database.AutoStir(when="Error or not exists")
+    @Database.Stirred
     final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists, Database.InitializationListener<T> onComplete) throws IllegalStateException{
         if(isInitialized || isInitializing) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
         Log.println(Log.DEBUG, "initData", getDocumentID()+" "+exists);
@@ -824,7 +827,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             Log.println(Log.DEBUG, "initDataModified", getDocumentID());
             isInitialized = true;
             onComplete.onInitialization(cast(), true);
-            initializationListeners.forEach(l -> l.onInitialization(cast(), true));
+            initializationListeners.forEach(l -> l.onInitialization(fetch(), true));
             initializationListeners.clear();
             notifyUpdate(Type.INIT);
             snapshotListener = getDocumentReference().addSnapshotListener(db);

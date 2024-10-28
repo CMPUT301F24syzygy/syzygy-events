@@ -187,9 +187,11 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         User.NewInstance(db, deviceID, name, bio, image == null ? "" : image.getDocumentID(), "", email, phone, org, admin, false, (instance, success) -> {
             if(success){
                 this.user = instance;
+                if(image!=null)image.setLocID(user.getDocumentID());
                 listener.accept(true);
                 switchToActivity(EntrantActivity.class);
             }else{
+                if(image!=null)image.deleteInstance(s -> {});
                 listener.accept(false);
             }
         });

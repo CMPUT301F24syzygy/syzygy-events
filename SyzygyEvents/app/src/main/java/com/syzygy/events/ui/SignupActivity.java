@@ -81,7 +81,7 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
                     }
                     Log.println(Log.DEBUG, "signup", "image good");
                     app.signupUser(name, email, phone, bio, admin, org, instance, success2 -> {
-                        //Errored here but took me to my profile
+
                         instance.dissolve();
                         if(success2){
                             Log.println(Log.DEBUG, "signup", "user good");

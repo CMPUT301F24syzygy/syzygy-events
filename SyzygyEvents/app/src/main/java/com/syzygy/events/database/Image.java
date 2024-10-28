@@ -67,6 +67,10 @@ public class Image extends DatabaseInstance<Image> {
         return setPropertyValue(R.string.database_img_locID, val.toString(), s -> {});
     }
 
+    public String getImageID(){
+        return getPropertyValueI(R.string.database_img_imgid);
+    }
+
     public String getAddress(){
         return getPropertyValueI(R.string.database_img_address);
     }
@@ -85,6 +89,7 @@ public class Image extends DatabaseInstance<Image> {
      */
     private static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_imgid, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locType, o -> o instanceof String && !((String)o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locID, o -> o instanceof String, true),
@@ -98,7 +103,7 @@ public class Image extends DatabaseInstance<Image> {
 
     @Override
     protected void requiredFirstDelete(Database.Querrier.EmptyListener listener) {
-        db.deleteImage(getDocumentID(), listener::onCompletion);
+        db.deleteImage(getImageID(), listener::onCompletion);
     }
 
     /**
@@ -130,16 +135,19 @@ public class Image extends DatabaseInstance<Image> {
             return;
         }
 
-        db.addImageToStorage(locID, image, success -> {
+        String docID = Database.Collections.IMAGES.getNewID(db);
+        String imageID = locType.toString() + "/" + docID;
+
+        db.addImageToStorage(imageID, image, success -> {
             if(!success){
                 listener.onInitialization(null, false);
                 return;
             }
-            db.getImageURL(locID, uri -> {
+            db.getImageURL(imageID, uri -> {
                 if(uri == null){
-                    db.deleteImage(locID, success2 -> {
+                    db.deleteImage(imageID, success2 -> {
                         if(!success2){
-                            db.throwE(new IllegalStateException("Hanging Image: " + locID + " :Image was created, failed to get uri, failed to delete"));
+                            db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, failed to get uri, failed to delete"));
                         }
                         listener.onInitialization(null, false);
                     });
@@ -148,18 +156,18 @@ public class Image extends DatabaseInstance<Image> {
 
                 String address = uri.toString();
 
-                Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, address, Timestamp.now());
+                Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, address, imageID, Timestamp.now());
 
                 if(!validateDataMap(map).isEmpty()){
-                    db.deleteImage(locID, success2 -> {
+                    db.deleteImage(imageID, success2 -> {
                         if(!success2){
-                            db.throwE(new IllegalStateException("Hanging Image: " + locID + " :Image was created, uri retrieved, failed validation, failed to delete"));
+                            db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
                         }
                         listener.onInitialization(null, false);
                     });
                     return;
                 }
-                db.createNewInstance(Database.Collections.IMAGES, locID, db.convertIDMapToNames(map), listener);
+                db.createNewInstance(Database.Collections.IMAGES, docID, db.convertIDMapToNames(map), listener);
             });
         });
     }
@@ -171,6 +179,7 @@ public class Image extends DatabaseInstance<Image> {
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
      * @param address The address of the ID
+     * @param imgid The id of the image with the storage
      * @param uploadTime The time when the image was uploaded
      * @return The map
      */
@@ -178,6 +187,7 @@ public class Image extends DatabaseInstance<Image> {
                                                      String locType,
                                                      String locID,
                                                      String address,
+                                                     String imgid,
                                                      Timestamp uploadTime
 
     ){
@@ -186,6 +196,7 @@ public class Image extends DatabaseInstance<Image> {
         map.put(R.string.database_img_locName, locName);
         map.put(R.string.database_img_locID, locID);
         map.put(R.string.database_img_address, address);
+        map.put(R.string.database_img_imgid, imgid);
         map.put(R.string.database_img_uploadTime, uploadTime);
         return map;
     }
@@ -194,7 +205,7 @@ public class Image extends DatabaseInstance<Image> {
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The invalid ids
-     * @see #createDataMap(String, String, String, String, Timestamp)
+     * @see #createDataMap(String, String, String, String, String, Timestamp) 
      */
     public static Set<Integer> validateDataMap(Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

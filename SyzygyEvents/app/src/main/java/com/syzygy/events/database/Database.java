@@ -521,6 +521,14 @@ public class Database implements EventListener<DocumentSnapshot> {
         }
 
         /**
+         * @param db The database
+         * @return A new unique id for the collection
+         */
+        String getNewID(Database db){
+            return getCollection(db).document().getId();
+        }
+
+        /**
          * Returns a new instance of the collection item with the id
          * @param db The database
          * @param id The document id
