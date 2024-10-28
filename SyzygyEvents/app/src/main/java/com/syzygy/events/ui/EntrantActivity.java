@@ -20,12 +20,13 @@ import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
 public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     private ActivityEntrantBinding entrantBinding;
     private NavController navController;
-    private Database database;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +97,10 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
+    public Event getEvent() {
+        return event;
+    }
+
     public void scanQR(View v) {
         IntentIntegrator intentIntegrator = new IntentIntegrator(this);
         intentIntegrator.setPrompt("Scan a QR Code");
@@ -113,5 +118,18 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
             ///
         }
     }
+    public void openEditProfile(Event e) {
+        navController.navigate(R.id.nav_entrant_edit_secondary);
+    }
+
+    public void openEvent(Event e) {
+        event = e;
+        navController.navigate(R.id.nav_entrant_event_secondary);
+    }
+
+    public void openFacility() {
+        navController.navigate(R.id.nav_entrant_facility_secondary);
+    }
+
 
 }
