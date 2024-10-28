@@ -52,6 +52,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     private boolean isInitialized = false;
 
     /**
+     * If the instance has been initialized with data
+     */
+    private boolean isInitializing = false;
+
+    /**
      * If the instance has been deleted
      */
     private boolean isDeleted = false;
@@ -176,10 +181,13 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @Database.MustStir
     public final void addInitializationListener(@Nullable Database.InitializationListener<T> listener) throws IllegalStateException{
+        Log.println(Log.DEBUG, "add init listener", getDocumentID() + " " + getCollection() + " " + isInitialized + " " + isInitializing);
         if(listener == null) return;
         if(isInitialized){
             assertNotIllegalState();
             listener.onInitialization(fetch(), true);
+        }else if(isInitializing){
+            listener.onInitialization(fetchWithoutThrow(), true);
         }else{
             initializationListeners.add(listener);
         }
@@ -198,14 +206,23 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Increases the reference count of this instance.
      * @return This instance casted to the generic type
+     */
+    @Database.MustStir
+    private T fetchWithoutThrow() {
+        Log.println(Log.DEBUG, "reference", getDocumentID() + " " + getCollection());
+        referenceCount ++;
+        return cast();
+    }
+
+    /**
+     * Increases the reference count of this instance.
+     * @return This instance casted to the generic type
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     @Database.MustStir
     public T fetch() throws IllegalStateException{
         assertNotIllegalState();
-        Log.println(Log.DEBUG, "reference", getDocumentID() + " " + getCollection());
-        referenceCount ++;
-        return cast();
+        return fetchWithoutThrow();
     }
 
     /**
@@ -388,18 +405,16 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Returns the document ID
      * @return the unique identifier of the instance within the collection
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
-    final String getDocumentID() throws IllegalStateException{
+    final String getDocumentID(){
         return this.documentID;
     }
 
     /**
      * Returns the unique identifier of this instance
      * @return the unique identifier of the instance within the collection
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
-    public final String getIdentifier() throws IllegalStateException{
+    public final String getIdentifier(){
         return this.documentID;
     }
 
@@ -785,7 +800,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @Database.AutoStir(when="Error or not exists")
     final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists, Database.InitializationListener<T> onComplete) throws IllegalStateException{
-        if(isInitialized) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
+        if(isInitialized || isInitializing) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
         Log.println(Log.DEBUG, "initData", getDocumentID()+" "+exists);
         if(!exists){
             Log.println(Log.DEBUG, "initDataFail", getDocumentID());
@@ -796,7 +811,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             return;
         }
         Log.println(Log.DEBUG, "initDataGood", getDocumentID());
-
+        isInitializing = true;
         modifyData(data, success -> {
             if(!success){
                 Log.println(Log.DEBUG, "initDataModifyFail", getDocumentID());
@@ -1053,10 +1068,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Returns the collection that this instance is apart of
      * @return the {@code Database.Collections}
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     protected final Database.Collections getCollection(){
-        assertNotIllegalState();
         return collection;
     }
 
