@@ -1,5 +1,8 @@
 package com.syzygy.events.ui.entrant;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,8 +54,11 @@ public class EntrantNotificationsFragment extends Fragment {
         binding.entrantNotificationsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                EntrantActivity activity = (EntrantActivity)getActivity();
-                ///
+                Notification notification = a.getItem(position);
+                Dialog dialog = new AlertDialog.Builder(getContext())
+                        .setTitle(notification.getSubject())
+                        .setView(R.layout.popup_entrant_notification)
+                        .create();
             }
         });
 
