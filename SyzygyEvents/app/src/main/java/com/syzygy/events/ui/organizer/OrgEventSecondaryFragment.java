@@ -32,7 +32,7 @@ public class OrgEventSecondaryFragment extends Fragment {
         ///
         ///
 
-        if (event.getQrHash() != null) {
+        if (!event.getQrHash().isEmpty()) {
             BitMatrix m;
             try {
                 m = new MultiFormatWriter().encode(event.getQrHash(), BarcodeFormat.QR_CODE, 100, 100);
