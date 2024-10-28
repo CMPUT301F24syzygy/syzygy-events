@@ -6,11 +6,47 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/popup_notification_sender_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
-        android:text="TextView"
+        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/popup_notification_subject_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toTopOf="@+id/popup_notification_sender_text" />
+
+    <TextView
+        android:id="@+id/popup_notification_date_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/popup_notification_subject_text" />
+
+    <TextView
+        android:id="@+id/popup_notification_body_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/popup_notification_date_text" />
+
+    <ImageView
+        android:id="@+id/popup_notification_sender_profile_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

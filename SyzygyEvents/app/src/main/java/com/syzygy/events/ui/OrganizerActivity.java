@@ -26,6 +26,7 @@ import com.google.zxing.common.BitMatrix;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
 public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
@@ -33,6 +34,7 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
     private ActivityOrganizerBinding organizerBinding;
     private NavController navController;
     private Database database;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,21 +99,7 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
-    public void generateQr(String data) {
-        BitMatrix matrix;
-        try {
-            matrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, 100, 100);
-        } catch (WriterException e) {
-            return;
-        }
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        for (int i=0; i<100; i++) {
-            for (int j=0; j<100; j++) {
-                bitmap.setPixel(i, j, matrix.get(i, j) ? Color.BLACK : Color.WHITE);
-            }
-        }
-        //v.setImageBitmap(bitmap);
-
+    public Event getEvent() {
+        return event;
     }
-
 }
