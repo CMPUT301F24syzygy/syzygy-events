@@ -179,6 +179,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         imageListeners.add(imageListener);
         currentActivity.getMediaContent.launch("image/*");
     }
+    
 
     /**
      * To be called by the Signup activity upon submission
