@@ -116,9 +116,11 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         if (intentResult != null && intentResult.getContents() != null) {
             String str = intentResult.getContents();
             SyzygyApplication app = (SyzygyApplication)getApplication();
-            ///Event e = ...str...
-            ///openEvent(e)
-            ///
+            app.getDatabase().getInstance(Database.Collections.EVENTS, str, (instance, success) -> {
+                Event e = (Event) instance;
+                openEvent(e);
+            });
+
         }
     }
     public void openEditProfile(Event e) {
@@ -126,6 +128,7 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     }
 
     public void openEvent(Event e) {
+        e.dissolve();
         event = e;
         navController.navigate(R.id.nav_entrant_event_secondary);
     }

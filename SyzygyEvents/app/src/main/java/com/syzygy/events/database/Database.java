@@ -541,6 +541,8 @@ public class Database implements EventListener<DocumentSnapshot> {
                     return (DatabaseInstance<T>) new Facility(db, id);
                 case NOTIFICATIONS:
                     return (DatabaseInstance<T>) new Notification(db, id);
+                case EVENT_ASSOCIATIONS:
+                    return (DatabaseInstance<T>) new EventAssociation(db, id);
             }
           throw new IllegalStateException("All cases covered, so can't reach this point");
         };
