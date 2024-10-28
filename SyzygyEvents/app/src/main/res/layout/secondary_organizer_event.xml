@@ -3,17 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".ui.organizer.OrgEventSecondaryFragment">
 
-    <TextView
-        android:id="@+id/organizer_events_item_title_text"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+
+    <ImageView
+        android:id="@+id/facility_event_qr_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
-        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-    </TextView>
-
+        app:srcCompat="@android:drawable/screen_background_light_transparent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

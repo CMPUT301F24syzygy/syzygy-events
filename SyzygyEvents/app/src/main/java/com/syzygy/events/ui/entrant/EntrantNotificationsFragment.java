@@ -1,5 +1,8 @@
 package com.syzygy.events.ui.entrant;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -37,13 +41,11 @@ public class EntrantNotificationsFragment extends Fragment {
 
         List<Notification> dataList = query.getInstances();
 
+
         EntrantNotificationsAdapter a = new EntrantNotificationsAdapter(this.getContext(), dataList);
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();
-            Log.println(Log.DEBUG, "success", success + "");
-            Log.println(Log.DEBUG, "qSize", query.getInstances().size() + "");
-            Log.println(Log.DEBUG, "Size", dataList.size() + "");
         });
 
         binding.entrantNotificationsList.setAdapter(a);
@@ -51,10 +53,18 @@ public class EntrantNotificationsFragment extends Fragment {
         binding.entrantNotificationsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                EntrantActivity activity = (EntrantActivity)getActivity();
-                ///
+                Notification notification = a.getItem(position);
+                Dialog dialog = new AlertDialog.Builder(getContext())
+                        .setView(R.layout.popup_entrant_notification)
+                        .create();
+                dialog.show();
+                TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
+                subject.setText(notification.getSubject());
+                TextView body = dialog.findViewById(R.id.popup_notification_body_text);
+                body.setText(notification.getBody());
             }
         });
+
 
         return binding.getRoot();
     }
