@@ -59,6 +59,7 @@ public class EntrantNotificationsFragment extends Fragment {
                         .setTitle(notification.getSubject())
                         .setView(R.layout.popup_entrant_notification)
                         .create();
+                dialog.show();
             }
         });
 
