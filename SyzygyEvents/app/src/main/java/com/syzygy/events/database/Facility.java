@@ -147,6 +147,7 @@ public class Facility extends DatabaseInstance<Facility> {
      * Updates all properties of the facility. If the facility changes, a notification is sent to listeners once and the database is updated once
      * @param name The name of the facility
      * @param location The location of the facility
+     * @param address The address of the facility
      * @param description The description of the facility
      * @param imageID The ID of the facility profile image
      * @return If the facility changed as a result
@@ -154,15 +155,18 @@ public class Facility extends DatabaseInstance<Facility> {
     @Database.StirsDeep(what = "The previous image")
     public boolean update(String name,
                           GeoPoint location,
+                          String address,
                           String description,
-                          @Database.Dilutes String imageID
+                          @Database.Dilutes String imageID,
+                          Database.Querrier.EmptyListener onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_fac_name, name);
         map.put(R.string.database_fac_location, location);
+        map.put(R.string.database_fac_address, location);
         map.put(R.string.database_fac_description, description);
         map.put(R.string.database_fac_imageID, imageID);
-        return updateDataFromMap(db.convertIDMapToNames(map), s->{});
+        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
     }
 
     /**

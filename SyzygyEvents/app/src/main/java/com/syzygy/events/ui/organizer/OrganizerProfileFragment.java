@@ -37,7 +37,9 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentOrganizerProfileBinding.inflate(inflater, container, false);
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch(this);
-
+        binding.facilityButtonEdit.setOnClickListener(v -> {
+            //todo switch
+        });
         updateValues();
 
         return binding.getRoot();
@@ -46,7 +48,7 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.create_facility_map);
+        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_map);
         mapFrag.getMapAsync(this);
     }
 
@@ -77,6 +79,7 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        facility.dissolve(this);
         binding = null;
     }
 
