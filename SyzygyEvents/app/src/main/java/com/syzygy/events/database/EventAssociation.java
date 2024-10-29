@@ -355,6 +355,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                     );
                 }
             };
+
+            asyncForLoop.onInitialization(null, true);
         }
 
         public int size() {

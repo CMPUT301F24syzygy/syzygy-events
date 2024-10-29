@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,178 +8,345 @@
     android:paddingBottom="?attr/actionBarSize"
     tools:context=".ui.organizer.OrganizerCreateFragment">
 
-    <ImageView
-        android:id="@+id/event_create_profile"
-        android:layout_width="256px"
-        android:layout_height="256px"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_background" />
-
-    <EditText
-        android:id="@+id/event_create_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="name"
-        android:inputType="textPersonName"
-        android:maxLength="40"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_profile">
-
-    </EditText>
-
-    <EditText
-        android:id="@+id/event_create_price"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="price"
-        android:inputType="numberDecimal"
-        android:maxLength="10"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_name">
-
-    </EditText>
-
-    <CheckBox
-        android:id="@+id/event_create_cap_waitlist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Cap Waitlist"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_price" />
-
     <LinearLayout
-        android:id="@+id/event_create_waitlist_cnt"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_cap_waitlist">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Waitlist Cap:" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/event_create_profile"
+                android:layout_width="256px"
+                android:layout_height="256px"
+                app:srcCompat="@drawable/ic_launcher_background" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/event_create_editImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Edit Image" />
+
+                <Button
+                    android:id="@+id/event_create_removeImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Remove Image"
+                    android:visibility="invisible" />
+            </LinearLayout>
+        </LinearLayout>
 
         <EditText
-            android:id="@+id/event_create_waitlist"
+            android:id="@+id/event_create_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="name"
+            android:inputType="textPersonName"
+            android:maxLength="40">
+
+        </EditText>
+
+        <EditText
+            android:id="@+id/event_create_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="price"
+            android:inputType="numberDecimal"
+            android:maxLength="10">
+
+        </EditText>
+
+        <CheckBox
+            android:id="@+id/event_create_cap_waitlist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:inputType="number"
-            android:maxLength="300">
-        </EditText>
-    </LinearLayout>
+            android:text="Cap Waitlist" />
 
-    <LinearLayout
-        android:id="@+id/event_create_capacity_cnt"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_waitlist_cnt">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:ems="3"
+                android:text="Waitlist opens:" />
+
+            <EditText
+                android:id="@+id/event_create_open_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="dd/MM/yyyy"
+                android:inputType="date" />
+
+            <EditText
+                android:id="@+id/event_create_open_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Start HH:mm"
+                android:inputType="time" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:ems="3"
+                android:text="Waitlist closes:" />
+
+            <EditText
+                android:id="@+id/event_create_close_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="dd/MM/yyyy"
+                android:inputType="date" />
+
+            <EditText
+                android:id="@+id/event_create_close_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Start HH:mm"
+                android:inputType="time" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/event_create_waitlist_cnt"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enrollment Capacity:" />
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Waitlist Cap:" />
+
+            <EditText
+                android:id="@+id/event_create_waitlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:inputType="number"
+                android:maxLength="300">
+            </EditText>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/event_create_capacity_cnt"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enrollment Capacity:" />
+
+            <EditText
+                android:id="@+id/event_create_capacity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:inputType="number"
+                android:maxLength="300">
+            </EditText>
+        </LinearLayout>
+
 
         <EditText
-            android:id="@+id/event_create_capacity"
+            android:id="@+id/event_create_bio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="start|top"
+            android:hint="bio"
+            android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
+            android:lines="5"
+            android:maxLength="300"
+            android:scrollbars="vertical">
+
+        </EditText>
+
+        <CheckBox
+            android:id="@+id/event_create_requireGeo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:inputType="number"
-            android:maxLength="300">
-        </EditText>
-    </LinearLayout>
+            android:text="Require Geolocation"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/event_create_bio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="start|top"
-        android:hint="bio"
-        android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-        android:lines="5"
-        android:maxLength="300"
-        android:scrollbars="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_capacity_cnt">
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="3"
+                android:text="Start: " />
 
-    </EditText>
+            <EditText
+                android:id="@+id/event_create_start_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="dd/MM/yyyy"
+                android:inputType="date" />
 
-    <CheckBox
-        android:id="@+id/event_create_requireGeo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Require Geolocation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_bio" />
+            <EditText
+                android:id="@+id/event_create_start_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Start HH:mm"
+                android:inputType="time" />
 
-    <Button
-        android:id="@+id/event_create_button_submit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Create Event"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_requireGeo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+            <EditText
+                android:id="@+id/event_create_end_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="End HH:mm"
+                android:inputType="time" />
+        </LinearLayout>
 
-    </Button>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-    <FrameLayout
-        android:id="@+id/progressBar"
-        android:visibility="gone"
-        android:alpha="0.4"
-        android:background="#000000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            <CheckBox
+                android:id="@+id/event_create_repeat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Repeat?" />
 
-        <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
+            <EditText
+                android:id="@+id/event_create_end_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="End dd/MM/yyyy"
+                android:inputType="date"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/create_event_days_cnt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_m"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Mondays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_t"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Tuesdays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_w"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Wednesdays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_r"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Thursdays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_f"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Fridays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_sat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Saturdays" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_days_sun"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="Sundays" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <Button
+            android:id="@+id/event_create_button_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:layout_gravity="center" />
-    </FrameLayout>
+            android:layout_marginTop="8dp"
+            android:text="Create Event">
 
-    <Button
-        android:id="@+id/event_create_editImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Edit Image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/event_create_profile"
-        app:layout_constraintTop_toTopOf="parent" />
+        </Button>
 
-    <Button
-        android:id="@+id/event_create_removeImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Remove Image"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/event_create_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/event_create_profile"
-        app:layout_constraintTop_toBottomOf="@+id/event_create_editImage" />
+        <FrameLayout
+            android:id="@+id/progressBar"
+            android:visibility="gone"
+            android:alpha="0.4"
+            android:background="#000000"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+            <ProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:layout_gravity="center" />
+        </FrameLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</ScrollView>
