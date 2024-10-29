@@ -6,10 +6,6 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyDBM5LG1WRjjo_IxkgNzYHwENZc1KNcv6w" />
-
     <application
         android:name=".SyzygyApplication"
         android:allowBackup="true"
