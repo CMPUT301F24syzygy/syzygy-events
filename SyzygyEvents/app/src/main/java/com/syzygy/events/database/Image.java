@@ -31,6 +31,8 @@ import java.util.Set;
  * @author Gareth Kmet
  * @version 1.0
  * @since 19oct24
+ *
+ * TODO on image delete
  */
 @Database.Dissovable
 public class Image extends DatabaseInstance<Image> {

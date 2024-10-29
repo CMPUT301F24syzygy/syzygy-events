@@ -57,9 +57,6 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         binding.createFacilityRemoveImage.setOnClickListener(view -> setImage(null));
         setImage(null);
 
-        Log.println(Log.DEBUG, "fac map", "calling get map");
-
-
         return binding.getRoot();
     }
 
@@ -109,6 +106,9 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
                             app.switchToActivity(OrganizerActivity.class);
                             return;
                         };
+                        img.deleteInstance(s->{if(!s){
+                            Log.println(Log.ERROR, "Fac create image", "Hanging image");
+                        }});
                         Log.println(Log.DEBUG, "createfac", "fac fail");
                         Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                         binding.progressBar.setVisibility(View.GONE);
