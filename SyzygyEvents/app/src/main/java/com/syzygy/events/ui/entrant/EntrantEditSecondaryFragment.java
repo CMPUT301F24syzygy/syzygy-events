@@ -104,8 +104,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
                 }
                 Log.println(Log.DEBUG, "edituser", "image good");
                 user.update(name, bio, img.getDocumentID(), email, phone, org, admin, user.isAdmin(), usr_success -> {
-                    img.dissolve();
                     if(usr_success){
+                        img.dissolve();
                         Log.println(Log.DEBUG, "edituser", "fac good");
                         if(currentImage != null) currentImage.deleteInstance(s -> {
                             if(!s){
