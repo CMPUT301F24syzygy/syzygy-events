@@ -48,13 +48,17 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText("$ " + event.getPrice().toString());
+            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+            if (event.getRequiresLocation()) {
+                binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
+            }
             ///binding.
             ///
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name);
             facility_name.setText(event.getFacility().getName());
             TextView facility_address = binding.getRoot().findViewById(R.id.card_facility_address);
-            facility_address.setText(event.getFacility().getLocation().toString());
+            facility_address.setText(event.getFacility().getAddress());
             ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
             Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AsIs()).into(facility_image);
 
