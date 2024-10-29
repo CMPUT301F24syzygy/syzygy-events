@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * An instance of an image database item
@@ -249,7 +248,7 @@ public class Image extends DatabaseInstance<Image> {
      */
     public static RequestCreator getDefaultImage(@Nullable Database.Collections collection){
         //Must be jpg or png
-        return Picasso.get().load(R.drawable.two_apples);
+        return Picasso.get().load(R.drawable.penguin_blue);
     }
 
     /**
@@ -292,7 +291,7 @@ public class Image extends DatabaseInstance<Image> {
      */
     public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
-        loadedPicasso.placeholder(R.drawable.two_apples).error(R.drawable.two_apples);
+        loadedPicasso.placeholder(R.drawable.transparent).error(R.drawable.transparent);
         option.modifyImage(loadedPicasso);
         return loadedPicasso;
     }
