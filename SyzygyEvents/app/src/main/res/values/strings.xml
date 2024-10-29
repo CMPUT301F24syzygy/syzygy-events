@@ -15,7 +15,7 @@
     <string name="title_organizer_create">Add Event</string>
 
     <string name="title_organizer_sec_event">Event</string>
-    <string name="title_organizer_sec_facility">Edit Facility</string>
+    <string name="title_organizer_sec_edit">Edit Facility</string>
 
     <string name="title_admin_profiles">Browse Users</string>
     <string name="title_admin_events">Browse Events</string>

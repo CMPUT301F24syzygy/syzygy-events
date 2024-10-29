@@ -1,5 +1,8 @@
 package com.syzygy.events.ui.entrant;
 
+import static java.lang.Math.min;
+import static java.lang.Math.max;
+
 import com.syzygy.events.R;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
@@ -39,7 +42,9 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         subject.setText(notification.getSubject());
 
         TextView body = view.findViewById(R.id.notification_item_body_preview_text);
-        body.setText(notification.getBody());
+        String preview = notification.getBody().substring(0, min(25, notification.getBody().length()));
+        preview = preview.substring(0, max(0, preview.lastIndexOf(" ")));
+        body.setText(preview);
 
         if(notification.getSender() != null){
             TextView sender = view.findViewById(R.id.notification_item_sender_text);

@@ -107,4 +107,12 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
         eventID = id;
         navController.navigate(R.id.nav_organizer_event_secondary);
     }
+
+    public void openEdit() {
+        navController.navigate(R.id.nav_organizer_edit_secondary);
+    }
+
+    public void navigateUp() {
+        navController.navigateUp();
+    }
 }

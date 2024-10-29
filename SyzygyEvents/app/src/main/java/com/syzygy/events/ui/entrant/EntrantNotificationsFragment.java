@@ -62,16 +62,22 @@ public class EntrantNotificationsFragment extends Fragment {
                 dialog.show();
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
-                TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
-                sender.setText(notification.getSender().getName());
+                if (notification.getSender() != null) {
+                    TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
+                    sender.setText(notification.getSender().getName());
+                }
                 ///date
                 TextView body = dialog.findViewById(R.id.popup_notification_body_text);
                 body.setText(notification.getBody());
                 ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
                 Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
 
-                TextView event_title = dialog.findViewById(R.id.card_event_name);
-                event_title.setText(notification.getEvent().getTitle());
+                if (notification.getEvent() != null) {
+                    View event_card = dialog.findViewById(R.id.notification_event_card);
+                    event_card.setVisibility(View.VISIBLE);
+                    TextView event_title = dialog.findViewById(R.id.card_event_name);
+                    event_title.setText(notification.getEvent().getTitle());
+                }
                 ///
                 ///
 
