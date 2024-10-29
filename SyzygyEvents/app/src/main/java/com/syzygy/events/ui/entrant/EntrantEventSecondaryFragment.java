@@ -56,7 +56,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
             TextView facility_address = binding.getRoot().findViewById(R.id.card_facility_address);
             facility_address.setText(event.getFacility().getLocation().toString());
             ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
-            Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AS_IS).into(facility_image);
+            Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AsIs()).into(facility_image);
 
 
             updateView();
