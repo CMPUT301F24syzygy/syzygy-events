@@ -602,7 +602,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String, true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double) o) >= 0, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
-            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp, false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp || o == null, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
             new PropertyField<List<Timestamp>, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof List && !((List<?>)o).isEmpty() && ((List<?>)o).stream().allMatch(i -> i instanceof Timestamp), true),
     };
@@ -631,7 +631,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param description the description of the event
      * @param capacity The max capacity of the event
      * @param waitlistCapacity the max waitlist capacity of the event
-     * @param qrHash the cashed qr code data for the event,
      * @param price The price of the event
      * @param openRegistrationDate The date that registration opens, if null uses now
      * @param closedRegistrationDate The date that registration closes and the lottery opens
@@ -647,7 +646,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                        String description,
                                        Integer capacity,
                                        Integer waitlistCapacity,
-                                       String qrHash,
                                        Double price,
                                        @Nullable Timestamp openRegistrationDate,
                                        Timestamp closedRegistrationDate,
@@ -656,14 +654,15 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     ){
         Timestamp now = Timestamp.now();
         openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, qrHash, price, openRegistrationDate, closedRegistrationDate, eventDates,  now);
+        String id = Database.Collections.EVENTS.getNewID(db);
+        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, id, price, openRegistrationDate, closedRegistrationDate, eventDates,  now);
 
         if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
             return;
         }
 
-        db.createNewInstance(Database.Collections.EVENTS, facilityID + "-" + now.toString(), db.convertIDMapToNames(map), listener);
+        db.createNewInstance(Database.Collections.EVENTS, id, db.convertIDMapToNames(map), listener);
     }
 
     /**

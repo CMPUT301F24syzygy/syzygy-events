@@ -97,8 +97,8 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
                     }
                     Log.println(Log.DEBUG, "createfac", "image good");
                     Facility.NewInstance(app.getDatabase(), name, loc, address, bio, img.getDocumentID(), user, (fac, fac_success) ->{
-                        img.dissolve();
                         if(fac_success){
+                            img.dissolve();
                             Log.println(Log.DEBUG, "createfac", "fac good");
                             app.getUser().setFacility(fac);
                             fac.dissolve();
@@ -126,7 +126,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
                     app.switchToActivity(OrganizerActivity.class);
                     return;
                 };
-                Log.println(Log.DEBUG, "createfac", "user fail");
+                Log.println(Log.DEBUG, "createfac", "fac fail");
                 Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
             });
