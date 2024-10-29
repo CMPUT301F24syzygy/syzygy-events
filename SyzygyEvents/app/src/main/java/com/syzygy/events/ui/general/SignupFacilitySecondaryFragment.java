@@ -168,7 +168,6 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         Log.println(Log.DEBUG, "fac map", "Ready");
-        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         map.setOnMapClickListener(this);
         this.map=map;
     }

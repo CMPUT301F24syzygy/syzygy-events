@@ -84,6 +84,11 @@ public class Facility extends DatabaseInstance<Facility> {
         return Facility.getFullAddressFromGeo(context, geo);
     }
 
+    public LatLng getLatLngLocation(){
+        GeoPoint geo = getLocation();
+        return new LatLng(geo.getLatitude(), geo.getLongitude());
+    }
+
     public static Address getFullAddressFromGeo(Context context, GeoPoint geo){
         return Facility.getFullAddressFromGeo(context, geo.getLatitude(), geo.getLongitude());
     }
