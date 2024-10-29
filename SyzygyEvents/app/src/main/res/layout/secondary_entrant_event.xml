@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:text=""
+        android:text="dates format TBD"
         app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
         app:layout_constraintTop_toBottomOf="@+id/event_price_text" />
 
@@ -62,9 +62,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:text=""
+        android:text="M, Tu, W, Th, F, Sa  at 3:00 pm"
         app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
         app:layout_constraintTop_toBottomOf="@+id/event_start_end_text" />
+
 
     <TextView
         android:id="@+id/event_geo_required_text"
@@ -73,7 +74,7 @@
         android:layout_marginStart="12dp"
         android:layout_marginTop="42dp"
         android:textStyle="bold"
-        android:text="Requires Geolocation"
+        android:text="@string/text_requires_geolocation"
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
         app:layout_constraintTop_toBottomOf="@+id/event_weekdays_time_text" />
@@ -87,6 +88,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/event_img_card_view" />
+
+
+
+
+
+
 
 
 
@@ -110,7 +117,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="100dp"
             android:layout_marginBottom="8dp"
-            android:text="Join Waitlist"
+            android:text="@string/button_join_waitlist"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -122,37 +129,25 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/event_invited_layout"
+        android:id="@+id/waitlist_full_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/event_waitlist_layout">
+        app:layout_constraintTop_toBottomOf="@+id/join_waitlist_layout">
 
-        <Button
-            android:id="@+id/button_reject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="60dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="Reject"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/button_accept"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="60dp"
             android:layout_marginBottom="8dp"
-            android:text="Accept"
+            android:textSize="16sp"
+            android:text="@string/text_waitlist_full"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -160,30 +155,178 @@
 
 
 
+
+
+
+
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/event_waitlist_layout"
+        android:id="@+id/in_waitlist_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/join_waitlist_layout">
+        app:layout_constraintTop_toBottomOf="@+id/waitlist_full_layout">
 
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_w1"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_waitlist_chip"
+            android:checkable="true"
+            android:checked="true"
+            app:layout_constraintEnd_toStartOf="@+id/chip_w2"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_w2"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_invited_chip"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_w3"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_enrolled_chip"
+            app:layout_constraintStart_toEndOf="@+id/chip_w2"
+            app:layout_constraintTop_toTopOf="parent" />
         <Button
             android:id="@+id/event_exit_waitlist_button"
-            android:layout_width="match_parent"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="100dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="8dp"
-            android:text="Exit Waitlist"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/button_leave_waitlist"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chip_w1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/in_invited_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/in_waitlist_layout">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_i1"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_waitlist_chip"
+            app:layout_constraintEnd_toStartOf="@+id/chip_i2"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_i2"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_invited_chip"
+            android:checkable="true"
+            android:checked="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_i3"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_enrolled_chip"
+            app:layout_constraintStart_toEndOf="@+id/chip_i2"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button_reject"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/button_reject_invite"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chip_i1" />
+        <Button
+            android:id="@+id/button_accept"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/button_accept_invite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chip_i1" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/in_enrolled_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/in_invited_layout">
+
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_e1"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_waitlist_chip"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/chip_e2"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_e2"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_invited_chip"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_e3"
+            android:layout_width="125dp"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/text_enrolled_chip"
+            android:checkable="true"
+            android:checked="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chip_e2"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 
 
@@ -193,10 +336,41 @@
         android:id="@+id/div2"
         android:layout_width="409dp"
         android:layout_height="1dp"
+        android:layout_marginTop="8dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_invited_layout" />
+        app:layout_constraintTop_toBottomOf="@+id/in_enrolled_layout" />
+
+
+
+    <TextView
+        android:id="@+id/close_reg_date_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Open until: 20/01/2025"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/div2" />
+
+    <TextView
+        android:id="@+id/waitlist_capacity_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Waitlist capacity: 50/50"
+        android:textSize="12sp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/div2" />
+
+
+
+
 
 
     <androidx.cardview.widget.CardView
@@ -204,19 +378,38 @@
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div2">
+        app:layout_constraintTop_toBottomOf="@+id/close_reg_date_text">
 
         <include
             layout="@layout/card_facility"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </androidx.cardview.widget.CardView>
+
+    <View
+        android:id="@+id/div3"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/event_facility_card" />
+
+    <TextView
+        android:id="@+id/event_description_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/div3" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

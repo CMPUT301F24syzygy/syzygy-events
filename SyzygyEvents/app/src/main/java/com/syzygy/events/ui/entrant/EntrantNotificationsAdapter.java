@@ -44,7 +44,7 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         TextView body = view.findViewById(R.id.notification_item_body_preview_text);
         String preview = notification.getBody().substring(0, min(25, notification.getBody().length()));
         preview = preview.substring(0, max(0, preview.lastIndexOf(" ")));
-        body.setText(preview);
+        body.setText(preview + " ...");
 
         if(notification.getSender() != null){
             TextView sender = view.findViewById(R.id.notification_item_sender_text);

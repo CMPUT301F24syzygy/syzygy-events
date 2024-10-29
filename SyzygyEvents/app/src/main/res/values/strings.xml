@@ -31,4 +31,13 @@
     <string name="add_acc_title_organizer">Create Facility</string>
     <string name="acc_title_organizer">Facility</string>
     <string name="acc_title_admin">Admin</string>
+    <string name="text_waitlist_chip">Waitlist</string>
+    <string name="text_invited_chip">Invited</string>
+    <string name="text_enrolled_chip">Enrolled</string>
+    <string name="text_waitlist_full">Waitlist is Full</string>
+    <string name="button_accept_invite">Accept</string>
+    <string name="button_reject_invite">Reject</string>
+    <string name="button_leave_waitlist">Exit Waitlist</string>
+    <string name="button_join_waitlist">Join Waitlist</string>
+    <string name="text_requires_geolocation">Requires Geolocation</string>
 </resources>
