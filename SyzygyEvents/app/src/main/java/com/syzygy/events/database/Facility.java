@@ -163,7 +163,7 @@ public class Facility extends DatabaseInstance<Facility> {
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_fac_name, name);
         map.put(R.string.database_fac_location, location);
-        map.put(R.string.database_fac_address, location);
+        map.put(R.string.database_fac_address, address);
         map.put(R.string.database_fac_description, description);
         map.put(R.string.database_fac_imageID, imageID);
         return updateDataFromMap(db.convertIDMapToNames(map), onComplete);

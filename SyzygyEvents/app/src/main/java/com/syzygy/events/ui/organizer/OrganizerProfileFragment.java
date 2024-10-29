@@ -25,6 +25,7 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragmentOrganizerProfileBinding;
+import com.syzygy.events.ui.OrganizerActivity;
 
 public class OrganizerProfileFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private FragmentOrganizerProfileBinding binding;
@@ -38,7 +39,7 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
         binding = FragmentOrganizerProfileBinding.inflate(inflater, container, false);
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch(this);
         binding.facilityButtonEdit.setOnClickListener(v -> {
-            //todo switch
+            ((OrganizerActivity)getActivity()).openEdit();
         });
         updateValues();
 
