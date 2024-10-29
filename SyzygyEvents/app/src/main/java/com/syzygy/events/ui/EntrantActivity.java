@@ -127,6 +127,10 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         navController.navigate(R.id.nav_entrant_facility_secondary);
     }
 
+    public void navigateUp() {
+        navController.navigateUp();
+    }
+
 
 
 }
