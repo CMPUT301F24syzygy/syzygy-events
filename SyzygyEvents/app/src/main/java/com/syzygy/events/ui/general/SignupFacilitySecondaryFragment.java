@@ -1,5 +1,7 @@
 package com.syzygy.events.ui.general;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,8 +11,18 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.AdvancedMarkerOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
@@ -24,12 +36,18 @@ import com.syzygy.events.databinding.FragmentSignupBinding;
 import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
-public class SignupFacilitySecondaryFragment extends Fragment {
+public class SignupFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private SecondarySignupFacilityBinding binding;
     private Uri image;
+    private SupportMapFragment mapFrag;
+    private Marker marker = null;
+    private GoogleMap map = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = SecondarySignupFacilityBinding.inflate(inflater, container, false);
@@ -37,20 +55,37 @@ public class SignupFacilitySecondaryFragment extends Fragment {
         binding.createFacilityButtonSubmit.setOnClickListener(view -> submitData());
         binding.createFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.createFacilityRemoveImage.setOnClickListener(view -> setImage(null));
-
         setImage(null);
+
+        Log.println(Log.DEBUG, "fac map", "calling get map");
+
 
         return binding.getRoot();
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.create_facility_map);
+        mapFrag.getMapAsync(this);
+
+    }
+
     private void submitData(){
+        if(marker == null){
+            Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
+            return;
+        }
         String name = binding.createFacilityName.getText().toString();
-        String location = binding.createFacilityLocation.getText().toString();
-        GeoPoint loc = new GeoPoint(0,0);
+        LatLng pos = marker.getPosition();
+        GeoPoint loc = new GeoPoint(pos.latitude,pos.longitude);
+        Address add = Facility.getFullAddressFromGeo(getActivity(), pos);
+        String address = add == null ? "" : add.getAddressLine(0);
+        Log.println(Log.INFO, "Map Selection", address);
         String bio = binding.createFacilityBio.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
-        Set<Integer> invalidIds = Facility.validateDataMap(Facility.createDataMap(name, loc, bio, "", user));
+        Set<Integer> invalidIds = Facility.validateDataMap(Facility.createDataMap(name, loc, address, bio, "", user));
         if(invalidIds.isEmpty()){
             Log.println(Log.DEBUG, "createfac", "valid");
             binding.progressBar.setVisibility(View.VISIBLE);
@@ -64,7 +99,7 @@ public class SignupFacilitySecondaryFragment extends Fragment {
                         return;
                     }
                     Log.println(Log.DEBUG, "createfac", "image good");
-                    Facility.NewInstance(app.getDatabase(), name, loc, bio, img.getDocumentID(), user, (fac, fac_success) ->{
+                    Facility.NewInstance(app.getDatabase(), name, loc, address, bio, img.getDocumentID(), user, (fac, fac_success) ->{
                         img.dissolve();
                         if(fac_success){
                             Log.println(Log.DEBUG, "createfac", "fac good");
@@ -82,7 +117,7 @@ public class SignupFacilitySecondaryFragment extends Fragment {
                 return;
             }
             Log.println(Log.DEBUG, "createfac", "no image");
-            Facility.NewInstance(app.getDatabase(), name, loc, bio, "", user, (fac, fac_success) ->{
+            Facility.NewInstance(app.getDatabase(), name, loc, address, bio, "", user, (fac, fac_success) ->{
                 if(fac_success){
                     Log.println(Log.DEBUG, "createfac", "fac good");
                     app.getUser().setFacility(fac);
@@ -105,9 +140,6 @@ public class SignupFacilitySecondaryFragment extends Fragment {
         }
         if(invalidIds.contains(R.string.database_fac_description)){
             binding.createFacilityBio.setError("Bad");
-        }
-        if(invalidIds.contains(R.string.database_fac_location)){
-            binding.createFacilityLocation.setError("Bad");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
@@ -134,18 +166,27 @@ public class SignupFacilitySecondaryFragment extends Fragment {
     }
 
     @Override
+    public void onMapReady(@NonNull GoogleMap map) {
+        Log.println(Log.DEBUG, "fac map", "Ready");
+        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        map.setOnMapClickListener(this);
+        this.map=map;
+    }
+
+    @Override
+    public void onMapClick(@NonNull LatLng latLng) {
+        if(marker == null){
+            marker = map.addMarker(new MarkerOptions()
+                    .position(latLng).draggable(true)
+            );
+        }else{
+            marker.setPosition(latLng);
+        }
+
+    }
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-    }
-
-
-
-    public void submit() {
-        //validate
-        //
-        //create facility
-        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
-        app.switchToActivity(OrganizerActivity.class);
     }
 }
