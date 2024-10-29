@@ -99,11 +99,11 @@ public class Image extends DatabaseInstance<Image> {
      * Loads the image into a picasso request and formats it based on the collection type
      * @param option How to format the image
      * @return The picasso creator with this image formated
-     * @see #formatImage(RequestCreator, Database.Collections, Options)
+     * @see #formatImage(RequestCreator, Options)
      */
     public RequestCreator loadAndFormatImage(Options option){
-        RequestCreator req = Picasso.get().load(getAddress()).placeholder(R.drawable.two_apples).error(R.drawable.two_apples);
-        return formatImage(req, getCollection(), option);
+        RequestCreator req = Picasso.get().load(getAddress());
+        return formatImage(req, option);
     }
 
 
@@ -227,19 +227,17 @@ public class Image extends DatabaseInstance<Image> {
      * If the associated image is null, uses a default image for the instances collection.
      * @param instance The instance whos image should be loaded
      * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
-     * @see #formatImage(RequestCreator, Database.Collections, Options)
+     * @see #formatImageOrDefault(RequestCreator, Database.Collections, Options) 
      * @see #getDefaultImage(Database.Collections)
      */
     public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option){
-        Picasso pic = Picasso.get();
-        RequestCreator loadedPic;
         if(instance == null){
-            return formatImage(null, null, option);
+            return formatDefaultImage(null, option);
         }
         Image img = instance.getAssociatedImage();
         Database.Collections coll = instance.getCollection();
         if(img == null){
-            return formatImage(null, coll, option);
+            return formatDefaultImage(null, option);
         }
         return img.loadAndFormatImage(option);
     }
@@ -260,95 +258,102 @@ public class Image extends DatabaseInstance<Image> {
      * @param collection The collection to base the default on if the loaded is null
      * @param option How to format the image
      * @return The loaded picasso after formatting
+     * @see #formatDefaultImage(Database.Collections, Options)
+     * @see #formatImage(RequestCreator, Options)
      * @see #getDefaultImage(Database.Collections)
      */
-    public static RequestCreator formatImage(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull Options option){
-        RequestCreator pic = loadedPicasso == null ? getDefaultImage(collection) : loadedPicasso;
-        Log.println(Log.DEBUG, "format", "formating");
-        option.modifyImage(pic);
-        return pic;
+    public static RequestCreator formatImageOrDefault(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull Options option){
+        if(loadedPicasso == null){
+            return formatDefaultImage(collection, option);
+        }else{
+            return formatImage(loadedPicasso, option);
+        }
     }
 
-    public enum Options {
-        /**
-         * Returns the image as retrieved from the database
-         */
-        AS_IS(-1,false),
-        /**
-         * Returns the image as the biggest circular image
-         */
-        CIRCLE(-1,true),
-        /**
-         * Returns the image as a circular 256*256 image
-         */
-        BIG_AVATAR(256, true),
-        /**
-         * Returns the image as a square 256*256 image
-         */
-        BIG_SQUARE(256,false),
-        /**
-         * Returns the image as a circular 128*128 image
-         */
-        MEDIUM_AVATAR(128,true),
-        /**
-         * Returns the image as a square 128*128 image
-         */
-        MEDIUM_SQUARE(128,false),
-        /**
-         * Returns the image as a circular 64*64 image
-         */
-        SMALL_AVATAR(64,true),
-        /**
-         * Returns the image as a square 64*64 image
-         */
-        SMALL_SQUARE(64,false),
-        /**
-         * Returns the image as a circular 32*32 image
-         */
-        TINY_AVATAR(32,true),
-        /**
-         * Returns the image as a square 32*32 image
-         */
-        TINY_SQUARE(32,false);
+    /**
+     * Formats a default image based on the collection
+     * @param collection The collection to base the default on
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #formatImage(RequestCreator, Options) 
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatDefaultImage(@Nullable Database.Collections collection, @NonNull Options option){
+        RequestCreator pic = getDefaultImage(collection);
+        return formatImage(getDefaultImage(collection), option);
+    }
 
-        private final Consumer<RequestCreator> funct;
+    /**
+     * Formats the loaded image based on the collection
+     * @param loadedPicasso The picasso element that is loaded with the image.
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
+        Log.println(Log.DEBUG, "format", "formating");
+        loadedPicasso.placeholder(R.drawable.two_apples).error(R.drawable.two_apples);
+        option.modifyImage(loadedPicasso);
+        return loadedPicasso;
+    }
 
-        private Options(int squareSize, boolean isCircle){
-            if(squareSize >= 0 && isCircle){
-                funct = img -> {
-                    square(img, squareSize);
-                    circle(img);
-                };
-            }else if(squareSize >= 0){
-                funct = img -> square(img, squareSize);
-            }else if(isCircle){
-                funct = this::circle;
-            }else{
-                funct = null;
+    public static class Options {
+
+        private final int width, height;
+        private final boolean isCircle;
+        public Options(int width, int height, boolean isCircle){
+            this.width = width; this.height = height;
+            this.isCircle = isCircle;
+        }
+
+        /**
+         * Modifies the image based off the parameters of the option
+         * @param img The image to modify
+         */
+        public void modifyImage(RequestCreator img){
+            if(width >= 0 && height >= 0){
+                img.resize(width, height);
+            }
+            if(isCircle){
+                img.transform(new CircleTransform());
             }
         }
 
-        private Options(Consumer<RequestCreator> modify){
-            funct = modify;
+        /**
+         * Returns the image resized to size*size
+         * @param size The width and height of the image
+         */
+        public static Options Square(int size){
+            return new Options(size, size, false);
         }
 
-        public void modifyImage(RequestCreator img){
-            if(funct == null) return;
-            funct.accept(img);
+        /**
+         * Returns the image cropped to the largest circle that can fit within the image
+         */
+        public static Options LargestCircle(){
+            return new Options(-1, -1, true);
         }
 
-        private void circle(RequestCreator img){
-            img.transform(new CircleTransform());
+        /**
+         * Returns the image resized to a size*size square then cropped to the largest circle that fits within
+         * @param size the diameter of the circle
+         */
+        public static Options Circle(int size){
+            return new Options(size, size, true);
         }
 
-        private void square(RequestCreator img, int size){
-            img.resize(size, size);
+        /**
+         * Returns the image as is
+         */
+        public static Options AsIs(){
+            return new Options(-1,-1,false);
         }
+
 
     }
 
     //https://stackoverflow.com/questions/26112150/android-create-circular-image-with-picasso
-    public static class CircleTransform implements Transformation {
+    private static class CircleTransform implements Transformation {
         @Override
         public Bitmap transform(Bitmap source) {
             int size = Math.min(source.getWidth(), source.getHeight());

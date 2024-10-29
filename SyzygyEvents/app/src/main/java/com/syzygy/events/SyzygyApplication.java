@@ -8,6 +8,8 @@ import android.app.Application;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,8 +34,10 @@ import com.syzygy.events.database.User;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.SignupActivity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
@@ -218,6 +222,11 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(i);
         currentActivity.finish();
+    }
+
+    public void stringToLocation(String location) throws IOException {
+        Geocoder geo = new Geocoder(this, Locale.getDefault());
+        List<Address> addresses = geo.getFromLocationName(location, 3);
     }
 
     /**

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.Timestamp;
+import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
@@ -36,14 +37,9 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
 
         binding.signupButtonSubmit.setOnClickListener(view -> submitData());
         binding.signupEditImage.setOnClickListener(view -> choosePhoto());
-        binding.signupRemoveImage.setOnClickListener(view -> removePhoto());
+        binding.signupRemoveImage.setOnClickListener(view -> setImage(null));
 
-    }
-
-    private void removePhoto(){
-        image = null;
-        binding.signupProfile.setImageURI(null);
-        binding.signupRemoveImage.setVisibility(View.INVISIBLE);
+        setImage(null);
     }
 
     private void choosePhoto(){
@@ -52,10 +48,19 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
                 Toast.makeText(this, "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
-            image = uri;
-            binding.signupProfile.setImageURI(uri);
-            binding.signupRemoveImage.setVisibility(View.VISIBLE);
+            setImage(uri);
         });
+    }
+
+    private void setImage(Uri uri){
+        image = uri;
+        if(image == null){
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(256)).into(binding.signupProfile);
+            binding.signupRemoveImage.setVisibility(View.INVISIBLE);
+        }else{
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.signupProfile);;
+            binding.signupRemoveImage.setVisibility(View.VISIBLE);
+        }
     }
 
     private void submitData(){
@@ -95,6 +100,7 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
                 return;
             }
             Log.println(Log.DEBUG, "signup", "no image");
+
             app.signupUser(name, email, phone, bio, admin, org, null, success -> {
                 if(success){
                     Log.println(Log.DEBUG, "signup", "user good");
