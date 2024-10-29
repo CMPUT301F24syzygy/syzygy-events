@@ -164,12 +164,12 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
                 Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
-            selectedImage = true;
             setImage(uri);
         });
     }
 
     private void setImage(Uri uri){
+        selectedImage = true;
         image = uri;
         if(image == null){
             Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(256)).into(binding.editFacilityProfile);

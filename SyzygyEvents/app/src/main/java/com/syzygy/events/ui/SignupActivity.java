@@ -127,11 +127,6 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         Toast.makeText(this, "Invalid", Toast.LENGTH_SHORT).show();
     }
 
-    public void openEntrant(View v) {
-        Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
-        startActivity(intent);
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
