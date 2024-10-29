@@ -102,4 +102,9 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
     public String getEventID() {
         return eventID;
     }
+
+    public void openEvent(String id) {
+        eventID = id;
+        navController.navigate(R.id.nav_organizer_event_secondary);
+    }
 }
