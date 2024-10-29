@@ -9,7 +9,7 @@
         android:id="@+id/notification_item_subject_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@+id/notification_item_sender_profile_img"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -44,10 +44,12 @@
 
     <ImageView
         android:id="@+id/notification_item_sender_profile_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_launcher_foreground"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_launcher_foreground" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
