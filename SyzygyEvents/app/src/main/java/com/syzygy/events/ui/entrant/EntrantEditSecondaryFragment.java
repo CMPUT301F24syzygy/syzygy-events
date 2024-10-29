@@ -45,6 +45,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
         binding.entrantEditEmail.setText(user.getEmail());
         binding.entrantEditName.setText(user.getName());
         binding.entrantEditPhone.setText(user.getPhoneNumber());
+        binding.entrantEditOrgNotifications.setChecked(user.getOrganizerNotifications());
+        binding.entrantEditAdminNotifications.setChecked(user.getAdminNotifications());
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(256)).into(binding.entrantEditProfile);
 
         binding.entrantEditButtonSubmit.setOnClickListener(view -> submitData());

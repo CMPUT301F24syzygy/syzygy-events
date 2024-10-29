@@ -17,6 +17,7 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragmentEntrantProfileBinding;
+import com.syzygy.events.ui.EntrantActivity;
 
 public class EntrantProfileFragment extends Fragment implements Database.UpdateListener {
     private FragmentEntrantProfileBinding binding;
@@ -29,6 +30,10 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         updateValues();
         binding.entrantProfileImage.setOnClickListener(v -> {
             ((SyzygyApplication)getActivity().getApplication()).displayImage(user);
+        });
+
+        binding.entrantButtonEdit.setOnClickListener(v -> {
+            ((EntrantActivity)getActivity()).openEditProfile();
         });
         return binding.getRoot();
     }
