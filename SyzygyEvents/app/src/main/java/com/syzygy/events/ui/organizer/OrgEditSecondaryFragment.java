@@ -49,12 +49,14 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
 
         binding.editFacilityButtonSubmit.setOnClickListener(view -> submitData());
         binding.editFacilityButtonCancel.setOnClickListener(view -> {
-            //todo change to profile
+            ((OrganizerActivity)getActivity()).navigateUp();
         });
         binding.editFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
         Image.getFormatedAssociatedImage(facility, Image.Options.Circle(256)).into(binding.editFacilityProfile);
         binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.editFacilityBio.setText(facility.getDescription());
+        binding.editFacilityName.setText(facility.getName());
         return binding.getRoot();
     }
 
@@ -121,7 +123,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
                             }
                         });
                         facility.dissolve();
-                        //TODO app.switchToActivity(OrganizerActivity.class);
+                        ((OrganizerActivity)getActivity()).navigateUp();
                         return;
                     }
                     if(currentImage!=null)currentImage.dissolve();
@@ -145,7 +147,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
                     }
                 });
                 facility.dissolve();
-                //TODO app.switchToActivity(OrganizerActivity.class);
+                ((OrganizerActivity)getActivity()).navigateUp();
                 return;
             }
             if(currentImage!=null)currentImage.dissolve();
