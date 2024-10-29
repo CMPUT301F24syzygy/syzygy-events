@@ -26,6 +26,8 @@ import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,15 +62,21 @@ public class EntrantNotificationsFragment extends Fragment {
                         .setView(R.layout.popup_entrant_notification)
                         .create();
                 dialog.show();
+
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
+
                 if (notification.getSender() != null) {
                     TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
                     sender.setText(notification.getSender().getName());
                 }
-                ///date
+                TextView date = dialog.findViewById(R.id.popup_notification_date_text);
+                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                date.setText(df.format(notification.getSentTime().toDate()));
+
                 TextView body = dialog.findViewById(R.id.popup_notification_body_text);
                 body.setText(notification.getBody());
+
                 ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
                 Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
 
