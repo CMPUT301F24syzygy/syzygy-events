@@ -19,16 +19,13 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
-import com.syzygy.events.database.DatabaseInfLoadQuery;
-import com.syzygy.events.database.DatabaseQuery;
-import com.syzygy.events.database.Event;
+
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
 public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     private ActivityEntrantBinding entrantBinding;
     private NavController navController;
-    private Event event;
+    private String selectedEventID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +96,8 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
-    public Event getEvent() {
-        return event;
+    public String getEventID() {
+        return selectedEventID;
     }
 
     public void scanQR(View v) {
@@ -114,22 +111,15 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (intentResult != null && intentResult.getContents() != null) {
-            String str = intentResult.getContents();
-            SyzygyApplication app = (SyzygyApplication)getApplication();
-            app.getDatabase().getInstance(Database.Collections.EVENTS, str, (instance, success) -> {
-                Event e = (Event) instance;
-                openEvent(e);
-            });
-
+            openEvent(intentResult.getContents());
         }
     }
-    public void openEditProfile(Event e) {
+    public void openEditProfile() {
         navController.navigate(R.id.nav_entrant_edit_secondary);
     }
 
-    public void openEvent(Event e) {
-        e.dissolve();
-        event = e;
+    public void openEvent(String id) {
+        selectedEventID = id;
         navController.navigate(R.id.nav_entrant_event_secondary);
     }
 

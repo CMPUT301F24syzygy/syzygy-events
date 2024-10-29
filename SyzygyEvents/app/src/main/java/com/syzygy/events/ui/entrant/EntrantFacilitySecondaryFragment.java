@@ -20,7 +20,7 @@ public class EntrantFacilitySecondaryFragment extends Fragment {
         binding = SecondaryEntrantFacilityBinding.inflate(inflater, container, false);
 
         EntrantActivity activity = (EntrantActivity)getActivity();
-        Event event = activity.getEvent();
+        ///get event
 
         ///binding.
         ///

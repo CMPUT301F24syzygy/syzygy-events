@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
 import com.syzygy.events.ui.EntrantActivity;
@@ -60,8 +62,19 @@ public class EntrantNotificationsFragment extends Fragment {
                 dialog.show();
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
+                TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
+                sender.setText(notification.getSender().getName());
+                ///date
                 TextView body = dialog.findViewById(R.id.popup_notification_body_text);
                 body.setText(notification.getBody());
+                ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
+                Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.AS_IS).into(image);
+
+                TextView event_title = dialog.findViewById(R.id.card_event_name);
+                event_title.setText(notification.getEvent().getTitle());
+                ///
+                ///
+
             }
         });
 

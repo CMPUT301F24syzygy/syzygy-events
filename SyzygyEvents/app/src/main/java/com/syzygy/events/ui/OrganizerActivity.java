@@ -34,7 +34,7 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
     private ActivityOrganizerBinding organizerBinding;
     private NavController navController;
     private Database database;
-    private Event event;
+    private String eventID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +99,7 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
-    public Event getEvent() {
-        return event;
+    public String getEventID() {
+        return eventID;
     }
 }

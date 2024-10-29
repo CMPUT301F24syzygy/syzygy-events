@@ -3,7 +3,9 @@ package com.syzygy.events;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -11,10 +13,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.ui.EntrantActivity;
@@ -179,7 +182,15 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         imageListeners.add(imageListener);
         currentActivity.getMediaContent.launch("image/*");
     }
-    
+
+    public void displayImage(DatabaseInstance<?> instance) {
+        Dialog dialog = new AlertDialog.Builder(currentActivity)
+                .setView(R.layout.popup_image)
+                .create();
+        dialog.show();
+        ImageView v = dialog.findViewById(R.id.popup_img);
+        Image.getFormatedAssociatedImage(instance, Image.Options.AS_IS).into(v);
+    }
 
     /**
      * To be called by the Signup activity upon submission

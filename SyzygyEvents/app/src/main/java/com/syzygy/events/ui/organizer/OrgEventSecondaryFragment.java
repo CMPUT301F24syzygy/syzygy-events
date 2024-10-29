@@ -15,23 +15,51 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
+import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
 public class OrgEventSecondaryFragment extends Fragment {
     private SecondaryOrganizerEventBinding binding;
+    Event event;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = SecondaryOrganizerEventBinding.inflate(inflater, container, false);
 
         OrganizerActivity activity = (OrganizerActivity)getActivity();
-        Event event = activity.getEvent();
+        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+        app.getDatabase().getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
+            event = (Event) instance;
 
-        ///binding.
-        ///
-        ///
+            event.addListener(new Database.UpdateListener() {
+                @Override
+                public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+                    ///check exists
+                    ///
+                    ///update view
 
+                }
+            });
+
+            ///
+            ///
+            updateView();
+        });
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    private void updateView() {
+        ///
         if (!event.getQrHash().isEmpty()) {
             BitMatrix m;
             try {
@@ -47,15 +75,9 @@ public class OrgEventSecondaryFragment extends Fragment {
             }
             binding.facilityEventQrImg.setImageBitmap(bitmap);
         }
+        ///
+        ///
 
-
-
-        return binding.getRoot();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
 }

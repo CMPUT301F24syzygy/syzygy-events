@@ -57,7 +57,7 @@ public class EntrantEventsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 EntrantActivity activity = (EntrantActivity)getActivity();
-                activity.openEvent(a.getItem(position).getEvent());
+                activity.openEvent(a.getItem(position).getEventID());
             }
         });
 

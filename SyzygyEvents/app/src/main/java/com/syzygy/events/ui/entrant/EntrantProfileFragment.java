@@ -24,7 +24,9 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch(this);
 
         updateValues();
-
+        binding.entrantProfileImage.setOnClickListener(v -> {
+            ((SyzygyApplication)getActivity().getApplication()).displayImage(user);
+        });
         return binding.getRoot();
     }
 
