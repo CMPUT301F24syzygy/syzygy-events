@@ -33,17 +33,21 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
         EntrantActivity activity = (EntrantActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
-        app.getDatabase().getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
-            event = (Event) instance;
+        app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
+            event = instance;
 
             event.addListener(new Database.UpdateListener() {
                 @Override
                 public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
-                    ///check exists
-                    ///
-                    ///update view
+                    if (!event.isLegalState()) {
+                        EntrantActivity activity = (EntrantActivity)getActivity();
+                        ///error toast
+                        activity.navigateUp();
+                    }
+                    updateView();
                 }
             });
+            ///association listener!!!!!
 
 
             binding.eventTitle.setText(event.getTitle());
@@ -52,6 +56,9 @@ public class EntrantEventSecondaryFragment extends Fragment {
             if (event.getRequiresLocation()) {
                 binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
             }
+            ///binding.eventWeekdaysTimeText.setText(event.get..
+            binding.eventDescriptionText.setText(event.getDescription());
+
             ///binding.
             ///
 
@@ -61,6 +68,20 @@ public class EntrantEventSecondaryFragment extends Fragment {
             facility_address.setText(event.getFacility().getAddress());
             ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
             Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AsIs()).into(facility_image);
+            binding.eventFacilityCard.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EntrantActivity activity = (EntrantActivity)getActivity();
+                    activity.openFacility();
+                }
+            });
+            binding.eventImg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+                    app.displayImage(event);
+                }
+            });
 
 
             updateView();
@@ -72,9 +93,9 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        event.dissolve();
         super.onDestroyView();
         binding = null;
-        event.dissolve();
     }
 
 
@@ -83,18 +104,28 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
         //event.getUserAssociation(app.getUser(), (e, a, success) -> {
             //if (a != null) {
-                binding.joinWaitlistLayout.setVisibility(View.VISIBLE); ///if...
-                ///configure status_bar
-                ///if waitlist : show leave
-                ///if invited : show accept / decline
+
+                binding.inWaitlistLayout.setVisibility(View.VISIBLE);
+                //binding.inInvitedLayout.setVisibility(View.VISIBLE);
+                //binding.inEnrolledLayout.setVisibility(View.VISIBLE);
             //}
             //else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
                 ///and waitlist not at capacity
-                //binding.joinWaitlistLayout.setVisibility(View.VISIBLE); ///
+                //binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
+                ///else
+                //binding.waitlistFullLayout.setVisibility(View.VISIBLE);
             //}
         //});
 
-        ///set capacity
+
+        ///if before reg close
+        //// > set open until
+        //binding.closeRegDateText.setText();
+        ////else > set "reg closed"
+        ////and if waitlist has capacity > show / set capacity
+
+
+        ///
     }
 
 }

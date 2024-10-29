@@ -87,6 +87,15 @@ public class EntrantNotificationsFragment extends Fragment {
                     event_title.setText(notification.getEvent().getTitle());
                     ImageView event_image = dialog.findViewById(R.id.card_event_image);
                     Image.getFormatedAssociatedImage(notification.getEvent(), Image.Options.AsIs()).into(event_image);
+
+                    event_card.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                            EntrantActivity activity = (EntrantActivity)getActivity();
+                            activity.openEvent(notification.getEventID());
+                        }
+                    });
                 }
                 ///
                 ///
