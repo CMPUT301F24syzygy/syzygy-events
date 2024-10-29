@@ -297,86 +297,63 @@ public class Image extends DatabaseInstance<Image> {
         return loadedPicasso;
     }
 
-    public enum Options {
-        /**
-         * Returns the image as retrieved from the database
-         */
-        AS_IS(-1,false),
-        /**
-         * Returns the image as the biggest circular image
-         */
-        CIRCLE(-1,true),
-        /**
-         * Returns the image as a circular 256*256 image
-         */
-        BIG_AVATAR(256, true),
-        /**
-         * Returns the image as a square 256*256 image
-         */
-        BIG_SQUARE(256,false),
-        /**
-         * Returns the image as a circular 128*128 image
-         */
-        MEDIUM_AVATAR(128,true),
-        /**
-         * Returns the image as a square 128*128 image
-         */
-        MEDIUM_SQUARE(128,false),
-        /**
-         * Returns the image as a circular 64*64 image
-         */
-        SMALL_AVATAR(64,true),
-        /**
-         * Returns the image as a square 64*64 image
-         */
-        SMALL_SQUARE(64,false),
-        /**
-         * Returns the image as a circular 32*32 image
-         */
-        TINY_AVATAR(32,true),
-        /**
-         * Returns the image as a square 32*32 image
-         */
-        TINY_SQUARE(32,false);
+    public static class Options {
 
-        private final Consumer<RequestCreator> funct;
+        private final int width, height;
+        private final boolean isCircle;
+        public Options(int width, int height, boolean isCircle){
+            this.width = width; this.height = height;
+            this.isCircle = isCircle;
+        }
 
-        private Options(int squareSize, boolean isCircle){
-            if(squareSize >= 0 && isCircle){
-                funct = img -> {
-                    square(img, squareSize);
-                    circle(img);
-                };
-            }else if(squareSize >= 0){
-                funct = img -> square(img, squareSize);
-            }else if(isCircle){
-                funct = this::circle;
-            }else{
-                funct = null;
+        /**
+         * Modifies the image based off the parameters of the option
+         * @param img The image to modify
+         */
+        public void modifyImage(RequestCreator img){
+            if(width >= 0 && height >= 0){
+                img.resize(width, height);
+            }
+            if(isCircle){
+                img.transform(new CircleTransform());
             }
         }
 
-        private Options(Consumer<RequestCreator> modify){
-            funct = modify;
+        /**
+         * Returns the image resized to size*size
+         * @param size The width and height of the image
+         */
+        public static Options Square(int size){
+            return new Options(size, size, false);
         }
 
-        public void modifyImage(RequestCreator img){
-            if(funct == null) return;
-            funct.accept(img);
+        /**
+         * Returns the image cropped to the largest circle that can fit within the image
+         */
+        public static Options LargestCircle(){
+            return new Options(-1, -1, true);
         }
 
-        private void circle(RequestCreator img){
-            img.transform(new CircleTransform());
+        /**
+         * Returns the image resized to a size*size square then cropped to the largest circle that fits within
+         * @param size the diameter of the circle
+         */
+        public static Options Circle(int size){
+            return new Options(size, size, true);
         }
 
-        private void square(RequestCreator img, int size){
-            img.resize(size, size);
+        /**
+         * Returns the image as is
+         */
+        public static Options AsIs(){
+            return new Options(-1,-1,false);
         }
+
 
     }
 
     //https://stackoverflow.com/questions/26112150/android-create-circular-image-with-picasso
-    public static class CircleTransform implements Transformation {
+    private static class CircleTransform implements Transformation {
         @Override
         public Bitmap transform(Bitmap source) {
             int size = Math.min(source.getWidth(), source.getHeight());

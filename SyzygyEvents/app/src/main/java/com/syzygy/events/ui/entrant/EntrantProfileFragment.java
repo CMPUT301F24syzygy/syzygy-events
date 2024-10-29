@@ -33,8 +33,9 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         binding.entrantProfileEmail.setText(user.getEmail());
         binding.entrantProfileName.setText(user.getName());
         binding.entrantProfilePhone.setText(user.getPhoneNumber());
-        Image.getFormatedAssociatedImage(user, Image.Options.BIG_AVATAR).into(binding.entrantProfileImage);
+        Image.getFormatedAssociatedImage(user, Image.Options.Circle(256)).into(binding.entrantProfileImage);
     }
+
 
     @Override
     public void onDestroyView() {

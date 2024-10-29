@@ -544,7 +544,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             if(prop.meta.loads){
                 if(ent.getValue() instanceof DatabaseInstance){
                     Log.println(Log.DEBUG, "modPropLoadsI", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
-                    exchangeInstance((InstancePropertyWrapper) prop, (DatabaseInstance)ent.getValue());
+                    exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance)ent.getValue());
                 }else{
                     Log.println(Log.DEBUG, "modPropLoadsId", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                     loadIds.add(new Pair<>(prop, String.valueOf(ent.getValue())));
@@ -593,6 +593,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws ClassCastException if the value type does not match the properties type
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Database.StirsDeep(what="The previous instance", when="Modifying an instance property")
     public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, IllegalStateException{
         assertNotIllegalState();
@@ -605,14 +606,30 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             onComplete.onCompletion(true);
             return false;
         }
-        if(prop.meta.loads){
-            exchangeInstance(prop, (String)newValue, onComplete);
-        }else{
+        if(!prop.meta.loads){
             prop.setValue(newValue);
+            processUpdate();
+            onComplete.onCompletion(true);
+            return true;
         }
-        processUpdate();
-        onComplete.onCompletion(true);
+        if(newValue instanceof DatabaseInstance) {
+            exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance) newValue);
+            processUpdate();
+            onComplete.onCompletion(true);
+            return true;
+        }
+
+        exchangeInstance(prop, (String)newValue, s -> {
+            if(s){
+                processUpdate();
+                onComplete.onCompletion(true);
+            }else{
+                onComplete.onCompletion(false);
+            }
+        });
+
         return true;
+
     }
 
     /**
@@ -629,6 +646,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final <W extends DatabaseInstance<W>> boolean setPropertyInstance(int resID, @Nullable @Database.Dilutes W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
+        Log.println(Log.DEBUG, "setPropertyStart", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
         PropertyWrapper<?,?> prop = properties.get(name);
         if(prop==null || !prop.meta.loads) db.throwE(new IllegalArgumentException("Invalid property: " + name));
         if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
@@ -638,9 +656,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         if(!isPropertyValid(prop, id)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + instance.toString()));
         InstancePropertyWrapper<W> iprop = (InstancePropertyWrapper<W>) prop;
         if(Objects.equals(iprop.instance, instance)) {
+            Log.println(Log.DEBUG, "setPropertyEqual", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
             return false;
         }
+        exchangeInstance(iprop, instance);
         processUpdate();
+        Log.println(Log.DEBUG, "setPropertyEnd", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
         return true;
     }
 

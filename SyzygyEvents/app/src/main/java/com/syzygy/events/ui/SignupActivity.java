@@ -55,10 +55,10 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.BIG_AVATAR).into(binding.signupProfile);
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(256)).into(binding.signupProfile);
             binding.signupRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.BIG_AVATAR).into(binding.signupProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.signupProfile);;
             binding.signupRemoveImage.setVisibility(View.VISIBLE);
         }
     }
@@ -100,6 +100,7 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
                 return;
             }
             Log.println(Log.DEBUG, "signup", "no image");
+
             app.signupUser(name, email, phone, bio, admin, org, null, success -> {
                 if(success){
                     Log.println(Log.DEBUG, "signup", "user good");
