@@ -7,41 +7,49 @@
     android:minHeight="600dp">
 
     <TextView
-        android:id="@+id/popup_notification_sender_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/popup_notification_subject_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
-        app:layout_constraintTop_toTopOf="@+id/popup_notification_sender_text" />
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="18dp"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/popup_notification_sender_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="6dp"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@+id/popup_notification_sender_profile_img"
+        app:layout_constraintTop_toBottomOf="@+id/popup_notification_subject_text" />
+
 
     <TextView
         android:id="@+id/popup_notification_date_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
-        app:layout_constraintTop_toBottomOf="@+id/popup_notification_subject_text" />
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="12dp"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/popup_notification_body_text"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginEnd="28dp"
         android:layout_marginTop="32dp"
         android:minHeight="50dp"
-        app:layout_constraintStart_toStartOf="@+id/popup_notification_sender_profile_img"
-        app:layout_constraintTop_toBottomOf="@+id/popup_notification_date_text" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/popup_notification_sender_profile_img" />
 
     <ImageView
         android:id="@+id/popup_notification_sender_profile_img"
