@@ -653,7 +653,8 @@ public class Database implements EventListener<DocumentSnapshot> {
         public class QueryResult<V> {
             public final V result;
 
-            public QueryResult(V result) {
+
+            public QueryResult(@Observes V result) {
                 this.result = result;
             }
         }

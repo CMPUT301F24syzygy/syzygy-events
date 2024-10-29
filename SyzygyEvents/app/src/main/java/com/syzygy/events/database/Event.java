@@ -11,6 +11,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -451,12 +452,20 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_closedDate);
     }
 
-    public List<Timestamp> getEventDates(){
+    public Integer getEventDates(){
         return getPropertyValueI(R.string.database_event_dates);
     }
 
-    public boolean setEventDates(List<Timestamp> val){
-        return setPropertyValue(R.string.database_event_dates, val, s -> {});
+    public String getFormattedEventDates(){
+        return Dates.format(getEventDates());
+    }
+
+    public Timestamp getStartDate(){
+        return getPropertyValueI(R.string.database_event_start);
+    }
+
+    public Timestamp getEndDate(){
+        return getPropertyValueI(R.string.database_event_end);
     }
 
     public Double getPrice(){
@@ -470,7 +479,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     /**
      * Adds a user to the waitlist given that the user either does not have an association with the event or the association is cancelled.
      * <p>
-     *     The listener will be returned with false success if an error occurs or the user cannot be added to the waitlist.
+     *     The listener will be returned with false success if an error occurs or the user cannot be added to the waitlist. If the this is because the user is already attached, the association is returned with false success
      * </p>
      * @param user The user to be added
      * @param location The current location of the user. If this event requires geolocation, the location cannot be null.
@@ -519,14 +528,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     EventAssociation e = data.result.get(0).fetch();
                     String status = e.getStatus();
 
-                    if (!Objects.equals(status, db.constants.getString(R.string.notification_cancelled_body))) {
+                    if (!Objects.equals(status, db.constants.getString(R.string.event_assoc_status_cancelled))) {
                         //Not in state where can become waitlist
                         listener.onCompletion(this, new QueryResult<>(e), false);
                         data.dissolve();
                         return;
                     }
                     e.setStatus(R.string.database_event_waitlist);
-                    listener.onCompletion(this, new QueryResult<>(data.result.get(0)), true);
+                    listener.onCompletion(this, new QueryResult<>(e), true);
                     data.dissolve();
                     return;
                 }
@@ -565,7 +574,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param description the description of the event
      * @param qrHash the cashed qr code data for the event
      * @param price The price of the event
-     * @param eventDates The dates that the event occurs
      * @param onComplete called on completion
      * @return If the event changed as a result
      */
@@ -575,7 +583,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                           String description,
                           String qrHash,
                           Double price,
-                          List<Timestamp> eventDates,
+
                           EmptyListener onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
@@ -584,7 +592,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         map.put(R.string.database_event_description, description);
         map.put(R.string.database_event_qrHash, qrHash);
         map.put(R.string.database_event_price, price);
-        map.put(R.string.database_event_dates, eventDates);
+
         return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
     }
 
@@ -604,7 +612,9 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp || o == null, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
-            new PropertyField<List<Timestamp>, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof List && !((List<?>)o).isEmpty() && ((List<?>)o).stream().allMatch(i -> i instanceof Timestamp), true),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_start, o -> o instanceof Timestamp, false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_end, o -> o instanceof Timestamp, false),
+            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Integer, false),
     };
 
     @Override
@@ -634,7 +644,9 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param price The price of the event
      * @param openRegistrationDate The date that registration opens, if null uses now
      * @param closedRegistrationDate The date that registration closes and the lottery opens
-     * @param eventDates The dates that the event occurs
+     * @param startDate The datetime that the event starts
+     * @param endDate The datetime that the event stored
+     * @param eventDates The days of the week that the event occurs {@link Dates}
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
     @Database.MustStir
@@ -649,13 +661,15 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                        Double price,
                                        @Nullable Timestamp openRegistrationDate,
                                        Timestamp closedRegistrationDate,
-                                       List<Timestamp> eventDates,
+                                       Timestamp startDate,
+                                       Timestamp endDate,
+                                       Integer eventDates,
                                        Database.InitializationListener<Event> listener
     ){
         Timestamp now = Timestamp.now();
         openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
         String id = Database.Collections.EVENTS.getNewID(db);
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, id, price, openRegistrationDate, closedRegistrationDate, eventDates,  now);
+        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, id, price, openRegistrationDate, closedRegistrationDate, startDate, endDate, eventDates,  now);
 
         if(!validateDataMap(map).isEmpty()){
             listener.onInitialization(null, false);
@@ -663,6 +677,109 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         }
 
         db.createNewInstance(Database.Collections.EVENTS, id, db.convertIDMapToNames(map), listener);
+    }
+
+    /**
+     * Used to store repetition of dates in the database
+     * @see #NO_REPEAT
+     * @see #MONDAY
+     * @see #TUESDAY
+     * @see #WEDNESDAY
+     * @see #THURSDAY
+     * @see #FRIDAY
+     * @see #SATURDAY
+     * @see #SUNDAY
+     * @see #WEEKDAYS
+     * @see #EVERY_DAY
+     */
+    public enum Dates { // used as a namespace
+        ;
+        public static final int
+                NO_REPEAT   = 0b0000000,
+                MONDAY      = 0b1000000,
+                TUESDAY     = 0b0100000,
+                WEDNESDAY   = 0b0010000,
+                THURSDAY    = 0b0001000,
+                FRIDAY      = 0b0000100,
+                SATURDAY    = 0b0000010,
+                SUNDAY      = 0b0000001,
+                WEEKDAYS    = 0b1111100,
+                EVERY_DAY   = 0b1111111;
+
+        /**
+         * Checks if the collection of dates contains the specific day
+         * @param collection The set of {@link Dates} to check
+         * @param day The {@link Dates} to look for
+         * @return {@code true} if the collection contains the day. Will return {@code true} if the
+         * collection contains other days as well
+         */
+        public static boolean collectionContainsDay(int collection, int day){
+            return (collection & day) == day;
+        }
+
+        /**
+         * Gets the number of days selected
+         * @param collection The set of {@link Dates} to check
+         * @return The number of days in the selection
+         */
+        public static int numberOfDays(int collection){
+            int count = 0;
+            for(int i=0; i<7; i++){
+                if(collectionContainsDay(collection, 1<<i)) count ++;
+            }
+            return count;
+        }
+
+        /**
+         * Formats the set of days to a user friendly string
+         * @param collection The set of days
+         * @return The formated string
+         */
+        public static String format(int collection){
+
+            if(collection == WEEKDAYS) return "Weekdays";
+            if(collection == EVERY_DAY) return "Every day";
+            if(collection == NO_REPEAT) return "No Repetition";
+
+            int count = numberOfDays(collection);
+            List<String> result = new ArrayList<>();
+            if(collectionContainsDay(collection, MONDAY)){
+                if(count == 1) return "Mondays";
+                if(count <= 3) result.add("Mon");
+                else result.add("M");
+            }
+            if(collectionContainsDay(collection, TUESDAY)){
+                if(count == 1) return "Tuesdays";
+                if(count <= 3) result.add("Tues");
+                else result.add("Tu");
+            }
+            if(collectionContainsDay(collection, WEDNESDAY)){
+                if(count == 1) return "Wednesdays";
+                if(count <= 3) result.add("Wed");
+                else result.add("W");
+            }
+            if(collectionContainsDay(collection, THURSDAY)){
+                if(count == 1) return "Thursdays";
+                if(count <= 3) result.add("Thurs");
+                else result.add("Th");
+            }
+            if(collectionContainsDay(collection, FRIDAY)){
+                if(count == 1) return "Fridays";
+                if(count <= 3) result.add("Fri");
+                else result.add("F");
+            }
+            if(collectionContainsDay(collection, SATURDAY)){
+                if(count == 1) return "Saturdays";
+                if(count <= 3) result.add("Sat");
+                else result.add("Sa");
+            }
+            if(collectionContainsDay(collection, SUNDAY)){
+                if(count == 1) return "Sundays";
+                if(count <= 3) result.add("Sun");
+                else result.add("Su");
+            }
+            return String.join(", ", result);
+        }
     }
 
     /**
@@ -678,7 +795,9 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param price The price of the event
      * @param openRegistrationDate The date that registration opens
      * @param closedRegistrationDate The date that registration closes and the lottery opens
-     * @param eventDates The dates that the event occurs
+     * @param startDate The datetime that the event starts
+     * @param endDate The datetime that the event ends
+     * @param eventDates The dates that the event occurs {@link Dates}
      * @param createdTime The time when the event was created
      * @return The map
      */
@@ -693,7 +812,9 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                                      Double price,
                                                      Timestamp openRegistrationDate,
                                                      Timestamp closedRegistrationDate,
-                                                     List<Timestamp> eventDates,
+                                                     Timestamp startDate,
+                                                     Timestamp endDate,
+                                                     Integer eventDates,
                                                      Timestamp createdTime
 
     ){
@@ -710,6 +831,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         map.put(R.string.database_event_createdTime, createdTime);
         map.put(R.string.database_event_openDate, openRegistrationDate);
         map.put(R.string.database_event_closedDate, closedRegistrationDate);
+        map.put(R.string.database_event_start, startDate);
+        map.put(R.string.database_event_end, endDate);
         map.put(R.string.database_event_dates, eventDates);
 
         return map;
@@ -719,7 +842,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Tests if the data is valid
      * @param dataMap The data map
      * @return The invalid ids
-     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp, List, Timestamp)
+     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp, Timestamp, Timestamp, Integer, Timestamp)
      */
     public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
         return DatabaseInstance.isDataValid(dataMap, fields);

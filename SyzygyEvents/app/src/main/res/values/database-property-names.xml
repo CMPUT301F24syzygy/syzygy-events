@@ -40,6 +40,8 @@
     <string name="database_event_createdTime">CreatedTime</string>
     <string name="database_event_price">Price</string>
     <string name="database_event_dates">EventDates</string>
+    <string name="database_event_start">StartDate</string>
+    <string name="database_event_end">EndDate</string>
     <string name="database_event_openDate">OpenRegistrationDate</string>
     <string name="database_event_closedDate">ClosedRegistrationDate</string>
     <string name="database_assoc_user">UserID</string>

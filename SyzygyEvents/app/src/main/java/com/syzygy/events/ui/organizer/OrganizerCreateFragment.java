@@ -23,8 +23,13 @@ import com.syzygy.events.databinding.FragmentOrganizerCreateBinding;
 import com.syzygy.events.databinding.FragmentOrganizerProfileBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class OrganizerCreateFragment extends Fragment {
@@ -41,6 +46,12 @@ public class OrganizerCreateFragment extends Fragment {
 
         binding.eventCreateCapWaitlist.setOnClickListener(view -> {
             binding.eventCreateWaitlistCnt.setVisibility(binding.eventCreateCapWaitlist.isChecked() ? View.VISIBLE : View.GONE);
+        });
+
+        binding.eventCreateRepeat.setOnClickListener(view -> {
+            int v = binding.eventCreateRepeat.isChecked() ? View.VISIBLE : View.GONE;
+            binding.eventCreateEndDate.setVisibility(v);
+            binding.createEventDaysCnt.setVisibility(v);
         });
 
         setImage(null);
@@ -78,13 +89,74 @@ public class OrganizerCreateFragment extends Fragment {
         Integer capacity = Integer.parseInt(binding.eventCreateCapacity.getText().toString());
         Integer waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Integer.parseInt(binding.eventCreateWaitlist.getText().toString()) : -1;
         Double price = Double.parseDouble(binding.eventCreatePrice.getText().toString());
-        Timestamp openDate = null;//todo
-        Timestamp closeDate = Timestamp.now();//todo
-        List<Timestamp> dates = Collections.singletonList(Timestamp.now()); //todo
+        Timestamp openDate;
+        Timestamp closeDate;
+        Timestamp startDate;
+        Timestamp endDate;
 
+        boolean repeat = binding.eventCreateRepeat.isChecked();
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        String startDay = binding.eventCreateStartDate.getText().toString();
+        String startTime = binding.eventCreateStartTime.getText().toString();
+        String endTime = binding.eventCreateEndTime.getText().toString();
+        String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
+        try{
+            Log.println(Log.DEBUG, "Event", "Start : " + startDay + " " + startTime);
+            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " " + startTime)));
+        }catch (ParseException | NullPointerException ex){
+            Log.println(Log.DEBUG, "Event", "ExceptionStart");
+            startDate = null;
+        }
+
+        try{
+            Log.println(Log.DEBUG, "Event", "End : " + endDay + " " + endTime);
+            endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " " + endTime)));
+        }catch (ParseException | NullPointerException ex){
+            Log.println(Log.DEBUG, "Event", "ExceptionEnd");
+            endDate = null;
+        }
+
+        Timestamp finalStartDate = startDate;
+        Timestamp finalEndDate = endDate;
+
+        String openDay = binding.eventCreateOpenDate.getText().toString();
+        String openTime = binding.eventCreateOpenTime.getText().toString();
+        String closeTime = binding.eventCreateCloseTime.getText().toString();
+        String closeDay = binding.eventCreateCloseDate.getText().toString();
+        try{
+            Log.println(Log.DEBUG, "Event", "Open : " + openDay + " " + openTime);
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " " + openTime)));
+        }catch (ParseException | NullPointerException ex){
+            Log.println(Log.DEBUG, "Event", "ExceptionOpen");
+            openDate = null;
+        }
+
+        try{
+            Log.println(Log.DEBUG, "Event", "Close : " + closeDay + " " + closeTime);
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " " + closeTime)));
+        }catch (ParseException | NullPointerException ex){
+            Log.println(Log.DEBUG, "Event", "ExceptionClose");
+            closeDate = null;
+        }
+
+        Timestamp finalOpenDate = openDate;
+        Timestamp finalCloseDate = closeDate;
+
+        Integer dates;
+        if(repeat){
+            dates = (binding.createEventDaysM.isChecked() ? Event.Dates.MONDAY : 0) |
+                    (binding.createEventDaysT.isChecked() ? Event.Dates.TUESDAY : 0) |
+                    (binding.createEventDaysW.isChecked() ? Event.Dates.WEDNESDAY : 0) |
+                    (binding.createEventDaysR.isChecked() ? Event.Dates.THURSDAY : 0) |
+                    (binding.createEventDaysF.isChecked() ? Event.Dates.FRIDAY : 0) |
+                    (binding.createEventDaysSat.isChecked() ? Event.Dates.SATURDAY : 0) |
+                    (binding.createEventDaysSun.isChecked() ? Event.Dates.SUNDAY : 0);
+        } else {
+            dates = Event.Dates.NO_REPEAT;
+        }
 
         Set<Integer> invalidIds = Event.validateDataMap(Event.createDataMap(
-                title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, "", price, openDate, closeDate, dates, Timestamp.now()));
+                title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, "", price, openDate, closeDate, startDate, endDate, dates, Timestamp.now()));
         if(invalidIds.isEmpty()){
             Log.println(Log.DEBUG, "create event", "valid");
             binding.progressBar.setVisibility(View.VISIBLE);
@@ -99,7 +171,7 @@ public class OrganizerCreateFragment extends Fragment {
                         return;
                     }
                     Log.println(Log.DEBUG, "create event", "image good");
-                    Event.NewInstance(app.getDatabase(), title, img.getDocumentID(), facilityID, requiresGeo, description, capacity, waitlistCapacity, price, openDate, closeDate, dates, (evnt, evnt_success) -> {
+                    Event.NewInstance(app.getDatabase(), title, img.getDocumentID(), facilityID, requiresGeo, description, capacity, waitlistCapacity, price, finalOpenDate, finalCloseDate, finalStartDate, finalEndDate, dates, (evnt, evnt_success) -> {
                         if(evnt_success){
                             img.dissolve();
                             Log.println(Log.DEBUG, "create event", "event good");
@@ -119,7 +191,7 @@ public class OrganizerCreateFragment extends Fragment {
             }
             Log.println(Log.DEBUG, "create event", "no image");
 
-            Event.NewInstance(app.getDatabase(), title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, price, openDate, closeDate, dates, (evnt, evnt_success) -> {
+            Event.NewInstance(app.getDatabase(), title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, price, openDate, closeDate, startDate, endDate, dates, (evnt, evnt_success) -> {
                 if(evnt_success){
                     Log.println(Log.DEBUG, "create event", "event good");
                     this.event = evnt;
@@ -148,13 +220,23 @@ public class OrganizerCreateFragment extends Fragment {
             binding.eventCreatePrice.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_event_openDate)){
-            binding.eventCreateName.setError("Badopen");//todo
+            binding.eventCreateOpenDate.setError("Badopen");
+            binding.eventCreateOpenTime.setError("Badopen");
         }
         if(invalidIds.contains(R.string.database_event_closedDate)){
-            binding.eventCreateName.setError("Badclose");//todo
+            binding.eventCreateCloseDate.setError("Badclose");
+            binding.eventCreateCloseTime.setError("Badclose");
+        }
+        if(invalidIds.contains(R.string.database_event_start)){
+            binding.eventCreateStartDate.setError("Bad");
+            binding.eventCreateStartTime.setError("Bad");
+        }
+        if(invalidIds.contains(R.string.database_event_end)){
+            binding.eventCreateEndDate.setError("Bad");
+            binding.eventCreateEndTime.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_event_dates)){
-            binding.eventCreateName.setError("Baddates");//todo
+            binding.eventCreateRepeat.setError("Baddates");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
