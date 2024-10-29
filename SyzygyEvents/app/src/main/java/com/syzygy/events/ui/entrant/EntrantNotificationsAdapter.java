@@ -1,6 +1,7 @@
 package com.syzygy.events.ui.entrant;
 
 import com.syzygy.events.R;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
 
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,6 +49,9 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         TextView sent_date = view.findViewById(R.id.notification_item_sent_date_text);
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         sent_date.setText(df.format(notification.getSentTime().toDate()));
+
+        ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
+        Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
 
         ///notification.getIsRead();
         ///

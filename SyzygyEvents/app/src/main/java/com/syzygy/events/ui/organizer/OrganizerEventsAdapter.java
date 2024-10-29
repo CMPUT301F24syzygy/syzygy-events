@@ -11,20 +11,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.syzygy.events.R;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 
 import java.util.List;
 
-public class OrganizerEventsAdapter extends ArrayAdapter<EventAssociation> {
+public class OrganizerEventsAdapter extends ArrayAdapter<Event> {
 
-    public OrganizerEventsAdapter(Context context, List<EventAssociation> dataList) {
+    public OrganizerEventsAdapter(Context context, List<Event> dataList) {
         super(context, 0, dataList);
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
-        EventAssociation association = getItem(position);
+        Event event = getItem(position);
 
         if (view == null) {
             view = LayoutInflater.from(getContext()).inflate(
@@ -32,7 +33,7 @@ public class OrganizerEventsAdapter extends ArrayAdapter<EventAssociation> {
         }
 
         TextView title = view.findViewById(R.id.organizer_events_item_title_text);
-        title.setText(association.getEvent().getTitle());
+        title.setText(event.getTitle());
         ///
         ///
         ///

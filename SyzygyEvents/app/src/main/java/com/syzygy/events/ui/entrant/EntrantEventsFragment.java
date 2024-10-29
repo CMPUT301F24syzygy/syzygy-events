@@ -46,9 +46,6 @@ public class EntrantEventsFragment extends Fragment {
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();
-            Log.println(Log.DEBUG, "success", success + "");
-            Log.println(Log.DEBUG, "qSize", query.getInstances().size() + "");
-            Log.println(Log.DEBUG, "Size", dataList.size() + "");
         });
 
         binding.entrantEventsList.setAdapter(a);
