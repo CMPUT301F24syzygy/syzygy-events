@@ -31,9 +31,9 @@ public class OrgEventSecondaryFragment extends Fragment {
 
         OrganizerActivity activity = (OrganizerActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
-        app.getDatabase().getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
-            event = (Event) instance;
-
+        app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
+            event = instance;
+            /*
             event.addListener(new Database.UpdateListener() {
                 @Override
                 public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
@@ -41,9 +41,10 @@ public class OrgEventSecondaryFragment extends Fragment {
                     ///
                     ///update view
 
-
                 }
             });
+
+             */
 
             ///
             ///

@@ -85,6 +85,8 @@ public class EntrantNotificationsFragment extends Fragment {
                     event_card.setVisibility(View.VISIBLE);
                     TextView event_title = dialog.findViewById(R.id.card_event_name);
                     event_title.setText(notification.getEvent().getTitle());
+                    ImageView event_image = dialog.findViewById(R.id.card_event_image);
+                    Image.getFormatedAssociatedImage(notification.getEvent(), Image.Options.AsIs()).into(event_image);
                 }
                 ///
                 ///

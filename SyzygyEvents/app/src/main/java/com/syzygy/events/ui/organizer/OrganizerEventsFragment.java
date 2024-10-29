@@ -49,7 +49,7 @@ public class OrganizerEventsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 OrganizerActivity activity = (OrganizerActivity)getActivity();
-                activity.openEvent(a.getItem(position).getIdentifier());
+                activity.openEvent(a.getItem(position).getDocumentID());
             }
         });
 
