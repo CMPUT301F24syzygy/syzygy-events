@@ -30,6 +30,7 @@ public class OrganizerEventsFragment extends Fragment {
     private DatabaseInfLoadQuery<Event> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         binding = FragmentOrganizerEventsBinding.inflate(inflater, container, false);
 
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();

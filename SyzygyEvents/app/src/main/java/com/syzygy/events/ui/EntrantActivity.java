@@ -54,12 +54,7 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
             }
         });
 ///////////
-        SyzygyApplication app = (SyzygyApplication)getApplication();
-        app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, "testEvent1", (instance, success) -> {
-            instance.addUserToWaitlist(app.getUser(), app.getUser().getFacility().getLocation(), (a, b, c) -> {
-                String s;
-            });
-        });
+        openEvent("testEvent1");
 /////////////////
     }
 
