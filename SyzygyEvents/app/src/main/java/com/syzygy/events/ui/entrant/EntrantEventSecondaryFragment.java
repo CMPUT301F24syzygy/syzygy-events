@@ -102,7 +102,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
     private void updateView() {
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
 
-        //event.getUserAssociation(app.getUser(), (e, a, success) -> {
+        event.getUserAssociation(app.getUser(), (e, a, success) -> {
             //if (a != null) {
 
                 binding.inWaitlistLayout.setVisibility(View.VISIBLE);
@@ -115,7 +115,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
                 ///else
                 //binding.waitlistFullLayout.setVisibility(View.VISIBLE);
             //}
-        //});
+        });
 
 
         ///if before reg close
