@@ -40,4 +40,5 @@
     <string name="button_leave_waitlist">Exit Waitlist</string>
     <string name="button_join_waitlist">Join Waitlist</string>
     <string name="text_requires_geolocation">Requires Geolocation</string>
+    <string name="button_run_lottery">Fill Spots</string>
 </resources>

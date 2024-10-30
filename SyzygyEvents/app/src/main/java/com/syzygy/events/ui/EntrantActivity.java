@@ -53,9 +53,7 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
                 return true;
             }
         });
-///////////
-        openEvent("testEvent1");
-/////////////////
+
     }
 
     @Override

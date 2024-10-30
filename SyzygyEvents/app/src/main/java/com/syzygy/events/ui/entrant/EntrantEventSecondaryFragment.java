@@ -18,6 +18,7 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
+import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryEntrantEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
@@ -82,8 +83,6 @@ public class EntrantEventSecondaryFragment extends Fragment {
                     app.displayImage(event);
                 }
             });
-
-
             updateView();
         });
 
@@ -102,7 +101,8 @@ public class EntrantEventSecondaryFragment extends Fragment {
     private void updateView() {
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
 
-        event.getUserAssociation(app.getUser(), (e, a, success) -> {
+
+        //event.getUserAssociation(app.getUser(), (e, a, success) -> {
             //if (a != null) {
 
                 binding.inWaitlistLayout.setVisibility(View.VISIBLE);
@@ -115,7 +115,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
                 ///else
                 //binding.waitlistFullLayout.setVisibility(View.VISIBLE);
             //}
-        });
+        //});
 
 
         ///if before reg close

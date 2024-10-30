@@ -18,6 +18,7 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
@@ -45,6 +46,15 @@ public class OrgEventSecondaryFragment extends Fragment {
             });
 
              */
+
+            binding.eventTitle.setText(event.getTitle());
+            binding.eventPriceText.setText("$ " + event.getPrice().toString());
+            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+            if (event.getRequiresLocation()) {
+                binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
+            }
+            binding.eventDescriptionText.setText(event.getDescription());
+
 
             ///
             ///
