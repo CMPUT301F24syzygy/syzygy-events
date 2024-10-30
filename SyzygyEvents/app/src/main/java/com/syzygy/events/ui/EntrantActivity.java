@@ -20,6 +20,8 @@ import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 
+import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
 public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
@@ -51,7 +53,14 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
                 return true;
             }
         });
-
+///////////
+        SyzygyApplication app = (SyzygyApplication)getApplication();
+        app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, "testEvent1", (instance, success) -> {
+            instance.addUserToWaitlist(app.getUser(), app.getUser().getFacility().getLocation(), (a, b, c) -> {
+                String s;
+            });
+        });
+/////////////////
     }
 
     @Override
