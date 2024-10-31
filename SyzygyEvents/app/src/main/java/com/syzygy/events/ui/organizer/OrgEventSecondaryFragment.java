@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -14,6 +17,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
@@ -22,6 +26,9 @@ import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class OrgEventSecondaryFragment extends Fragment {
     private SecondaryOrganizerEventBinding binding;
@@ -54,6 +61,12 @@ public class OrgEventSecondaryFragment extends Fragment {
                 binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
             }
             binding.eventDescriptionText.setText(event.getDescription());
+
+            String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
+            ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_event_associated_entrants, dataList);
+            ListView test = binding.getRoot().findViewById(R.id.admin_events_list);
+            test.setAdapter(adapter);
 
 
             ///

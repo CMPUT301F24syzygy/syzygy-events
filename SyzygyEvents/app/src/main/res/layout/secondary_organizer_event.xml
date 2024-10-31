@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:paddingBottom="?attr/actionBarSize"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="match_parent">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="2000dp"
     android:paddingBottom="?attr/actionBarSize"
     tools:context=".ui.organizer.OrgEventSecondaryFragment">
 
@@ -28,13 +33,10 @@
         app:cardElevation="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
         <ImageView
             android:id="@+id/event_img"
             android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:src="@drawable/ic_launcher_background" />
-
+            android:layout_height="180dp"/>
     </androidx.cardview.widget.CardView>
 
     <TextView
@@ -178,8 +180,8 @@
 
     <ImageView
         android:id="@+id/facility_event_qr_img"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -195,34 +197,65 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/facility_event_qr_img" />
 
+
+
     <com.google.android.material.tabs.TabLayout
-        android:layout_width="360dp"
-        android:layout_height="20dp"
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/div5">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="100dp"
             android:text="Waitlist" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="100dp"
             android:text="Invited" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="100dp"
             android:text="Enrolled" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="20dp"
+            android:minWidth="100dp"
             android:text="Cancelled" />
-
 
     </com.google.android.material.tabs.TabLayout>
 
 
+
+    <include
+        android:id="@+id/stupid_list"
+        layout="@layout/fragment_admin_events"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:fillViewport="true"
+        android:transcriptMode="alwaysScroll"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabs"/>
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stupid_list"
+        android:src="@drawable/ic_launcher_background">
+
+    </ImageView>
+
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

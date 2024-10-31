@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.syzygy.events.R;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
+import com.syzygy.events.database.Image;
 
 import java.util.List;
 
@@ -34,6 +36,9 @@ public class OrganizerEventsAdapter extends ArrayAdapter<Event> {
 
         TextView title = view.findViewById(R.id.organizer_events_item_title_text);
         title.setText(event.getTitle());
+        ImageView image = view.findViewById(R.id.organizer_events_item_poster_img);
+        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(image);
+
         ///
         ///
         ///

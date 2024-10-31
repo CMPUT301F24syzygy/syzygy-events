@@ -38,7 +38,7 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
         title.setText(association.getEvent().getTitle());
 
         ImageView image = view.findViewById(R.id.entrant_events_item_poster_img);
-        Image.getFormatedAssociatedImage(association, Image.Options.AsIs()).into(image);
+        Image.getFormatedAssociatedImage(association.getEvent(), Image.Options.AsIs()).into(image);
 
 
         ///
