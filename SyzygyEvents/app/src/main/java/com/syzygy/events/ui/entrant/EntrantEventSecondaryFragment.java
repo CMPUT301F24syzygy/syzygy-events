@@ -173,7 +173,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
         else if (event.isRegistrationOpen()) {
             event.refreshData((e, success) -> {
-                if (e.getCurrentWaitlist() < e.getWaitlistCapacity()) {
+                if (e.getWaitlistCapacity() < 0 || e.getCurrentWaitlist() < e.getWaitlistCapacity()) {
                     binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
                     binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
                         @Override
