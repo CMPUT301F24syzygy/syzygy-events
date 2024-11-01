@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:paddingBottom="?attr/actionBarSize"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="2000dp"
     android:paddingBottom="?attr/actionBarSize"
@@ -37,6 +34,14 @@
             android:id="@+id/event_img"
             android:layout_width="180dp"
             android:layout_height="180dp"/>
+
+        <ImageView
+            android:id="@+id/edit_image_button"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="115dp"
+            android:layout_marginTop="115dp"
+            android:src="@drawable/ic_dashboard_black_24dp" />
     </androidx.cardview.widget.CardView>
 
     <TextView
@@ -90,6 +95,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/event_img_card_view" />
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/div1">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Actions" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Entrants" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+
+
+
+
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/actions_tab_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabs">
+
 
     <Button
         android:id="@+id/run_lottery_button"
@@ -99,16 +139,7 @@
         android:text="@string/button_run_lottery"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div1">
-
-    </Button>
-
-
-
-
-
-
-
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <View
         android:id="@+id/div2"
@@ -119,7 +150,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/run_lottery_button" />
-
 
     <TextView
         android:id="@+id/close_reg_date_text"
@@ -159,7 +189,7 @@
     <TextView
         android:id="@+id/event_description_text"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="150dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -176,16 +206,33 @@
         app:layout_constraintTop_toBottomOf="@+id/event_description_text" />
 
 
-
-
     <ImageView
         android:id="@+id/facility_event_qr_img"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/div4"/>
+
+        <Button
+            android:id="@+id/copy_qr_button"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:text="@string/button_copy_qr_hash"
+            app:layout_constraintStart_toEndOf="@+id/facility_event_qr_img"
+            app:layout_constraintTop_toBottomOf="@+id/div4"/>
+
+        <Button
+            android:id="@+id/download_qr_button"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/button_download_qr_image"
+            android:drawableStart="@android:drawable/stat_sys_download"
+            app:layout_constraintStart_toEndOf="@+id/facility_event_qr_img"
+            app:layout_constraintTop_toBottomOf="@+id/copy_qr_button"/>
 
     <View
         android:id="@+id/div5"
@@ -197,65 +244,128 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/facility_event_qr_img" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs"
-        android:layout_width="match_parent"
+
+
+
+
+
+
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/entrants_tab_layout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div5">
+        app:layout_constraintTop_toBottomOf="@+id/actions_tab_layout">
 
-        <com.google.android.material.tabs.TabItem
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/entrant_filter_chips"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="100dp"
+            android:checkable="true"
             android:text="Waitlist" />
 
-        <com.google.android.material.tabs.TabItem
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="100dp"
+            android:checkable="true"
             android:text="Invited" />
 
-        <com.google.android.material.tabs.TabItem
+        <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="100dp"
+            android:checkable="true"
             android:text="Enrolled" />
 
-        <com.google.android.material.tabs.TabItem
+        <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:minWidth="100dp"
+            android:layout_height="wrap_content"
+            android:checkable="true"
             android:text="Cancelled" />
 
-    </com.google.android.material.tabs.TabLayout>
+        <com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkable="true"
+            android:checked="true"
+            android:text="All" />
+    </com.google.android.material.chip.ChipGroup>
 
 
-
-    <include
-        android:id="@+id/stupid_list"
-        layout="@layout/fragment_admin_events"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+    <ListView
+        android:id="@+id/event_associated_entrants_list"
+        android:layout_width="390dp"
+        android:layout_height="250dp"
+        android:background="#63DBD6E9"
+        android:choiceMode="singleChoice"
+        android:divider="@color/white"
         android:fillViewport="true"
+        android:listSelector="#63DBD6E9"
         android:transcriptMode="alwaysScroll"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabs"/>
+        app:layout_constraintTop_toBottomOf="@+id/entrant_filter_chips" />
 
-    <ImageView
-        android:layout_width="100dp"
+
+    <View
+    android:id="@+id/div6"
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_marginTop="12dp"
+    android:background="?android:attr/listDivider"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/event_associated_entrants_list" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/entrant_location_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="380dp"
         android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/stupid_list"
-        android:src="@drawable/ic_launcher_background">
+        app:layout_constraintTop_toBottomOf="@+id/div6"
+        app:mapType="terrain"
+        app:uiZoomGestures="true" />
 
-    </ImageView>
+    <View
+        android:id="@+id/div7"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/entrant_location_map" />
 
+        <Button
+            android:id="@+id/create_notification_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Send Notification"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/div7" />
 
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-</ScrollView>

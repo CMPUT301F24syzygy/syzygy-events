@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,12 +23,16 @@ import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryEntrantEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class EntrantEventSecondaryFragment extends Fragment {
 
     private SecondaryEntrantEventBinding binding;
     Event event;
+    EventAssociation association;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = SecondaryEntrantEventBinding.inflate(inflater, container, false);
@@ -35,33 +40,32 @@ public class EntrantEventSecondaryFragment extends Fragment {
         EntrantActivity activity = (EntrantActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
+            if (!success) {
+                Toast.makeText(getContext(), "event does not exist", Toast.LENGTH_SHORT).show();
+                activity.navigateUp();
+            }
             event = instance;
-
             event.addListener(new Database.UpdateListener() {
                 @Override
                 public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
                     if (!event.isLegalState()) {
                         EntrantActivity activity = (EntrantActivity)getActivity();
-                        ///error toast
+                        Toast.makeText(getContext(), "event does not exist", Toast.LENGTH_SHORT).show();
                         activity.navigateUp();
                     }
-                    updateView();
+                    Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
                 }
             });
-            ///association listener!!!!!
 
-
+            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText("$ " + event.getPrice().toString());
-            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+            binding.eventStartEndText.setText("");
+            //binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             if (event.getRequiresLocation()) {
                 binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
             }
-            ///binding.eventWeekdaysTimeText.setText(event.get..
             binding.eventDescriptionText.setText(event.getDescription());
-
-            ///binding.
-            ///
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name);
             facility_name.setText(event.getFacility().getName());
@@ -69,13 +73,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
             facility_address.setText(event.getFacility().getAddress());
             ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
             Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AsIs()).into(facility_image);
-            binding.eventFacilityCard.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    EntrantActivity activity = (EntrantActivity)getActivity();
-                    activity.openFacility();
-                }
-            });
+
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -83,9 +81,16 @@ public class EntrantEventSecondaryFragment extends Fragment {
                     app.displayImage(event);
                 }
             });
-            updateView();
-        });
+            binding.eventFacilityCard.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EntrantActivity activity = (EntrantActivity)getActivity();
+                    activity.openFacility();
+                }
+            });
 
+            updateAssociation();
+        });
 
         return binding.getRoot();
     }
@@ -98,34 +103,68 @@ public class EntrantEventSecondaryFragment extends Fragment {
     }
 
 
-    private void updateView() {
-        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+    private void updateAssociation() {
+
+        SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
+
+        binding.inWaitlistLayout.setVisibility(View.GONE);
+        binding.inInvitedLayout.setVisibility(View.GONE);
+        binding.inEnrolledLayout.setVisibility(View.GONE);
+        binding.joinWaitlistLayout.setVisibility(View.GONE);
+        binding.waitlistFullLayout.setVisibility(View.GONE);
+
+        if (association == null) {
+            event.getUserAssociation(app.getUser(), (e, a, success) -> {
+                if (success) {
+                    association = a.result.get(0);
+
+                    association.addListener(new Database.UpdateListener() {
+                        @Override
+                        public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+                            updateAssociation();
+                        }
+                    });
+
+                }
+            });
+        }
 
 
-        //event.getUserAssociation(app.getUser(), (e, a, success) -> {
-            //if (a != null) {
-
+        if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
+            if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
                 binding.inWaitlistLayout.setVisibility(View.VISIBLE);
-                //binding.inInvitedLayout.setVisibility(View.VISIBLE);
-                //binding.inEnrolledLayout.setVisibility(View.VISIBLE);
-            //}
-            //else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
-                ///and waitlist not at capacity
-                //binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
-                ///else
-                //binding.waitlistFullLayout.setVisibility(View.VISIBLE);
-            //}
-        //});
+            }
+            else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
+                binding.inInvitedLayout.setVisibility(View.VISIBLE);
+            }
+            else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
+                binding.inEnrolledLayout.setVisibility(View.VISIBLE);
+            }
+        }
+
+        else if (event.isRegistrationOpen()) {
+            event.refreshData((e, success) -> {
+                if (e.getCurrentWaitlist() < e.getWaitlistCapacity()) {
+                    binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
+                }
+                else {
+                    binding.waitlistFullLayout.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        if (Timestamp.now().compareTo(event.getOpenRegistrationDate()) < 0) {
+            binding.registrationDateInfoText.setText("Registration Opens " + df.format(event.getOpenRegistrationDate().toDate()));
+        }
+        else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
+            binding.registrationDateInfoText.setText("Registration Open Until " + df.format(event.getCloseRegistrationDate().toDate()));
+        }
+        else {
+            binding.registrationDateInfoText.setText("Registration Closed");
+        }
 
 
-        ///if before reg close
-        //// > set open until
-        //binding.closeRegDateText.setText();
-        ////else > set "reg closed"
-        ////and if waitlist has capacity > show / set capacity
-
-
-        ///
     }
 
 }

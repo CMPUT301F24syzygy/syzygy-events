@@ -41,4 +41,7 @@
     <string name="button_join_waitlist">Join Waitlist</string>
     <string name="text_requires_geolocation">Requires Geolocation</string>
     <string name="button_run_lottery">Fill Spots</string>
+    <string name="button_download_qr_image">download qr</string>
+    <string name="button_copy_qr_hash">copy hash</string>
+    <string name="button_scan_qr">Scan QR</string>
 </resources>

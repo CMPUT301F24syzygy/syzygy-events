@@ -20,7 +20,14 @@ public class EntrantQrFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentEntrantQrBinding.inflate(inflater, container, false);
-
+        binding.scanQrButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator intentIntegrator = new IntentIntegrator(getActivity());
+                intentIntegrator.setPrompt("Scan a QR Code");
+                intentIntegrator.initiateScan();
+            }
+        });
         return binding.getRoot();
 
     }

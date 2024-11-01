@@ -9,10 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TabHost;
+import android.widget.TabWidget;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.tabs.TabLayout;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -65,8 +68,38 @@ public class OrgEventSecondaryFragment extends Fragment {
             String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
             ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_event_associated_entrants, dataList);
-            ListView test = binding.getRoot().findViewById(R.id.admin_events_list);
-            test.setAdapter(adapter);
+            binding.eventAssociatedEntrantsList.setAdapter(adapter);
+
+
+            binding.eventImg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+                    app.displayImage(event);
+                }
+            });
+
+            binding.tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    if (tab.getPosition() == 0) {
+                        binding.actionsTabLayout.setVisibility(View.VISIBLE);
+                        binding.entrantsTabLayout.setVisibility(View.GONE);
+                    }
+                    else {
+                        binding.actionsTabLayout.setVisibility(View.GONE);
+                        binding.entrantsTabLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {return;}
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {return;}
+
+            });
+
+
+
 
 
             ///

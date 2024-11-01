@@ -105,6 +105,10 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     @Database.StirsDeep(what = "Previous Instances", when = "All success")
     @Database.Observes
     public void refreshData(Listener<DatabaseQuery<T>> listener){
+        if(currentPage == null){
+            gotoFirstPage(listener);
+            return;
+        }
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
                 listener.onCompletion(this, false);
