@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -20,8 +19,7 @@ import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 
-import com.syzygy.events.database.Database;
-import com.syzygy.events.database.Event;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
 public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
@@ -59,6 +57,7 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
+        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
         return true;
     }
 
@@ -72,13 +71,17 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
             PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
-            SyzygyApplication app = (SyzygyApplication)getApplication();
+
+            Menu menu = m.getMenu();
+            SyzygyApplication app = (SyzygyApplication) getApplication();
+            app.loadMenuItemIcons(menu);
+
             if (app.getUser().getFacility() != null) {
-                m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
-                m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+                menu.findItem(R.id.add_organizer_item).setVisible(false);
+                menu.findItem(R.id.organizer_item).setVisible(true);
             }
             if (app.getUser().isAdmin()) {
-                m.getMenu().findItem(R.id.admin_item).setVisible(true);
+                menu.findItem(R.id.admin_item).setVisible(true);
             }
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override

@@ -1,22 +1,15 @@
 package com.syzygy.events.ui;
 
-import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragmentSignupBinding;
 
 import java.util.Set;
@@ -55,10 +48,10 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(256)).into(binding.signupProfile);
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupProfile);
             binding.signupRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.signupProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupProfile);;
             binding.signupRemoveImage.setVisibility(View.VISIBLE);
         }
     }

@@ -221,7 +221,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         @Database.StirsDeep(what="Deletes the result instances")
         @Database.AutoStir
         public void delete(){
-            result.forEach(i -> i.deleteInstance(success -> {}));
+            result.forEach(i -> i.deleteInstance(DeletionType.HARD_DELETE, success -> {}));
             dissolve();
         }
 

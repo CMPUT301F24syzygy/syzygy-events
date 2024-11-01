@@ -380,7 +380,7 @@ public class Database implements EventListener<DocumentSnapshot> {
             updateVariable.accept(null, (passData, success) -> {
                 Log.println(Log.DEBUG, "UpdateVariable", success+" Remove");
                 if(success){
-                    oldImage.deleteInstance(s -> {
+                    oldImage.deleteInstance(DatabaseInstance.DeletionType.REPLACMENT, s -> {
                         if (!s) {
                             Log.println(Log.ERROR, "ReplaceImage", "Hanging image");
                         }
@@ -397,7 +397,7 @@ public class Database implements EventListener<DocumentSnapshot> {
         this.createImageAndThen(newImage, oldImage.getLocName(), oldImage.getCollection(), oldImage.getDatabaseID(), updateVariable, (passData, success) -> {
             Log.println(Log.DEBUG, "UpdateVariable", success+" Create");
             if(success){
-                oldImage.deleteInstance(s -> {
+                oldImage.deleteInstance(DatabaseInstance.DeletionType.REPLACMENT, s -> {
                     if (!s) {
                         Log.println(Log.ERROR, "ReplaceImage", "Hanging image");
                     }
@@ -441,7 +441,7 @@ public class Database implements EventListener<DocumentSnapshot> {
                     onComplete.accept(passData, true);
                 }else{
                     String img_id = img.getDocumentID();
-                    img.deleteInstance(s -> {
+                    img.deleteInstance(DatabaseInstance.DeletionType.ERROR, s -> {
                         if(!s) {
                             Log.println(Log.ERROR, "CreateInstance", "Hanging image: " + img_id);
                         }

@@ -17,6 +17,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityAdminBinding;
 
 public class AdminActivity extends SyzygyApplication.SyzygyActivity {
@@ -54,6 +55,7 @@ public class AdminActivity extends SyzygyApplication.SyzygyActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
+        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
         return true;
     }
 
@@ -66,11 +68,13 @@ public class AdminActivity extends SyzygyApplication.SyzygyActivity {
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
             SyzygyApplication app = (SyzygyApplication)getApplication();
+            Menu menu = m.getMenu();
+            app.loadMenuItemIcons(menu);
             if (app.getUser().getFacility() != null) {
-                m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
-                m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+                menu.findItem(R.id.add_organizer_item).setVisible(false);
+                menu.findItem(R.id.organizer_item).setVisible(true);
             }
-            m.getMenu().findItem(R.id.admin_item).setVisible(true);
+            menu.findItem(R.id.admin_item).setVisible(true);
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {

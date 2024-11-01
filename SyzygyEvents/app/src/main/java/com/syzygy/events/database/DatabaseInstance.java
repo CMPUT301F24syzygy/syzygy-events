@@ -411,7 +411,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             iprop.value = "";
             iprop.instance = null;
             if(!prop.meta.loadsNullable){
-                deleteInstance(success -> {});
+                deleteInstance(DeletionType.UP_FALL, success -> {});
             }else{
                 notifyUpdate(Type.UPDATE);
             }
@@ -1045,52 +1045,83 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         notifyUpdate(Database.UpdateListener.Type.UPDATE);
         db.updateDatabase(this);
         Image assocImage = getAssociatedImage();
-        if(assocImage != null){
-            assocImage.setLocName(getAssociatedImageLocName());
+        String assocLocName = getAssociatedImageLocName();
+        if(assocImage != null && assocLocName != null){
+            assocImage.setLocName(assocLocName);
         }
     }
 
     /**
+     * @see #REPLACMENT
+     * @see #HARD_DELETE
+     * @see #CASCADE
+     * @see #ERROR
+     */
+    public enum DeletionType {;
+        /**
+         * If the instance is being deleted because it is being replaced by another version of the instance.
+         */
+        public final static int REPLACMENT = 0b00001;
+        /**
+         * If the instance is being deleted explicitly
+         */
+        public final static int HARD_DELETE = 0b00010;
+        /**
+         * If the instance is being deleted because another instance was deleted
+         */
+        public final static int CASCADE = 0b00100;
+        /**
+         * If the instance is being deleted because a non nullable sub instance was deleted
+         */
+        public final static int UP_FALL = 0b01000;
+        /**
+         * If the instance is being deleted because
+         */
+        public final static int ERROR = 0b10000;
+    }
+
+    /**
      * Dereferences the instance. Then cascade deletes all cascading properties. Then notifies all listeners that the instance was deleted.
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
      * @param listener called on completion of deletion, returns false if one or more errors occured
      * @see Database#deleteFromDatabase(DatabaseInstance)
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
-    public void deleteInstance(Consumer<Boolean> listener){
+    public void deleteInstance(int deletionType, Consumer<Boolean> listener){
         if(!isLegalState()) return;
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
-        requiredFirstDelete(success -> {
+        requiredFirstDelete(deletionType, success -> {
             if(!success){
                 listener.accept(false);
                 return;
             }
             isDeleted = true;
             db.deleteFromDatabase(this);
-            deleteSubInstances(success2 -> {
+            deleteSubInstances(deletionType, success2 -> {
                 notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
                 fullDissolve();
                 listener.accept(true);
             });
         });
-
-
     }
 
     /**
-     * Deletes any sub objects that are not instances.
-     * Called before the instance and sub instances are deleted; they are only deleted if this returns true
+     * Deletes any sub objects that are not instances
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
+     * @param listener Called before the instance and sub instances are deleted; they are only deleted if this returns true
      */
-    protected void requiredFirstDelete(Consumer<Boolean> listener){
+    protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener){
         listener.accept(true);
     }
 
     /**
      * Deletes all subinstances that are cascaded
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
      * @param listener called on completion of deletion
      */
     @Database.StirsDeep(what = "Sub instances")
-    private void deleteSubInstances(Consumer<Boolean> listener){
+    private void deleteSubInstances(int deletionType, Consumer<Boolean> listener){
         List<Pair<Query, Database.Collections>> queries = subInstanceCascadeDeleteQuery();
         //Have I ever mentioned that I hate async
         Consumer<Boolean> l2 = new Consumer<Boolean>() {
@@ -1121,7 +1152,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                                 thiser.accept(s2);
                                 return;
                             }
-                            dq.getCurrentInstances().get(j).deleteInstance(this);
+                            dq.getCurrentInstances().get(j).deleteInstance(deletionType | DeletionType.CASCADE, this);
                         }
                     };
                 });
@@ -1143,10 +1174,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 assert p != null;
                 InstancePropertyWrapper<?> iprop = p.iS();
                 if(iprop.instance!=null && iprop.meta.cascadeDelete){
-                    iprop.instance.deleteInstance(this);
+                    iprop.instance.deleteInstance(deletionType | DeletionType.CASCADE, this);
                 }
             }
         };
+        l1.accept(false);
     }
 
     /**

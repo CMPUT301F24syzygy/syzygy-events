@@ -8,6 +8,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -15,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -31,7 +34,9 @@ import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
+import com.syzygy.events.ui.AdminActivity;
 import com.syzygy.events.ui.EntrantActivity;
+import com.syzygy.events.ui.OrganizerActivity;
 import com.syzygy.events.ui.SignupActivity;
 
 import java.io.IOException;
@@ -54,6 +59,8 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     private final List<Consumer<Location>> locationListeners = new ArrayList<>();
     private final List<Consumer<Uri>> imageListeners = new ArrayList<>();
 
+    private Drawable menuAdminIcon;
+    private Drawable menuAddFacilityIcon;
 
     @Override
     public void onCreate() {
@@ -65,8 +72,50 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             if(success) this.user = instance;
             switchToActivity(success ? EntrantActivity.class : SignupActivity.class);
         });
+
+        Image.loadAsDrawable(Image.formatImage(R.drawable.penguin_blue, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
+            menuAdminIcon = d;
+        });
+        Image.loadAsDrawable(Image.formatImage(R.drawable.penguin_blue, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
+            menuAddFacilityIcon = d;
+        });
+
         location = LocationServices.getFusedLocationProviderClient(this);
 
+    }
+
+    /**
+     * Loads the icon for the account menu
+     * @param menu The menu
+     */
+    public void loadMenuIcon(Menu menu){
+        Class<? extends SyzygyActivity> clazz = currentActivity.getClass();
+        if(clazz == EntrantActivity.class){
+            Image.getFormatedAssociatedImageAsDrawable(getUser(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+                menu.getItem(0).setIcon(d);
+            });
+        }else if(clazz == OrganizerActivity.class){
+            Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+                menu.getItem(0).setIcon(d);
+            });
+        }else if(clazz == AdminActivity.class){
+            menu.getItem(0).setIcon(menuAdminIcon);
+        }
+    }
+
+    /**
+     * Loads the icons for the account menu options
+     * @param menu The menu
+     */
+    public void loadMenuItemIcons(Menu menu){
+        Image.getFormatedAssociatedImageAsDrawable(getUser(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+            menu.findItem(R.id.entrant_item).setIcon(d);
+        });
+        Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+            menu.findItem(R.id.organizer_item).setIcon(d);
+        });
+        menu.findItem(R.id.admin_item).setIcon(menuAdminIcon);
+        menu.findItem(R.id.add_organizer_item).setIcon(menuAddFacilityIcon);
     }
 
     @Override

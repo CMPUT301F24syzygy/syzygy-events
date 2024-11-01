@@ -2,14 +2,11 @@ package com.syzygy.events.ui.entrant;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,7 +15,6 @@ import androidx.fragment.app.Fragment;
 
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Image;
@@ -28,8 +24,6 @@ import com.syzygy.events.ui.EntrantActivity;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class EntrantNotificationsFragment extends Fragment {
@@ -78,7 +72,7 @@ public class EntrantNotificationsFragment extends Fragment {
                 body.setText(notification.getBody());
 
                 ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
-                Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
+                Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(Image.Options.Sizes.SMALL)).into(image);
 
                 if (notification.getEvent() != null) {
                     View event_card = dialog.findViewById(R.id.notification_event_card);
@@ -86,7 +80,7 @@ public class EntrantNotificationsFragment extends Fragment {
                     TextView event_title = dialog.findViewById(R.id.card_event_name);
                     event_title.setText(notification.getEvent().getTitle());
                     ImageView event_image = dialog.findViewById(R.id.card_event_image);
-                    Image.getFormatedAssociatedImage(notification.getEvent(), Image.Options.Square(400)).into(event_image);
+                    Image.getFormatedAssociatedImage(notification.getEvent(), Image.Options.Square(Image.Options.Sizes.LARGE)).into(event_image);
 
                     event_card.setOnClickListener(new View.OnClickListener() {
                         @Override

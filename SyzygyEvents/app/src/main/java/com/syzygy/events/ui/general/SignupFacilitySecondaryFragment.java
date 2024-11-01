@@ -1,7 +1,6 @@
 package com.syzygy.events.ui.general;
 
 import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,16 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.AdvancedMarkerOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
@@ -31,14 +26,9 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.FragmentSignupBinding;
 import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class SignupFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
@@ -118,10 +108,10 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(256)).into(binding.createFacilityProfile);
+            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);
             binding.createFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.createFacilityProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);;
             binding.createFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }

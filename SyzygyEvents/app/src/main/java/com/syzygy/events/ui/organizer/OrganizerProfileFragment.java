@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -57,7 +56,7 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
         binding.facilityProfileBio.setText(facility.getDescription());
         binding.facilityProfileName.setText(facility.getName());
         binding.facilityProfileAddress.setText(facility.getAddress());
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(256)).into(binding.facilityProfileImage);
+        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.facilityProfileImage);
         updateMapPoints();
     }
 

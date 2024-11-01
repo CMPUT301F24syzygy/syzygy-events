@@ -1,6 +1,5 @@
 package com.syzygy.events.ui.entrant;
 
-import android.location.Address;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,20 +11,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.FragmentSignupBinding;
 import com.syzygy.events.databinding.SecondaryEntrantEditBinding;
 import com.syzygy.events.ui.EntrantActivity;
-import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -48,7 +41,7 @@ public class EntrantEditSecondaryFragment extends Fragment {
         binding.entrantEditPhone.setText(user.getPhoneNumber());
         binding.entrantEditOrgNotifications.setChecked(user.getOrganizerNotifications());
         binding.entrantEditAdminNotifications.setChecked(user.getAdminNotifications());
-        Image.getFormatedAssociatedImage(user, Image.Options.Circle(256)).into(binding.entrantEditProfile);
+        Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
 
         binding.entrantEditButtonSubmit.setOnClickListener(view -> submitData());
         binding.entrantEditButtonCancel.setOnClickListener(view -> ((EntrantActivity)getActivity()).navigateUp());
@@ -106,7 +99,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
     private void onUpdateInstance(boolean success) {
         Log.println(Log.DEBUG, "EditProfile", "update " + success);
         if(success){
-            ((EntrantActivity)getActivity()).navigateUp();
+            //((EntrantActivity)getActivity()).navigateUp();
+            ((SyzygyApplication)getActivity().getApplication()).switchToActivity(EntrantActivity.class);
         }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
@@ -127,10 +121,10 @@ public class EntrantEditSecondaryFragment extends Fragment {
         imageSelected = true;
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(256)).into(binding.entrantEditProfile);
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
             binding.entrantEditRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.entrantEditProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);;
             binding.entrantEditRemoveImage.setVisibility(View.VISIBLE);
         }
     }
