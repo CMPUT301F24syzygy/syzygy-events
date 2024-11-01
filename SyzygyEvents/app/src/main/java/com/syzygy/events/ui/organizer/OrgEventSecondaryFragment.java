@@ -23,18 +23,26 @@ import com.google.zxing.common.BitMatrix;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseInstance;
+import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
+import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
+import com.syzygy.events.database.Notification;
+import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
+import com.syzygy.events.ui.entrant.EntrantNotificationsAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class OrgEventSecondaryFragment extends Fragment {
     private SecondaryOrganizerEventBinding binding;
+    private DatabaseInfLoadQuery<EventAssociation> query;
     Event event;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,11 +73,17 @@ public class OrgEventSecondaryFragment extends Fragment {
             }
             binding.eventDescriptionText.setText(event.getDescription());
 
-            String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
-            ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_event_associated_entrants, dataList);
-            binding.eventAssociatedEntrantsList.setAdapter(adapter);
 
+            ////
+            query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            List<EventAssociation> dataList = query.getInstances();
+            AssociatedEntrantsAdapter a = new AssociatedEntrantsAdapter(this.getContext(), dataList);
+            query.refreshData((query1, s) -> {
+                a.notifyDataSetChanged();
+            });
+            binding.eventAssociatedEntrantsList.setAdapter(a);
+
+            ////
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
