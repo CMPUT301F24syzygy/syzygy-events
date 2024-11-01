@@ -1,5 +1,7 @@
 package com.syzygy.events.ui.entrant;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
@@ -97,6 +100,9 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (association != null) {
+            association.dissolve();
+        }
         event.dissolve();
         super.onDestroyView();
         binding = null;
@@ -116,7 +122,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
 
         if (association == null) {
             event.getUserAssociation(app.getUser(), (e, a, success) -> {
-                if (success) {
+                if (success && a.size()>0) {
                     association = a.result.get(0);
 
                     association.addListener(new Database.UpdateListener() {
@@ -131,14 +137,34 @@ public class EntrantEventSecondaryFragment extends Fragment {
         }
 
 
-
-
         if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
             if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
                 binding.inWaitlistLayout.setVisibility(View.VISIBLE);
+                binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        association.setStatus(R.string.event_assoc_status_cancelled);
+                        updateAssociation();
+                    }
+                });
             }
             else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
                 binding.inInvitedLayout.setVisibility(View.VISIBLE);
+                binding.buttonReject.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        association.setStatus(R.string.event_assoc_status_cancelled);
+                        updateAssociation();
+                    }
+                });
+                binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        event.acceptInvite(app.getUser(), (e, a, success) -> {
+                            updateAssociation();
+                        });
+                    }
+                });
             }
             else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
                 binding.inEnrolledLayout.setVisibility(View.VISIBLE);
@@ -149,6 +175,32 @@ public class EntrantEventSecondaryFragment extends Fragment {
             event.refreshData((e, success) -> {
                 if (e.getCurrentWaitlist() < e.getWaitlistCapacity()) {
                     binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
+                    binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (event.getRequiresLocation()) {
+                                app.getLocation((l) -> {
+                                    if (l == null) {
+                                        Dialog dialog = new AlertDialog.Builder(getContext())
+                                                .setMessage("Failed to get location.")
+                                                .create();
+                                        dialog.show();
+                                    }
+                                    else {
+                                        GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
+                                        event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
+                                            updateAssociation();
+                                        });
+                                    }
+                                });
+                            }
+                            else {
+                                event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
+                                    updateAssociation();
+                                });
+                            }
+                        }
+                    });
                 }
                 else {
                     binding.waitlistFullLayout.setVisibility(View.VISIBLE);
