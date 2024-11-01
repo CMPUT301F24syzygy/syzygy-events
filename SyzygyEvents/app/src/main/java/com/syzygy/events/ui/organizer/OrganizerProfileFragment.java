@@ -73,7 +73,6 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
         this.map = map;
         marker = map.addMarker(new MarkerOptions().draggable(false).position(new LatLng(0,0)));
         updateMapPoints();
-
     }
 
     @Override
