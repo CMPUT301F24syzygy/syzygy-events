@@ -279,6 +279,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         getUsersByStatus(R.string.event_assoc_status_waitlist, listener);
     }
 
+    @Override
+    public String getAssociatedImageLocName() {
+        return getTitle();
+    }
+
     /**
      * Returns all associated users with the given association status
      * @param statusID The res ID of the status
@@ -425,11 +430,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * Sets the profile image instance. This function will create a new reference to the instance.
      * @param image The new instance
      * @param onComplete called on completion with if the update was successful
-     * @see #setAssociatedImage(Uri, String, Consumer)
+     * @see #setAssociatedImage(Uri, Consumer)
      */
     @Database.StirsDeep(what = "The previous Image")
     public void setPoster(@Nullable Uri image, Consumer<Boolean> onComplete){
-        setAssociatedImage(image, getTitle(), onComplete);
+        setAssociatedImage(image, onComplete);
     }
 
     @Database.Observes

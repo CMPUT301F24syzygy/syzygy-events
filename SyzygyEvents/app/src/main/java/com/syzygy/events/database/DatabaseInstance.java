@@ -159,6 +159,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
+     * Returns the name that should be given to the image instance. If no image is associated, returns null
+     */
+    public String getAssociatedImageLocName() {return null;}
+
+    /**
      * Adds a new update listener to this instance
      * <p>
      * If the same listener is added twice, the listener will only be notified of an update once
@@ -1000,18 +1005,17 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Sets the associated Image instance. This function will create a new reference to the instance.
      * @param image The new instance
-     * @param locName the name of the instance that has the image
      * @param onComplete called on completion with if the update was successful
      * @throws UnsupportedOperationException if the instance type does not have an editable associated image
      */
     @Database.StirsDeep(what = "The previous Image")
-    public void setAssociatedImage(@Nullable Uri image, String locName, Consumer<Boolean> onComplete) throws UnsupportedOperationException{
+    public void setAssociatedImage(@Nullable Uri image, Consumer<Boolean> onComplete) throws UnsupportedOperationException{
         int id = getCollection().getAssociatedImagePropertyId();
         if(id == Database.Collections.IS_ITS_OWN_ASSOCIATED_IMAGE || id == Database.Collections.DOES_NOT_HAVE_ASSOCIATED_IMAGE || !isPropertyEditable(id)){
             db.throwE(new UnsupportedOperationException("This instance does not have an editable associated image"));
             return;
         }
-        db.replaceImage(image, getAssociatedImage(), locName, getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
+        db.replaceImage(image, getAssociatedImage(), getAssociatedImageLocName(), getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
             setPropertyInstance(getCollection().getAssociatedImagePropertyId(), newImage);
         }, (_null, success) -> onComplete.accept(success));
     }
@@ -1040,6 +1044,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     protected final void processUpdate() throws IllegalStateException{
         notifyUpdate(Database.UpdateListener.Type.UPDATE);
         db.updateDatabase(this);
+        Image assocImage = getAssociatedImage();
+        if(assocImage != null){
+            assocImage.setLocName(getAssociatedImageLocName());
+        }
     }
 
     /**

@@ -108,6 +108,11 @@ public class Facility extends DatabaseInstance<Facility> {
         }
     }
 
+    @Override
+    public String getAssociatedImageLocName() {
+        return getName();
+    }
+
     public String getImageID(){
         return getPropertyValueI(R.string.database_fac_imageID);
     }
@@ -125,11 +130,11 @@ public class Facility extends DatabaseInstance<Facility> {
      * Sets the Image instance. This function will create a new reference to the instance.
      * @param image The new instance
      * @param onComplete called on completion with if the update was successful
-     * @see #setAssociatedImage(Uri, String, Consumer)
+     * @see #setAssociatedImage(Uri, Consumer)
      */
     @Database.StirsDeep(what = "The previous Image")
     public void setFacilityImage(@Nullable Uri image, Consumer<Boolean> onComplete){
-        setAssociatedImage(image, getName(), onComplete);
+        setAssociatedImage(image, onComplete);
     }
 
     @Database.Observes
