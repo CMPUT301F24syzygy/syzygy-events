@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -85,10 +86,26 @@ public class OrganizerCreateFragment extends Fragment {
         String facilityID = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacilityID();
         Boolean requiresGeo = binding.eventCreateRequireGeo.isChecked();
         String description = binding.eventCreateBio.getText().toString();
-        //todo try catch numbers
-        Integer capacity = Integer.parseInt(binding.eventCreateCapacity.getText().toString());
-        Integer waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Integer.parseInt(binding.eventCreateWaitlist.getText().toString()) : -1;
-        Double price = Double.parseDouble(binding.eventCreatePrice.getText().toString());
+
+        Integer capacity;
+        Integer waitlistCapacity;
+        Double price;
+        try{
+            capacity = Integer.parseInt(binding.eventCreateCapacity.getText().toString());
+        }catch (NumberFormatException ex){
+            capacity = null;
+        }
+        try{
+            waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Integer.parseInt(binding.eventCreateWaitlist.getText().toString()) : -1;
+        }catch (NumberFormatException ex){
+            waitlistCapacity = null;
+        }
+        try{
+            price = Double.parseDouble(binding.eventCreatePrice.getText().toString());
+        }catch (NumberFormatException ex){
+            price = null;
+        }
+
         Timestamp openDate;
         Timestamp closeDate;
         Timestamp startDate;
@@ -101,46 +118,32 @@ public class OrganizerCreateFragment extends Fragment {
         String endTime = binding.eventCreateEndTime.getText().toString();
         String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
         try{
-            Log.println(Log.DEBUG, "Event", "Start : " + startDay + " " + startTime);
             startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " " + startTime)));
         }catch (ParseException | NullPointerException ex){
-            Log.println(Log.DEBUG, "Event", "ExceptionStart");
             startDate = null;
         }
 
         try{
-            Log.println(Log.DEBUG, "Event", "End : " + endDay + " " + endTime);
             endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " " + endTime)));
         }catch (ParseException | NullPointerException ex){
-            Log.println(Log.DEBUG, "Event", "ExceptionEnd");
             endDate = null;
         }
-
-        Timestamp finalStartDate = startDate;
-        Timestamp finalEndDate = endDate;
 
         String openDay = binding.eventCreateOpenDate.getText().toString();
         String openTime = binding.eventCreateOpenTime.getText().toString();
         String closeTime = binding.eventCreateCloseTime.getText().toString();
         String closeDay = binding.eventCreateCloseDate.getText().toString();
         try{
-            Log.println(Log.DEBUG, "Event", "Open : " + openDay + " " + openTime);
             openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " " + openTime)));
         }catch (ParseException | NullPointerException ex){
-            Log.println(Log.DEBUG, "Event", "ExceptionOpen");
             openDate = null;
         }
 
         try{
-            Log.println(Log.DEBUG, "Event", "Close : " + closeDay + " " + closeTime);
             closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " " + closeTime)));
         }catch (ParseException | NullPointerException ex){
-            Log.println(Log.DEBUG, "Event", "ExceptionClose");
             closeDate = null;
         }
-
-        Timestamp finalOpenDate = openDate;
-        Timestamp finalCloseDate = closeDate;
 
         Integer dates;
         if(repeat){
@@ -155,55 +158,21 @@ public class OrganizerCreateFragment extends Fragment {
             dates = Event.Dates.NO_REPEAT;
         }
 
-        Set<Integer> invalidIds = Event.validateDataMap(Event.createDataMap(
-                title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, "", price, openDate, closeDate, startDate, endDate, dates, Timestamp.now()));
-        if(invalidIds.isEmpty()){
-            Log.println(Log.DEBUG, "create event", "valid");
-            binding.progressBar.setVisibility(View.VISIBLE);
-            SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
-            if(image != null){
-                Log.println(Log.DEBUG, "create event", "image");
-                Image.NewInstance(app.getDatabase(), title, Database.Collections.EVENTS, "testingLocID", image, (img, img_success) -> {
-                    if(!img_success){
-                        Log.println(Log.DEBUG, "create event", "image fail");
-                        Toast.makeText(getActivity(), "An error occurred: Image", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                        return;
-                    }
-                    Log.println(Log.DEBUG, "create event", "image good");
-                    Event.NewInstance(app.getDatabase(), title, img.getDocumentID(), facilityID, requiresGeo, description, capacity, waitlistCapacity, price, finalOpenDate, finalCloseDate, finalStartDate, finalEndDate, dates, (evnt, evnt_success) -> {
-                        if(evnt_success){
-                            img.dissolve();
-                            Log.println(Log.DEBUG, "create event", "event good");
-                            this.event = evnt;
-                            ((OrganizerActivity)getActivity()).openEvent(evnt.getDocumentID());
-                            return;
-                        }
-                        img.deleteInstance(s->{if(!s){
-                            Log.println(Log.ERROR, "Event create image", "Hanging image");
-                        }});
-                        Log.println(Log.DEBUG, "create event", "event fail");
-                        Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                    });
-                });
-                return;
-            }
-            Log.println(Log.DEBUG, "create event", "no image");
-
-            Event.NewInstance(app.getDatabase(), title, "", facilityID, requiresGeo, description, capacity, waitlistCapacity, price, openDate, closeDate, startDate, endDate, dates, (evnt, evnt_success) -> {
-                if(evnt_success){
-                    Log.println(Log.DEBUG, "create event", "event good");
-                    this.event = evnt;
-                    ((OrganizerActivity)getActivity()).openEvent(evnt.getDocumentID());
-                    return;
-                }
-                Log.println(Log.DEBUG, "create event", "event fail");
+        SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
+        binding.progressBar.setVisibility(View.VISIBLE);
+        Set<Integer> invalidIds = Event.NewInstance(app.getDatabase(), title, image, facilityID, requiresGeo, description, capacity, waitlistCapacity, price, openDate, closeDate, startDate, endDate, dates, (evnt, evnt_success) -> {
+            binding.progressBar.setVisibility(View.GONE);
+            if(evnt_success){
+                this.event = evnt;
+                ((OrganizerActivity)getActivity()).openEvent(evnt.getDocumentID());
+            }else{
                 Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
-            });
-            return;
-        }
+            }
+        });
+
+        if(invalidIds.isEmpty()) return;
+
         if(invalidIds.contains(R.string.database_event_title)){
             binding.eventCreateName.setError("Bad");
         }

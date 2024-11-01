@@ -27,11 +27,14 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
+import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryOrganizerEditBinding;
 import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
+import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -81,81 +84,42 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         String bio = binding.editFacilityBio.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
-        Set<Integer> invalidIds = Facility.validateDataMap(Facility.createDataMap(name, loc, address, bio, "", user));
 
-        if(!invalidIds.isEmpty()){
-            for(int i : invalidIds){
-                Log.println(Log.INFO, "Fac Invalid", getString(i));
-            }
-            if(invalidIds.contains(R.string.database_fac_name)){
-                binding.editFacilityName.setError("Bad");
-            }
-            if(invalidIds.contains(R.string.database_fac_description)){
-                binding.editFacilityBio.setError("Bad");
-            }
-            Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
-            return;
+        Set<Integer> invalidIds;
+        if(selectedImage){
+            invalidIds = facility.update(name, loc, address, bio, image, this::onUpdateInstance);
+        }else{
+            invalidIds = facility.update(name, loc, address, bio, this::onUpdateInstance);
         }
 
-        Log.println(Log.DEBUG, "editfac", "valid");
         binding.progressBar.setVisibility(View.VISIBLE);
-        Image currentImage = facility.getImage();
-        if(currentImage != null) currentImage.fetch();
 
-        if(image != null){
-            Log.println(Log.DEBUG, "editfac", "image");
-            Image.NewInstance(app.getDatabase(), name, Database.Collections.FACILITIES, user, image, (img, img_success) -> {
-                if(!img_success){
-                    Log.println(Log.DEBUG, "editfac", "image fail");
-                    Toast.makeText(getActivity(), "An error occurred: Image", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                    if(currentImage!=null)currentImage.dissolve();
-                    return;
-                }
-                Log.println(Log.DEBUG, "editfac", "image good");
-                facility.update(name, loc, address, bio, img.getDocumentID(), fac_success -> {
-                    img.dissolve();
-                    if(fac_success){
-                        Log.println(Log.DEBUG, "editefac", "fac good");
-                        if(currentImage != null) currentImage.deleteInstance(s -> {
-                            if(!s){
-                                Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                            }
-                        });
-                        facility.dissolve();
-                        ((OrganizerActivity)getActivity()).navigateUp();
-                        return;
-                    }
-                    if(currentImage!=null)currentImage.dissolve();
-                    img.deleteInstance(s->{if(!s){
-                        Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                    }});
-                    Log.println(Log.DEBUG, "editfac", "fac fail");
-                    Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                });
-            });
-            return;
+
+        if(invalidIds.isEmpty()) return;
+
+        if(invalidIds.contains(R.string.database_fac_name)){
+            binding.editFacilityName.setError("Bad");
         }
-        Log.println(Log.DEBUG, "editfac", "no image");
-        facility.update(name, loc, address, bio, selectedImage||currentImage==null?"":currentImage.getDocumentID(), fac_success -> {
-            if(fac_success){
-                Log.println(Log.DEBUG, "editefac", "fac good");
-                if(currentImage != null && selectedImage) currentImage.deleteInstance(s -> {
-                    if(!s){
-                        Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                    }
-                });
-                facility.dissolve();
-                ((OrganizerActivity)getActivity()).navigateUp();
-                return;
-            }
-            if(currentImage!=null)currentImage.dissolve();
-            Log.println(Log.DEBUG, "editfac", "fac fail");
+        if(invalidIds.contains(R.string.database_fac_description)){
+            binding.editFacilityBio.setError("Bad");
+        }
+        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
+        binding.progressBar.setVisibility(View.GONE);
+    }
+
+    /**
+     * Called on update of facility
+     * @param success If the success
+     * @see Facility#update(String, GeoPoint, String, String, Uri, Consumer)
+     */
+    private void onUpdateInstance(boolean success) {
+        if(success){
+            facility.dissolve();
+            ((EntrantActivity)getActivity()).navigateUp();
+        }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
-        });
-
+        }
     }
 
     private void choosePhoto(){

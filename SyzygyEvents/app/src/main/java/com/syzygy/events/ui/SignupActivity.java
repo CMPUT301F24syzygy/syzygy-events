@@ -70,48 +70,21 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         String bio = binding.signupBio.getText().toString();
         Boolean admin = binding.signupAdminNotifications.isChecked();
         Boolean org = binding.signupOrgNotifications.isChecked();
-        Set<Integer> invalidIds = User.validateDataMap(User.createDataMap(name, bio, "", "", email, phone, org, admin, false, Timestamp.now()));
-        if(invalidIds.isEmpty()){
-            Log.println(Log.DEBUG, "signup", "valid");
-            binding.progressBar.setVisibility(View.VISIBLE);
-            SyzygyApplication app = (SyzygyApplication) getApplication();
-            if(image != null){
-                Log.println(Log.DEBUG, "signup", "image");
-                Image.NewInstance(app.getDatabase(), name, Database.Collections.USERS, "testingLocID", image, (instance, success) -> {
-                    if(!success){
-                        Log.println(Log.DEBUG, "signup", "image fail");
-                        Toast.makeText(this, "An error occurred: Image", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                        return;
-                    }
-                    Log.println(Log.DEBUG, "signup", "image good");
-                    app.signupUser(name, email, phone, bio, admin, org, instance, success2 -> {
 
-                        instance.dissolve();
-                        if(success2){
-                            Log.println(Log.DEBUG, "signup", "user good");
-                            return;
-                        };
-                        Log.println(Log.DEBUG, "signup", "user fail");
-                        Toast.makeText(this, "An error occurred", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                    });
-                });
-                return;
-            }
-            Log.println(Log.DEBUG, "signup", "no image");
 
-            app.signupUser(name, email, phone, bio, admin, org, null, success -> {
-                if(success){
-                    Log.println(Log.DEBUG, "signup", "user good");
-                    return;
-                };
-                Log.println(Log.DEBUG, "signup", "user fail");
-                Toast.makeText(this, "An error occurred", Toast.LENGTH_LONG).show();
+        SyzygyApplication app = (SyzygyApplication) getApplication();
+
+        binding.progressBar.setVisibility(View.VISIBLE);
+        Set<Integer> invalidIds = app.signupUser(name, email, phone, bio, admin, org, image, success -> {
+            if(success){
+                app.switchToActivity(EntrantActivity.class);
+            }else{
+                Toast.makeText(this, "An error occurred: Image", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
-            });
-            return;
-        }
+            }
+        });
+        if(invalidIds.isEmpty()) return;
+
         if(invalidIds.contains(R.string.database_user_name)){
             binding.signupName.setError("Bad");
         }
