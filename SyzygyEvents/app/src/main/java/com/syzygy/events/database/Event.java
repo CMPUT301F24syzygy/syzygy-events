@@ -328,7 +328,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.Stirred
-    public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener){
+    public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener) {
         getInvitedUsers((query, data, success) -> {
             if(!success){
                 listener.onCompletion(query, null, false);

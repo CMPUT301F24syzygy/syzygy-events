@@ -112,6 +112,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
         binding.inEnrolledLayout.setVisibility(View.GONE);
         binding.joinWaitlistLayout.setVisibility(View.GONE);
         binding.waitlistFullLayout.setVisibility(View.GONE);
+        /*
 
         if (association == null) {
             event.getUserAssociation(app.getUser(), (e, a, success) -> {
@@ -128,6 +129,8 @@ public class EntrantEventSecondaryFragment extends Fragment {
                 }
             });
         }
+
+         */
 
 
         if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
