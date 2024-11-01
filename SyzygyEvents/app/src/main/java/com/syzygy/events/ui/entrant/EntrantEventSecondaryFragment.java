@@ -64,7 +64,7 @@ public class EntrantEventSecondaryFragment extends Fragment {
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText("$ " + event.getPrice().toString());
             binding.eventStartEndText.setText("");
-            //binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
+            binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             if (event.getRequiresLocation()) {
                 binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
             }
