@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * An instance of an image database item
@@ -90,12 +91,6 @@ public class Image extends DatabaseInstance<Image> {
         return getPropertyValueI(R.string.database_img_address);
     }
 
-    @Override
-    @Database.Observes
-    public Image getAssociatedImage() {
-        return this;
-    }
-
     /**
      * Loads the image into a picasso request and formats it based on the collection type
      * @param option How to format the image
@@ -111,7 +106,7 @@ public class Image extends DatabaseInstance<Image> {
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_imgid, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_address, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_img_locName, o -> o instanceof String, true),
@@ -126,101 +121,76 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     @Override
-    protected void requiredFirstDelete(Database.Querrier.EmptyListener listener) {
-        db.deleteImage(getImageID(), listener::onCompletion);
+    protected void requiredFirstDelete(Consumer<Boolean> listener) {
+        db.deleteImage(getImageID(), listener);
     }
 
     /**
-     * Creates a new Image instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
+     * Validates and creates a new Image instance in the database using the given data.
      * @param db The database
      * @param locName the Name of where the image is stored
      * @param locType the type of where the image is stored
      * @param locID the database ID of where the image is stored
      * @param image the image file
-     * @param listener The initializer listener: this will be called once the user is ready
+     * @param listener This will be called once the image is initialized. Is not called if the data is invalid
+     * @return The property id of all invalid properties
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                    String locName,
                                    Database.Collections locType,
                                    String locID,
-                                   Uri image,
+                                   @NonNull Uri image,
                                    Database.InitializationListener<Image> listener
     ){
-        if(image == null){
-            listener.onInitialization(null, false);
-            return;
-        }
 
         String docID = Database.Collections.IMAGES.getNewID(db);
 
         String imageID = locType.toString() + "/" + docID;
 
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_img_locType, locType.toString());
+        map.put(R.string.database_img_locName, locName);
+        map.put(R.string.database_img_locID, locID);
+        map.put(R.string.database_img_imgid, imageID);
+        map.put(R.string.database_img_uploadTime, Timestamp.now());
+
+        Set<Integer> invalidIDs = isDataValid(map, fields);
+        if(!invalidIDs.isEmpty()) {
+            Log.println(Log.DEBUG, "Newimage", "invalid");
+            return invalidIDs;
+        }
+
         db.addFileToStorage(imageID, image, address -> {
             if(address == null){
+                Log.println(Log.DEBUG, "Newimage", "failed image");
                 listener.onInitialization(null, false);
                 return;
             }
-            Map<Integer,Object> map = createDataMap(locName, locType.toString(), locID, imageID, address.toString(), Timestamp.now());
 
-            if(!validateDataMap(map).isEmpty()){
-                db.deleteImage(imageID, success2 -> {
-                    if(!success2){
-                        db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
-                    }
-                    listener.onInitialization(null, false);
-                });
-                return;
-            }
-            db.createNewInstance(Database.Collections.IMAGES, docID, db.convertIDMapToNames(map), listener);
+            Log.println(Log.DEBUG, "Newimage", "created image file");
+
+            map.put(R.string.database_img_address, address.toString());
+
+            db.<Image>createNewInstance(Database.Collections.IMAGES, docID, map, (instance, success) -> {
+                Log.println(Log.DEBUG, "Newimage", "created image");
+                if(!success){
+                    db.deleteImage(imageID, success2 -> {
+                        if(!success2){
+                            db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
+                        }
+                        listener.onInitialization(null, false);
+                    });
+                    return;
+                }
+                listener.onInitialization(instance, success);
+            });
         });
+
+        return invalidIDs;
     }
 
-
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param locName the Name of where the image is stored
-     * @param locType the type of where the image is stored
-     * @param locID the database ID of where the image is stored
-     * @param imgid The id of the image with the storage
-     * @param address The download url of the image
-     * @param uploadTime The time when the image was uploaded
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(String locName,
-                                                     String locType,
-                                                     String locID,
-                                                     String imgid,
-                                                     String address,
-                                                     Timestamp uploadTime
-
-    ){
-        Map<Integer,Object> map = new HashMap<>();
-        map.put(R.string.database_img_locType, locType);
-        map.put(R.string.database_img_locName, locName);
-        map.put(R.string.database_img_locID, locID);
-        map.put(R.string.database_img_imgid, imgid);
-        map.put(R.string.database_img_address, address);
-        map.put(R.string.database_img_uploadTime, uploadTime);
-        return map;
-    }
-
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return The invalid ids
-     * @see #createDataMap(String, String, String, String, String, Timestamp) 
-     */
-    public static Set<Integer> validateDataMap(Map<Integer, Object> dataMap){
-        return com.syzygy.events.database.DatabaseInstance.isDataValid(dataMap, fields);
-    }
 
     /**
      * Loads the associated image of the instance and formats it.

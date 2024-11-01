@@ -82,59 +82,20 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         String bio = binding.createFacilityBio.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
-        Set<Integer> invalidIds = Facility.validateDataMap(Facility.createDataMap(name, loc, address, bio, "", user));
-        if(invalidIds.isEmpty()){
-            Log.println(Log.DEBUG, "createfac", "valid");
-            binding.progressBar.setVisibility(View.VISIBLE);
-            if(image != null){
-                Log.println(Log.DEBUG, "createfac", "image");
-                Image.NewInstance(app.getDatabase(), name, Database.Collections.FACILITIES, user, image, (img, img_success) -> {
-                    if(!img_success){
-                        Log.println(Log.DEBUG, "createfac", "image fail");
-                        Toast.makeText(getActivity(), "An error occurred: Image", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                        return;
-                    }
-                    Log.println(Log.DEBUG, "createfac", "image good");
-                    Facility.NewInstance(app.getDatabase(), name, loc, address, bio, img.getDocumentID(), user, (fac, fac_success) ->{
-                        if(fac_success){
-                            img.dissolve();
-                            Log.println(Log.DEBUG, "createfac", "fac good");
-                            app.getUser().setFacility(fac);
-                            fac.dissolve();
-                            Log.println(Log.DEBUG, "createfac", "user good");
-                            app.switchToActivity(OrganizerActivity.class);
-                            return;
-                        };
-                        img.deleteInstance(s->{if(!s){
-                            Log.println(Log.ERROR, "Fac create image", "Hanging image");
-                        }});
-                        Log.println(Log.DEBUG, "createfac", "fac fail");
-                        Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
-                        binding.progressBar.setVisibility(View.GONE);
-                    });
-                });
-                return;
-            }
-            Log.println(Log.DEBUG, "createfac", "no image");
-            Facility.NewInstance(app.getDatabase(), name, loc, address, bio, "", user, (fac, fac_success) ->{
-                if(fac_success){
-                    Log.println(Log.DEBUG, "createfac", "fac good");
-                    app.getUser().setFacility(fac);
-                    fac.dissolve();
-                    Log.println(Log.DEBUG, "createfac", "user good");
-                    app.switchToActivity(OrganizerActivity.class);
-                    return;
-                };
-                Log.println(Log.DEBUG, "createfac", "fac fail");
+
+        binding.progressBar.setVisibility(View.VISIBLE);
+        Set<Integer> invalidIds = Facility.NewInstance(app.getDatabase(), name, loc, address, bio, image, user, (fac, fac_success) -> {
+            if(fac_success){
+                app.getUser().setFacility(fac);
+                fac.dissolve();
+                app.switchToActivity(OrganizerActivity.class);
+            }else{
                 Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
-            });
-            return;
-        }
-        for(int i : invalidIds){
-            Log.println(Log.INFO, "Fac Invalid", getString(i));
-        }
+            }
+        });
+        if(invalidIds.isEmpty()) return;
+
         if(invalidIds.contains(R.string.database_fac_name)){
             binding.createFacilityName.setError("Bad");
         }

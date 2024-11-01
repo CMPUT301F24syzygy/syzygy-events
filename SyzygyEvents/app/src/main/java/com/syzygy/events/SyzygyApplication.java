@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
@@ -198,18 +199,14 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
 
     /**
      * To be called by the Signup activity upon submission
+     * @return all invalid properties
      */
-    public void signupUser(String name, String email, String phone, String bio, Boolean admin, Boolean org, Image image, Consumer<Boolean> listener){
-        User.NewInstance(db, deviceID, name, bio, image == null ? "" : image.getDocumentID(), "", email, phone, org, admin, false, (instance, success) -> {
+    public Set<Integer> signupUser(String name, String email, String phone, String bio, Boolean admin, Boolean org, Uri image, Consumer<Boolean> onComplete){
+        return User.NewInstance(db, deviceID, name, bio, image, "", email, phone, org, admin, false, (instance, success) -> {
             if(success){
                 this.user = instance;
-                if(image!=null)image.setLocID(user.getDocumentID());
-                listener.accept(true);
-                switchToActivity(EntrantActivity.class);
-            }else{
-                if(image!=null)image.deleteInstance(s -> {});
-                listener.accept(false);
             }
+            onComplete.accept(success);
         });
     }
 

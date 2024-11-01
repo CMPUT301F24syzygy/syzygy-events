@@ -28,6 +28,7 @@ import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class EntrantEditSecondaryFragment extends Fragment {
 
@@ -68,84 +69,48 @@ public class EntrantEditSecondaryFragment extends Fragment {
         Boolean org = binding.entrantEditOrgNotifications.isChecked();
 
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
-        Set<Integer> invalidIds = User.validateDataMap(User.createDataMap(name, bio, "", "", email, phone, org, admin, false, Timestamp.now()));
+        Set<Integer> invalidIds;
 
-        if(!invalidIds.isEmpty()){
-            if(invalidIds.contains(R.string.database_user_name)){
-                binding.entrantEditName.setError("Bad");
-            }
-            if(invalidIds.contains(R.string.database_user_phoneNumber)){
-                binding.entrantEditPhone.setError("Bad");
-            }
-            if(invalidIds.contains(R.string.database_user_email)){
-                binding.entrantEditEmail.setError("Bad");
-            }
-            if(invalidIds.contains(R.string.database_user_description)){
-                binding.entrantEditBio.setError("Bad");
-            }
-            Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Log.println(Log.DEBUG, "edituser", "valid");
         binding.progressBar.setVisibility(View.VISIBLE);
-        Image currentImage = user.getProfileImage();
-        if(currentImage != null) currentImage.fetch();
 
-        if(image != null){
-            Log.println(Log.DEBUG, "edituser", "image");
-            Image.NewInstance(app.getDatabase(), name, Database.Collections.USERS, user.getDocumentID(), image, (img, img_success) -> {
-                if(!img_success){
-                    Log.println(Log.DEBUG, "editusr", "image fail");
-                    Toast.makeText(getActivity(), "An error occurred: Image", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                    if(currentImage!=null)currentImage.dissolve();
-                    return;
-                }
-                Log.println(Log.DEBUG, "edituser", "image good");
-                user.update(name, bio, img.getDocumentID(), email, phone, org, admin, user.isAdmin(), usr_success -> {
-                    if(usr_success){
-                        img.dissolve();
-                        Log.println(Log.DEBUG, "edituser", "fac good");
-                        if(currentImage != null) currentImage.deleteInstance(s -> {
-                            if(!s){
-                                Log.println(Log.ERROR, "user edit image", "Hanging image");
-                            }
-                        });
-                        user.dissolve();
-                        ((EntrantActivity)getActivity()).navigateUp();
-                        return;
-                    }
-                    if(currentImage!=null)currentImage.dissolve();
-                    img.deleteInstance(s->{if(!s){
-                        Log.println(Log.ERROR, "user edit image", "Hanging image");
-                    }});
-                    Log.println(Log.DEBUG, "edituser", "user fail");
-                    Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                });
-            });
-            return;
+        if(imageSelected){
+            invalidIds = user.update(name, bio, image, email, phone, org, admin, user.isAdmin(), this::onUpdateInstance);
+        }else{
+            invalidIds = user.update(name, bio, email, phone, org, admin, user.isAdmin(), this::onUpdateInstance);
         }
-        Log.println(Log.DEBUG, "edituser", "no image");
-        user.update(name, bio, imageSelected||currentImage==null?"":currentImage.getDocumentID(), email, phone, org, admin, user.isAdmin(), usr_success -> {
-            if(usr_success){
-                Log.println(Log.DEBUG, "edituser", "fac good");
-                if(currentImage != null && imageSelected) currentImage.deleteInstance(s -> {
-                    if(!s){
-                        Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                    }
-                });
-                user.dissolve();
-                ((EntrantActivity)getActivity()).navigateUp();
-                return;
-            }
-            if(currentImage!=null)currentImage.dissolve();
-            Log.println(Log.DEBUG, "edituser", "fac fail");
+
+        if(invalidIds.isEmpty()) return;
+
+        if(invalidIds.contains(R.string.database_user_name)){
+            binding.entrantEditName.setError("Bad");
+        }
+        if(invalidIds.contains(R.string.database_user_phoneNumber)){
+            binding.entrantEditPhone.setError("Bad");
+        }
+        if(invalidIds.contains(R.string.database_user_email)){
+            binding.entrantEditEmail.setError("Bad");
+        }
+        if(invalidIds.contains(R.string.database_user_description)){
+            binding.entrantEditBio.setError("Bad");
+        }
+        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
+        binding.progressBar.setVisibility(View.GONE);
+
+    }
+
+    /**
+     * Called on update of user
+     * @param success If the success
+     * @see User#update(String, String, Uri, String, String, Boolean, Boolean, Boolean, Consumer)
+     */
+    private void onUpdateInstance(boolean success) {
+        Log.println(Log.DEBUG, "EditProfile", "update " + success);
+        if(success){
+            ((EntrantActivity)getActivity()).navigateUp();
+        }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
-        });
-
+        }
     }
 
     private void choosePhoto(){
@@ -176,4 +141,5 @@ public class EntrantEditSecondaryFragment extends Fragment {
         user.dissolve();
         binding = null;
     }
+
 }

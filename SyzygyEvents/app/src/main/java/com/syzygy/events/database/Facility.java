@@ -3,6 +3,7 @@ package com.syzygy.events.database;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * An instance of a facility database item
@@ -110,10 +112,6 @@ public class Facility extends DatabaseInstance<Facility> {
         return getPropertyValueI(R.string.database_fac_imageID);
     }
 
-    public boolean setImageID(String val, Database.Querrier.EmptyListener onComplete){
-        return setPropertyValue(R.string.database_fac_imageID, val, onComplete);
-    }
-
     public String getOrganizerID(){
         return getPropertyValueI(R.string.database_fac_organizer);
     }
@@ -123,19 +121,15 @@ public class Facility extends DatabaseInstance<Facility> {
         return getPropertyInstanceI(R.string.database_fac_imageID);
     }
 
-    @Override
-    @Database.Observes
-    public Image getAssociatedImage() {
-        return getImage();
-    }
-
     /**
      * Sets the Image instance. This function will create a new reference to the instance.
-     * @param val The new instance
+     * @param image The new instance
+     * @param onComplete called on completion with if the update was successful
+     * @see #setAssociatedImage(Uri, String, Consumer)
      */
-    @Database.StirsDeep(what = "The previous image")
-    public boolean setImage(@Nullable @Database.Dilutes Image val){
-        return setPropertyInstance(R.string.database_fac_imageID, val);
+    @Database.StirsDeep(what = "The previous Image")
+    public void setFacilityImage(@Nullable Uri image, Consumer<Boolean> onComplete){
+        setAssociatedImage(image, getName(), onComplete);
     }
 
     @Database.Observes
@@ -144,35 +138,60 @@ public class Facility extends DatabaseInstance<Facility> {
     }
 
     /**
-     * Updates all properties of the facility. If the facility changes, a notification is sent to listeners once and the database is updated once
+     * Validates an updates all properties of the facility. If the facility changes, a notification is sent to listeners once and the database is updated once
      * @param name The name of the facility
      * @param location The location of the facility
      * @param address The address of the facility
      * @param description The description of the facility
-     * @param imageID The ID of the facility profile image
+     * @param image The new image
+     * @param onComplete called once update is complete with weather the update was successful. Not called if properties are invalid
      * @return If the facility changed as a result
+     * @see #updateDataFromMap(Map, Uri, String, Consumer)
      */
     @Database.StirsDeep(what = "The previous image")
-    public boolean update(String name,
+    public Set<Integer> update(String name,
                           GeoPoint location,
                           String address,
                           String description,
-                          @Database.Dilutes String imageID,
-                          Database.Querrier.EmptyListener onComplete
+                          Uri image,
+                          Consumer<Boolean> onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_fac_name, name);
         map.put(R.string.database_fac_location, location);
         map.put(R.string.database_fac_address, address);
         map.put(R.string.database_fac_description, description);
-        map.put(R.string.database_fac_imageID, imageID);
-        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
+        return updateDataFromMap(map, image, name, onComplete);
+    }
+
+    /**
+     * Validates an updates all properties of the facility. If the facility changes, a notification is sent to listeners once and the database is updated once
+     * @param name The name of the facility
+     * @param location The location of the facility
+     * @param address The address of the facility
+     * @param description The description of the facility
+     * @param onComplete will always be true and will be called before return
+     * @return If the facility changed as a result
+     * @see #updateDataFromMap(Map, Consumer)
+     */
+    public Set<Integer> update(String name,
+                               GeoPoint location,
+                               String address,
+                               String description,
+                               Consumer<Boolean> onComplete
+    ){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_fac_name, name);
+        map.put(R.string.database_fac_location, location);
+        map.put(R.string.database_fac_address, address);
+        map.put(R.string.database_fac_description, description);
+        return updateDataFromMap(map, onComplete);
     }
 
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_fac_location, o -> o instanceof GeoPoint, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_fac_address, o -> o instanceof String, true),
@@ -191,76 +210,35 @@ public class Facility extends DatabaseInstance<Facility> {
 
     /**
      * Creates a new Image instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
      * @param db The database
      * @param name The name of the facility
      * @param location The location of the facility
      * @param address The address of the location
      * @param description The description of the facility
-     * @param imageID The ID of the facility profile image
+     * @param image The facility profile image
      * @param organizerID The Id of the organizer
-     * @param listener The initializer listener: this will be called once the user is ready
+     * @param listener called once the instance is initialized. Not called if properties are invalid
+     * @return The set property ids that are invalid
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                     String name,
                                     GeoPoint location,
                                     String address,
                                     String description,
-                                    @Database.Dilutes String imageID,
+                                    Uri image,
                                     @Database.Dilutes String organizerID,
                                     Database.InitializationListener<Facility> listener
     ){
-        Map<Integer,Object> map = createDataMap(name, location, address, description, imageID, organizerID);
 
-        if(!validateDataMap(map).isEmpty()){
-            listener.onInitialization(null, false);
-            return;
-        }
-
-        db.createNewInstance(Database.Collections.FACILITIES, organizerID, db.convertIDMapToNames(map), listener);
-    }
-
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param name The name of the facility
-     * @param location The location of the facility
-     * @param description The description of the facility
-     * @param imageID The ID of the facility profile image
-     * @param organizerID The Id of the organizer
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(String name,
-                                                     GeoPoint location,
-                                                     String address,
-                                                     String description,
-                                                     @Database.Observes String imageID,
-                                                     @Database.Observes String organizerID
-
-    ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_fac_name, name);
         map.put(R.string.database_fac_location, location);
         map.put(R.string.database_fac_address, address);
         map.put(R.string.database_fac_description, description);
-        map.put(R.string.database_fac_imageID, imageID);
         map.put(R.string.database_fac_organizer, organizerID);
-        return map;
-    }
 
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return The invalid ids
-     * @see #createDataMap(String, GeoPoint, String, String, String, String) 
-     */
-    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
+        return db.createNewInstance(Database.Collections.FACILITIES, organizerID, map, image, name, listener);
     }
 }
