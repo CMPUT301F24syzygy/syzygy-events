@@ -502,7 +502,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 listener.onCompletion(this, null, false);
                 return;
             }
-            if(getCurrentWaitlist() >= getWaitlistCapacity()){
+            int waitListCapacity = getWaitlistCapacity();
+            if(waitListCapacity >= 0 && getCurrentWaitlist() >= waitListCapacity){
                 listener.onCompletion(this, null, false);
                 return;
             }
@@ -517,7 +518,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     return;
                 }
                 if(data.size() == 1) {
-                    data.setStatus(R.string.event_assoc_status_waitlist);
                     EventAssociation e = data.result.get(0).fetch();
                     String status = e.getStatus();
 
@@ -527,7 +527,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                         data.dissolve();
                         return;
                     }
-                    e.setStatus(R.string.database_event_waitlist);
+                    e.setStatus(R.string.event_assoc_status_waitlist);
                     listener.onCompletion(this, new QueryResult<>(e), true);
                     data.dissolve();
                     return;
@@ -537,6 +537,56 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     listener.onCompletion(this, new QueryResult<>(instance), success2);
                     data.dissolve();
                 });
+            });
+
+        });
+    }
+
+    /**
+     * Adds a user to the enrolled given that the user is currently invited
+     * <p>
+     *     The listener will be returned with false success if an error occurs or the user cannot be enrolled. If the this is because the user in a not invite status, the association is returned with false success
+     * </p>
+     * @param user
+     * @param listener
+     */
+    @Database.MustStir
+    public void acceptInvite(@Database.Observes User user, DataListener<Event, QueryResult<EventAssociation>> listener){
+
+        refreshData((query, success) -> {
+            if(!success) {
+                listener.onCompletion(this, null, false);
+                return;
+            }
+
+            if(getCurrentEnrolled() >= getCapacity()){
+                listener.onCompletion(this, null, false);
+                return;
+            }
+
+            getUserAssociation(user, (query1, data, success1) -> {
+                if(!success1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+                if(data.size() != 1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+
+                EventAssociation e = data.result.get(0).fetch();
+                String status = e.getStatus();
+
+                if (!Objects.equals(status, db.constants.getString(R.string.event_assoc_status_invited))) {
+                    //Not in state where can become enrolled
+                    listener.onCompletion(this, new QueryResult<>(e), false);
+                    data.dissolve();
+                    return;
+                }
+
+                e.setStatus(R.string.event_assoc_status_cancelled);
+                listener.onCompletion(this, new QueryResult<>(e), true);
+                data.dissolve();
             });
 
         });
