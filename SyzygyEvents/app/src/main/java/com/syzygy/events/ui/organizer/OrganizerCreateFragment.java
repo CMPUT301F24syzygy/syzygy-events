@@ -87,16 +87,16 @@ public class OrganizerCreateFragment extends Fragment {
         Boolean requiresGeo = binding.eventCreateRequireGeo.isChecked();
         String description = binding.eventCreateBio.getText().toString();
 
-        Integer capacity;
-        Integer waitlistCapacity;
+        Long capacity;
+        Long waitlistCapacity;
         Double price;
         try{
-            capacity = Integer.parseInt(binding.eventCreateCapacity.getText().toString());
+            capacity = Long.parseLong(binding.eventCreateCapacity.getText().toString());
         }catch (NumberFormatException ex){
             capacity = null;
         }
         try{
-            waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Integer.parseInt(binding.eventCreateWaitlist.getText().toString()) : -1;
+            waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Long.parseLong(binding.eventCreateWaitlist.getText().toString()) : -1;
         }catch (NumberFormatException ex){
             waitlistCapacity = null;
         }
@@ -145,7 +145,7 @@ public class OrganizerCreateFragment extends Fragment {
             closeDate = null;
         }
 
-        Integer dates;
+        Long dates;
         if(repeat){
             dates = (binding.createEventDaysM.isChecked() ? Event.Dates.MONDAY : 0) |
                     (binding.createEventDaysT.isChecked() ? Event.Dates.TUESDAY : 0) |
