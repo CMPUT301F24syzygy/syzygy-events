@@ -1,14 +1,18 @@
 package com.syzygy.events.database;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,6 +20,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 import com.syzygy.events.R;
 
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -72,11 +78,11 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     public boolean setLocName(String val){
-        return setPropertyValue(R.string.database_img_locID, val, s -> {});
+        return setPropertyValue(R.string.database_img_locName, val, s -> {});
     }
 
     public boolean setLocType(Database.Collections val){
-        return setPropertyValue(R.string.database_img_locID, val.toString(), s -> {});
+        return setPropertyValue(R.string.database_img_locType, val.toString(), s -> {});
     }
 
     public String getImageID(){
@@ -121,14 +127,16 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     @Override
-    protected void requiredFirstDelete(Consumer<Boolean> listener) {
+    protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener) {
         db.deleteImage(getImageID(), success -> {
             if(!success){
                 listener.accept(false);
                 return;
             }
-            Database.Collections col = getLocType();
-            db.modifyField(getLocType(), getLocID(), col.getAssociatedImagePropertyId(), "", listener);
+            if((deletionType & DeletionType.HARD_DELETE) != 0){
+                Database.Collections col = getLocType();
+                db.modifyField(getLocType(), getLocID(), col.getAssociatedImagePropertyId(), "", listener);
+            }
         });
     }
 
@@ -198,6 +206,26 @@ public class Image extends DatabaseInstance<Image> {
         return invalidIDs;
     }
 
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @param option The formatting options
+     * @param resources The resources to use for creating the drawable
+     * @param useDrawable Called on preparation with a placeHolder drawable, then again on completion
+     *                    of load with the drawable or an error drawable if failed.
+     *                    <ul>
+     *                    <li>If placeholder, {@code success = null}</li>
+     *                    <li>If error, {@code success = false}</li>
+     *                    <li>If good, {@code success = true}</li>
+     *                    </ul>
+     * @see #getFormatedAssociatedImage(DatabaseInstance, Options)
+     * @see #loadAsDrawable(RequestCreator, Resources, BiConsumer)
+     */
+    public static void getFormatedAssociatedImageAsDrawable(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option, Resources resources, BiConsumer<Boolean, Drawable> useDrawable){
+        loadAsDrawable(getFormatedAssociatedImage(instance, option), resources, useDrawable);
+    }
 
     /**
      * Loads the associated image of the instance and formats it.
@@ -262,6 +290,19 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     /**
+     * Formats the drawable
+     * @param resID the id of the drawable
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #getDefaultImage(Database.Collections)
+     */
+    public static RequestCreator formatImage(@DrawableRes int resID, @NonNull Options option){
+        Log.println(Log.DEBUG, "format", "formating");
+        RequestCreator loadedPicasso =  Picasso.get().load(resID).placeholder(R.drawable.transparent).error(R.drawable.transparent);
+        return formatImage(loadedPicasso, option);
+    }
+
+    /**
      * Formats the loaded image based on the collection
      * @param loadedPicasso The picasso element that is loaded with the image.
      * @param option How to format the image
@@ -274,6 +315,39 @@ public class Image extends DatabaseInstance<Image> {
         option.modifyImage(loadedPicasso);
         return loadedPicasso;
     }
+
+    /**
+     * Turns a loaded picasso into a drawable
+     * @param loadedPicasso The picasso element that is loaded with the image.
+     * @param resources The resources to use for creating the drawable
+     * @param useDrawable Called on preparation with a placeHolder drawable, then again on completion
+     *                    of load with the drawable or an error drawable if failed.
+     *                    <ul>
+     *                    <li>If placeholder, {@code success = null}</li>
+     *                    <li>If error, {@code success = false}</li>
+     *                    <li>If good, {@code success = true}</li>
+     *                    </ul>
+     */
+    public static void loadAsDrawable(@NonNull RequestCreator loadedPicasso, Resources resources, BiConsumer<Boolean, Drawable> useDrawable){
+        Target target = new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                useDrawable.accept(true, new BitmapDrawable(resources, bitmap));
+            }
+
+            @Override
+            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                useDrawable.accept(false, errorDrawable);
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                useDrawable.accept(null, placeHolderDrawable);
+            }
+        };
+        loadedPicasso.into(target);
+    }
+
 
     public static class Options {
 
@@ -327,6 +401,16 @@ public class Image extends DatabaseInstance<Image> {
             return new Options(-1,-1,false);
         }
 
+        /**
+         * A list of predefined sizes
+         */
+        public enum Sizes {;
+            public static final int
+                    LARGE = 400,
+                    MEDIUM = 256,
+                    SMALL = 200,
+                    ICON = 128;
+        }
 
     }
 

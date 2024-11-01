@@ -2,7 +2,6 @@ package com.syzygy.events.ui.organizer;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,18 +17,12 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragmentOrganizerCreateBinding;
-import com.syzygy.events.databinding.FragmentOrganizerProfileBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -73,10 +66,10 @@ public class OrganizerCreateFragment extends Fragment {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(256)).into(binding.eventCreateProfile);
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
             binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.eventCreateProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);;
             binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
         }
     }

@@ -27,9 +27,7 @@ import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryOrganizerEditBinding;
-import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
@@ -56,7 +54,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         });
         binding.editFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(256)).into(binding.editFacilityProfile);
+        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);
         binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
         binding.editFacilityBio.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
@@ -114,8 +112,9 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
      */
     private void onUpdateInstance(boolean success) {
         if(success){
-            facility.dissolve();
-            ((EntrantActivity)getActivity()).navigateUp();
+            //Instead of navigating back were going to use the switch application
+            //This forces the menu icons to refresh in case the profile image was changed
+            ((SyzygyApplication)getActivity().getApplication()).switchToActivity(OrganizerActivity.class);
         }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
@@ -136,10 +135,10 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         selectedImage = true;
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(256)).into(binding.editFacilityProfile);
+            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);
             binding.editFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.editFacilityProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);;
             binding.editFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }
