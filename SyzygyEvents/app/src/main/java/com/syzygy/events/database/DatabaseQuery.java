@@ -107,7 +107,6 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     public void refreshData(Listener<DatabaseQuery<T>> listener){
         if(currentPage == null){
             firstPageQuery();
-            return;
         }
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){

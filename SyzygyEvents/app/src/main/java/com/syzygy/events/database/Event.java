@@ -1,6 +1,7 @@
 package com.syzygy.events.database;
 
 import android.net.Uri;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -497,11 +498,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         }
 
         GeoPoint finalLocation = getRequiresLocation() ? location : null;
-
         if(!isRegistrationOpen()){
             listener.onCompletion(this, null, false);
             return;
         }
+
         refreshData((query, success) -> {
             if(!success) {
                 listener.onCompletion(this, null, false);
@@ -512,7 +513,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 listener.onCompletion(this, null, false);
                 return;
             }
-
             getUserAssociation(user, (query1, data, success1) -> {
                 if(!success1){
                     listener.onCompletion(this, null, false);
