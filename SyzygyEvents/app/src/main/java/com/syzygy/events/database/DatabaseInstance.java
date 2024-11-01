@@ -1305,6 +1305,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          */
         @SuppressWarnings("unchecked")
         public void setValue(@Database.Observes Object value) throws ClassCastException{
+            if(!meta.isValid.test(value)) throw new ClassCastException("Invalid value: " + value + " for property id " + meta.propertyNameID);
             this.value = (V) value;
         }
 

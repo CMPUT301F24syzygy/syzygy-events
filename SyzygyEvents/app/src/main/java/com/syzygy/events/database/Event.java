@@ -395,11 +395,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return setPropertyValue(R.string.database_event_description, val, s -> {});
     }
 
-    public Integer getCapacity(){
+    public Long getCapacity(){
         return getPropertyValueI(R.string.database_event_capacity);
     }
 
-    public Integer getWaitlistCapacity(){
+    public Long getWaitlistCapacity(){
         return getPropertyValueI(R.string.database_event_waitlist);
     }
 
@@ -445,7 +445,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_closedDate);
     }
 
-    public Integer getEventDates(){
+    public Long getEventDates(){
         return getPropertyValueI(R.string.database_event_dates);
     }
 
@@ -502,7 +502,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 listener.onCompletion(this, null, false);
                 return;
             }
-            int waitListCapacity = getWaitlistCapacity();
+            long waitListCapacity = getWaitlistCapacity();
             if(waitListCapacity >= 0 && getCurrentWaitlist() >= waitListCapacity){
                 listener.onCompletion(this, null, false);
                 return;
@@ -689,8 +689,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String, true),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, false),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Integer && ((Integer)o > 0 || (Integer)o == -1), false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Long && (Long)o > 0, false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Long && ((Long)o > 0 || (Long)o == -1), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String, true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double) o) >= 0, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
@@ -698,7 +698,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_start, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_end, o -> o instanceof Timestamp, false),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Integer, false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Long, false),
     };
 
     @Override
@@ -736,14 +736,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                        @Database.Dilutes String facilityID,
                                        Boolean requiresLocation,
                                        String description,
-                                       Integer capacity,
-                                       Integer waitlistCapacity,
+                                       Long capacity,
+                                       Long waitlistCapacity,
                                        Double price,
                                        @Nullable Timestamp openRegistrationDate,
                                        Timestamp closedRegistrationDate,
                                        Timestamp startDate,
                                        Timestamp endDate,
-                                       Integer eventDates,
+                                       Long eventDates,
                                        Database.InitializationListener<Event> listener
     ){
         Timestamp now = Timestamp.now();
@@ -784,17 +784,17 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     public enum Dates { // used as a namespace
         ;
-        public static final int
-                NO_REPEAT   = 0b0000000,
-                MONDAY      = 0b1000000,
-                TUESDAY     = 0b0100000,
-                WEDNESDAY   = 0b0010000,
-                THURSDAY    = 0b0001000,
-                FRIDAY      = 0b0000100,
-                SATURDAY    = 0b0000010,
-                SUNDAY      = 0b0000001,
-                WEEKDAYS    = 0b1111100,
-                EVERY_DAY   = 0b1111111;
+        public static final long
+                NO_REPEAT   = 0b0000000L,
+                MONDAY      = 0b1000000L,
+                TUESDAY     = 0b0100000L,
+                WEDNESDAY   = 0b0010000L,
+                THURSDAY    = 0b0001000L,
+                FRIDAY      = 0b0000100L,
+                SATURDAY    = 0b0000010L,
+                SUNDAY      = 0b0000001L,
+                WEEKDAYS    = 0b1111100L,
+                EVERY_DAY   = 0b1111111L;
 
         /**
          * Checks if the collection of dates contains the specific day
@@ -803,7 +803,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @return {@code true} if the collection contains the day. Will return {@code true} if the
          * collection contains other days as well
          */
-        public static boolean collectionContainsDay(int collection, int day){
+        public static boolean collectionContainsDay(long collection, long day){
             return (collection & day) == day;
         }
 
@@ -812,7 +812,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param collection The set of {@link Dates} to check
          * @return The number of days in the selection
          */
-        public static int numberOfDays(int collection){
+        public static int numberOfDays(long collection){
             int count = 0;
             for(int i=0; i<7; i++){
                 if(collectionContainsDay(collection, 1<<i)) count ++;
@@ -825,7 +825,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param collection The set of days
          * @return The formated string
          */
-        public static String format(int collection){
+        public static String format(Long collection){
 
             if(collection == WEEKDAYS) return "Weekdays";
             if(collection == EVERY_DAY) return "Every day";
