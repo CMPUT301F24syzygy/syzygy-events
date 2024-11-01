@@ -285,8 +285,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void nextPageQuery(){
         assert snapshot != null;
-        if(resultsPerPage == null) return;
-        currentPage = query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
     }
 
     /**
@@ -294,23 +293,20 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void previousPageQuery(){
         assert snapshot != null;
-        if(resultsPerPage == null) return;
-        currentPage = query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
     }
 
     /**
      * Gets the first resultsPerPage of the query
      */
     private void firstPageQuery(){
-        if(resultsPerPage == null) return;
-        currentPage = query.limit(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.limit(resultsPerPage);
     }
     /**
      * Gets the last resultsPerPage of the query
      */
     private void lastPageQuery(){
-        if(resultsPerPage == null) return;
-        currentPage = query.limitToLast(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.limitToLast(resultsPerPage);
     }
 
 
