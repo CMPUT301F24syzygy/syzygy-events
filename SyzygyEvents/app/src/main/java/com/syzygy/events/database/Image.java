@@ -122,7 +122,14 @@ public class Image extends DatabaseInstance<Image> {
 
     @Override
     protected void requiredFirstDelete(Consumer<Boolean> listener) {
-        db.deleteImage(getImageID(), listener);
+        db.deleteImage(getImageID(), success -> {
+            if(!success){
+                listener.accept(false);
+                return;
+            }
+            Database.Collections col = getLocType();
+            db.modifyField(getLocType(), getLocID(), col.getAssociatedImagePropertyId(), "", listener);
+        });
     }
 
     /**

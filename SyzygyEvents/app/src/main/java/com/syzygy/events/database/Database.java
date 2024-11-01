@@ -132,6 +132,24 @@ public class Database implements EventListener<DocumentSnapshot> {
     }
 
     /**
+     * Updates the field in the instance given by the collection and documentID without loading the instance.
+     * <p>
+     *     Does not do any cascading.
+     * </p>
+     * @param collection The collection of the instance to update
+     * @param documentId The documentID of the instance to update
+     * @param propertyNameId The id of the property to update
+     * @param newValue The new value to be put in the property
+     * @param onComplete called on completion with if the update occurred successfully.
+     */
+    void modifyField(@NonNull Collections collection, @NonNull String documentId, int propertyNameId, Object newValue, Consumer<Boolean> onComplete){
+        DocumentReference doc = collection.getDocument(this, documentId);
+        doc.update(constants.getString(propertyNameId), newValue).addOnCompleteListener(task -> {
+            onComplete.accept(task.isSuccessful());
+        });
+    }
+
+    /**
      * Retrieves the document properties of the instance and updates the instance to match
      * @param instance The database instance
      * @param <T> The instance type
