@@ -30,6 +30,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.Timestamp;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
@@ -40,6 +41,8 @@ import com.syzygy.events.ui.OrganizerActivity;
 import com.syzygy.events.ui.SignupActivity;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -273,6 +276,11 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     public void stringToLocation(String location) throws IOException {
         Geocoder geo = new Geocoder(this, Locale.getDefault());
         List<Address> addresses = geo.getFromLocationName(location, 3);
+    }
+
+    public String formatTimestamp(Timestamp t) {
+        DateFormat format = new SimpleDateFormat(getString(R.string.date_format_basic));
+        return format.format(t.toDate());
     }
 
     /**

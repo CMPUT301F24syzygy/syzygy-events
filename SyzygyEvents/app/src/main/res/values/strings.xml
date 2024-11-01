@@ -44,4 +44,14 @@
     <string name="button_download_qr_image">download qr</string>
     <string name="button_copy_qr_hash">copy hash</string>
     <string name="button_scan_qr">Scan QR</string>
+
+    <string name="weekdays_time">%s  at  %s</string>
+
+    <string name="before_reg_text">Registration Opens %s</string>
+    <string name="reg_open_text">Registration Open Until %s</string>
+    <string name="after_reg_text">Registration Closed</string>
+
+    <string name="failed_get_location">Failed to get location. This event ... </string>
+
+    <string name="date_format_basic">"dd/MM/yyyy"</string>
 </resources>

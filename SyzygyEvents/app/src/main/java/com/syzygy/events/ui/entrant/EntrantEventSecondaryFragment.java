@@ -31,42 +31,34 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-public class EntrantEventSecondaryFragment extends Fragment {
+public class EntrantEventSecondaryFragment extends Fragment implements Database.UpdateListener{
 
     private SecondaryEntrantEventBinding binding;
     Event event;
     EventAssociation association;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         binding = SecondaryEntrantEventBinding.inflate(inflater, container, false);
 
         EntrantActivity activity = (EntrantActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
                 activity.navigateUp();
             }
-            event = instance;
-            event.addListener(new Database.UpdateListener() {
-                @Override
-                public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
-                    if (!event.isLegalState()) {
-                        EntrantActivity activity = (EntrantActivity)getActivity();
-                        activity.navigateUp();
-                    }
-                    Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
-                }
-            });
 
-            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+            event = instance;
+            event.addListener(this);
+
             binding.eventTitle.setText(event.getTitle());
-            binding.eventPriceText.setText("$ " + event.getPrice().toString());
+            binding.eventPriceText.setText("");
             binding.eventStartEndText.setText("");
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
-            if (event.getRequiresLocation()) {
-                binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
-            }
+            binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
+            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name);
             facility_name.setText(event.getFacility().getName());
@@ -78,15 +70,59 @@ public class EntrantEventSecondaryFragment extends Fragment {
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
                     app.displayImage(event);
                 }
             });
+
             binding.eventFacilityCard.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    EntrantActivity activity = (EntrantActivity)getActivity();
                     activity.openFacility();
+                }
+            });
+
+            binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    association.setStatus(R.string.event_assoc_status_cancelled);
+                }
+            });
+
+            binding.buttonReject.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    association.setStatus(R.string.event_assoc_status_cancelled);
+                }
+            });
+
+            binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    event.acceptInvite(app.getUser(), (e, a, success) -> {});
+                }
+            });
+
+            binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (event.getRequiresLocation()) {
+                        app.getLocation((l) -> {
+                            if (l != null) {
+                                GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
+                                event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
+                                    updateAssociation();
+                                });
+                            } else {
+                                Dialog dialog = new AlertDialog.Builder(getContext())
+                                        .setMessage(R.string.failed_get_location).create();
+                                dialog.show();
+                            }
+                        });
+                    } else {
+                        event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
+                            updateAssociation();
+                        });
+                    }
                 }
             });
 
@@ -96,12 +132,13 @@ public class EntrantEventSecondaryFragment extends Fragment {
         return binding.getRoot();
     }
 
+
     @Override
     public void onDestroyView() {
         if (association != null) {
-            association.dissolve();
+            association.dissolve(this);
         }
-        event.dissolve();
+        event.dissolve(this);
         super.onDestroyView();
         binding = null;
     }
@@ -117,19 +154,12 @@ public class EntrantEventSecondaryFragment extends Fragment {
         binding.joinWaitlistLayout.setVisibility(View.GONE);
         binding.waitlistFullLayout.setVisibility(View.GONE);
 
-
         if (association == null) {
             event.getUserAssociation(app.getUser(), (e, a, success) -> {
                 if (success && a.size()>0) {
                     association = a.result.get(0);
-                    association.addListener(new Database.UpdateListener() {
-                        @Override
-                        public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
-                            updateAssociation();
-                        }
-                    });
+                    association.addListener(this);
                     updateAssociation();
-                    return;
                 }
             });
         }
@@ -137,78 +167,41 @@ public class EntrantEventSecondaryFragment extends Fragment {
             if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
                 if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
                     binding.inWaitlistLayout.setVisibility(View.VISIBLE);
-                    binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            association.setStatus(R.string.event_assoc_status_cancelled);
-                        }
-                    });
-                }
-                else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
+                } else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
                     binding.inInvitedLayout.setVisibility(View.VISIBLE);
-                    binding.buttonReject.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            association.setStatus(R.string.event_assoc_status_cancelled);
-                        }
-                    });
-                    binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            event.acceptInvite(app.getUser(), (e, a, success) -> {});
-                        }
-                    });
-                }
-                else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
+                } else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
                     binding.inEnrolledLayout.setVisibility(View.VISIBLE);
                 }
             }
             else if (event.isRegistrationOpen()) {
                 if (event.getWaitlistCapacity() < 0 || event.getCurrentWaitlist() < event.getWaitlistCapacity()) {
                     binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
-                    binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (event.getRequiresLocation()) {
-                                app.getLocation((l) -> {
-                                    if (l == null) {
-                                        Dialog dialog = new AlertDialog.Builder(getContext())
-                                                .setMessage("Failed to get location.")
-                                                .create();
-                                        dialog.show();
-                                    } else {
-                                        GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
-                                        event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
-                                            updateAssociation();
-                                        });
-                                    }
-                                });
-                            } else {
-                                event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
-                                    updateAssociation();
-                                });
-                            }
-                        }
-                    });
                 } else {
                     binding.waitlistFullLayout.setVisibility(View.VISIBLE);
                 }
-
             }
         });
 
-        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         if (Timestamp.now().compareTo(event.getOpenRegistrationDate()) < 0) {
-            binding.registrationDateInfoText.setText("Registration Opens " + df.format(event.getOpenRegistrationDate().toDate()));
+            binding.registrationDateInfoText.setText(
+                    getString(R.string.before_reg_text, app.formatTimestamp(event.getOpenRegistrationDate())));
+        } else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
+            binding.registrationDateInfoText.setText(
+                    getString(R.string.reg_open_text, app.formatTimestamp(event.getCloseRegistrationDate())));
+        } else {
+            binding.registrationDateInfoText.setText(getString(R.string.after_reg_text));
         }
-        else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
-            binding.registrationDateInfoText.setText("Registration Open Until " + df.format(event.getCloseRegistrationDate().toDate()));
-        }
-        else {
-            binding.registrationDateInfoText.setText("Registration Closed");
-        }
+    }
 
 
+    @Override
+    public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+        if (!event.isLegalState()) {
+            EntrantActivity activity = (EntrantActivity)getActivity();
+            activity.navigateUp();
+        }
+        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+        updateAssociation();
     }
 
 }
