@@ -44,7 +44,6 @@ public class EntrantEventSecondaryFragment extends Fragment {
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
-                Toast.makeText(getContext(), "event does not exist", Toast.LENGTH_SHORT).show();
                 activity.navigateUp();
             }
             event = instance;
@@ -53,7 +52,6 @@ public class EntrantEventSecondaryFragment extends Fragment {
                 public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
                     if (!event.isLegalState()) {
                         EntrantActivity activity = (EntrantActivity)getActivity();
-                        Toast.makeText(getContext(), "event does not exist", Toast.LENGTH_SHORT).show();
                         activity.navigateUp();
                     }
                     Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);

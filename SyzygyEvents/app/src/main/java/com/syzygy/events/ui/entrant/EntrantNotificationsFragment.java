@@ -52,6 +52,7 @@ public class EntrantNotificationsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Notification notification = a.getItem(position);
+                //notification.setIsRead(true);
                 Dialog dialog = new AlertDialog.Builder(getContext())
                         .setView(R.layout.popup_entrant_notification)
                         .create();

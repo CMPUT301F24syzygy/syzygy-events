@@ -36,7 +36,7 @@
             android:layout_height="180dp"/>
 
         <ImageView
-            android:id="@+id/edit_image_button"
+            android:id="@+id/edit_poster_button"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginStart="115dp"
@@ -137,6 +137,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/button_run_lottery"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -152,27 +153,14 @@
         app:layout_constraintTop_toBottomOf="@+id/run_lottery_button" />
 
     <TextView
-        android:id="@+id/close_reg_date_text"
+        android:id="@+id/registration_date_info_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-black"
-        android:text="Open until: 20/01/2025"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div2" />
-
-    <TextView
-        android:id="@+id/waitlist_capacity_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="sans-serif-black"
-        android:text="Waitlist capacity: 50/50"
-        android:textSize="12sp"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/div2" />
 
 
@@ -180,11 +168,11 @@
         android:id="@+id/div3"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/close_reg_date_text" />
+        app:layout_constraintTop_toBottomOf="@+id/registration_date_info_text" />
 
     <TextView
         android:id="@+id/event_description_text"
@@ -276,31 +264,35 @@
         app:singleSelection="true">
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/waitlist_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
             android:text="Waitlist" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip"
+            android:id="@+id/invited_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
             android:text="Invited" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/enrolled_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
             android:text="Enrolled" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/cancelled_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
             android:text="Cancelled" />
 
         <com.google.android.material.chip.Chip
+            android:id="@+id/all_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
