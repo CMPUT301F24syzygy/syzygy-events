@@ -124,56 +124,49 @@ public class EntrantEventSecondaryFragment extends Fragment {
             event.getUserAssociation(app.getUser(), (e, a, success) -> {
                 if (success && a.size()>0) {
                     association = a.result.get(0);
-
                     association.addListener(new Database.UpdateListener() {
                         @Override
                         public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
                             updateAssociation();
                         }
                     });
-
+                    updateAssociation();
+                    return;
                 }
             });
         }
-
-
-        if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
-            if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
-                binding.inWaitlistLayout.setVisibility(View.VISIBLE);
-                binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        association.setStatus(R.string.event_assoc_status_cancelled);
-                        updateAssociation();
-                    }
-                });
+        event.refreshData((e, success) -> {
+            if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
+                if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
+                    binding.inWaitlistLayout.setVisibility(View.VISIBLE);
+                    binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            association.setStatus(R.string.event_assoc_status_cancelled);
+                        }
+                    });
+                }
+                else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
+                    binding.inInvitedLayout.setVisibility(View.VISIBLE);
+                    binding.buttonReject.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            association.setStatus(R.string.event_assoc_status_cancelled);
+                        }
+                    });
+                    binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            event.acceptInvite(app.getUser(), (e, a, success) -> {});
+                        }
+                    });
+                }
+                else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
+                    binding.inEnrolledLayout.setVisibility(View.VISIBLE);
+                }
             }
-            else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_invited))) {
-                binding.inInvitedLayout.setVisibility(View.VISIBLE);
-                binding.buttonReject.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        association.setStatus(R.string.event_assoc_status_cancelled);
-                        updateAssociation();
-                    }
-                });
-                binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        event.acceptInvite(app.getUser(), (e, a, success) -> {
-                            updateAssociation();
-                        });
-                    }
-                });
-            }
-            else if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_enrolled))) {
-                binding.inEnrolledLayout.setVisibility(View.VISIBLE);
-            }
-        }
-
-        else if (event.isRegistrationOpen()) {
-            event.refreshData((e, success) -> {
-                if (e.getWaitlistCapacity() < 0 || e.getCurrentWaitlist() < e.getWaitlistCapacity()) {
+            else if (event.isRegistrationOpen()) {
+                if (event.getWaitlistCapacity() < 0 || event.getCurrentWaitlist() < event.getWaitlistCapacity()) {
                     binding.joinWaitlistLayout.setVisibility(View.VISIBLE);
                     binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -185,28 +178,26 @@ public class EntrantEventSecondaryFragment extends Fragment {
                                                 .setMessage("Failed to get location.")
                                                 .create();
                                         dialog.show();
-                                    }
-                                    else {
+                                    } else {
                                         GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
                                         event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
                                             updateAssociation();
                                         });
                                     }
                                 });
-                            }
-                            else {
+                            } else {
                                 event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
                                     updateAssociation();
                                 });
                             }
                         }
                     });
-                }
-                else {
+                } else {
                     binding.waitlistFullLayout.setVisibility(View.VISIBLE);
                 }
-            });
-        }
+
+            }
+        });
 
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         if (Timestamp.now().compareTo(event.getOpenRegistrationDate()) < 0) {
