@@ -33,8 +33,7 @@
         <ImageView
             android:id="@+id/event_img"
             android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:src="@drawable/ic_launcher_background" />
+            android:layout_height="180dp"/>
 
     </androidx.cardview.widget.CardView>
 
@@ -141,7 +140,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
             android:textSize="16sp"
             android:text="@string/text_waitlist_full"
@@ -150,9 +149,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
 
 
 
@@ -345,32 +341,16 @@
 
 
     <TextView
-        android:id="@+id/close_reg_date_text"
+        android:id="@+id/registration_date_info_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:fontFamily="sans-serif-black"
-        android:text="Open until: 20/01/2025"
+        android:text="Registration Open Until 20/01/2025"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/div2" />
-
-    <TextView
-        android:id="@+id/waitlist_capacity_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="sans-serif-black"
-        android:text="Waitlist capacity: 50/50"
-        android:textSize="12sp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div2" />
-
-
-
-
 
 
     <androidx.cardview.widget.CardView
@@ -384,7 +364,7 @@
         app:cardElevation="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/close_reg_date_text">
+        app:layout_constraintTop_toBottomOf="@+id/registration_date_info_text">
 
         <include
             layout="@layout/card_facility"

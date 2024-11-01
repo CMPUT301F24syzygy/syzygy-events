@@ -102,12 +102,6 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         return selectedEventID;
     }
 
-    public void scanQR(View v) {
-        IntentIntegrator intentIntegrator = new IntentIntegrator(this);
-        intentIntegrator.setPrompt("Scan a QR Code");
-        intentIntegrator.initiateScan();
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
