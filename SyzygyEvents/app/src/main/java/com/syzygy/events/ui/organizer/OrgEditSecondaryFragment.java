@@ -112,8 +112,9 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
      */
     private void onUpdateInstance(boolean success) {
         if(success){
-            facility.dissolve();
-            ((EntrantActivity)getActivity()).navigateUp();
+            //Instead of navigating back were going to use the switch application
+            //This forces the menu icons to refresh in case the profile image was changed
+            ((SyzygyApplication)getActivity().getApplication()).switchToActivity(OrganizerActivity.class);
         }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);

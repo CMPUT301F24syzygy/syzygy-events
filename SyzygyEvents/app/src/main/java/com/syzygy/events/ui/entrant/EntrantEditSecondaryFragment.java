@@ -99,7 +99,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
     private void onUpdateInstance(boolean success) {
         Log.println(Log.DEBUG, "EditProfile", "update " + success);
         if(success){
-            //((EntrantActivity)getActivity()).navigateUp();
+            //Instead of navigating back were going to use the switch application
+            //This forces the menu icons to refresh in case the profile image was changed
             ((SyzygyApplication)getActivity().getApplication()).switchToActivity(EntrantActivity.class);
         }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
