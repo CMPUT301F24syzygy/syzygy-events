@@ -4,7 +4,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -233,60 +235,55 @@ public class Image extends DatabaseInstance<Image> {
      * If the associated image is null, uses a default image for the instances collection.
      * @param instance The instance whos image should be loaded
      * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
-     * @see #formatImageOrDefault(RequestCreator, Database.Collections, Options) 
-     * @see #getDefaultImage(Database.Collections)
+     * @see #formatDefaultImage(DatabaseInstance, Options)
+     * @see #getDefaultImage(DatabaseInstance)
      */
     public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option){
         if(instance == null){
             return formatDefaultImage(null, option);
         }
         Image img = instance.getAssociatedImage();
-        Database.Collections coll = instance.getCollection();
         if(img == null){
-            return formatDefaultImage(null, option);
+            return formatDefaultImage(instance, option);
         }
         return img.loadAndFormatImage(option);
     }
 
     /**
      * Gets and loads a default image for the collection
-     * @param collection The collection
+     * @param instance The instance that the image is for
      * @return The loaded request creator for the image
      */
-    public static RequestCreator getDefaultImage(@Nullable Database.Collections collection){
+    public static RequestCreator getDefaultImage(@Nullable DatabaseInstance<?> instance){
         //Must be jpg or png
-        return Picasso.get().load(R.drawable.penguin_blue);
-    }
-
-    /**
-     * Formats the loaded image based on the collection
-     * @param loadedPicasso The picasso element that is loaded with the image. If null, gets a default image for the collection
-     * @param collection The collection to base the default on if the loaded is null
-     * @param option How to format the image
-     * @return The loaded picasso after formatting
-     * @see #formatDefaultImage(Database.Collections, Options)
-     * @see #formatImage(RequestCreator, Options)
-     * @see #getDefaultImage(Database.Collections)
-     */
-    public static RequestCreator formatImageOrDefault(@Nullable RequestCreator loadedPicasso, @Nullable Database.Collections collection, @NonNull Options option){
-        if(loadedPicasso == null){
-            return formatDefaultImage(collection, option);
+        if(instance == null){
+            return Picasso.get().load(R.drawable.penguin_blue);
+        }
+        if(instance instanceof User){
+            Transformation t = new InitialsTransformation.Builder()
+                    .setInitials(((User)instance).getInitials())
+                    .setTextColor(Color.WHITE)
+                    .setTextAlpha(255)
+                    .setBackgroundColor(Color.GRAY)
+                    .setBackgroundAlpha(255)
+                    .build();
+            return Picasso.get().load(R.drawable.penguin_blue).transform(t);
         }else{
-            return formatImage(loadedPicasso, option);
+            return Picasso.get().load(R.drawable.penguin_blue);
         }
     }
 
     /**
      * Formats a default image based on the collection
-     * @param collection The collection to base the default on
+     * @param instance The instance that the image is for
      * @param option How to format the image
      * @return The loaded picasso after formatting
      * @see #formatImage(RequestCreator, Options) 
-     * @see #getDefaultImage(Database.Collections)
+     * @see #getDefaultImage(DatabaseInstance)
      */
-    public static RequestCreator formatDefaultImage(@Nullable Database.Collections collection, @NonNull Options option){
-        RequestCreator pic = getDefaultImage(collection);
-        return formatImage(getDefaultImage(collection), option);
+    public static RequestCreator formatDefaultImage(@Nullable DatabaseInstance<?> instance, @NonNull Options option){
+        RequestCreator pic = getDefaultImage(instance);
+        return formatImage(pic, option);
     }
 
     /**
@@ -294,7 +291,6 @@ public class Image extends DatabaseInstance<Image> {
      * @param resID the id of the drawable
      * @param option How to format the image
      * @return The loaded picasso after formatting
-     * @see #getDefaultImage(Database.Collections)
      */
     public static RequestCreator formatImage(@DrawableRes int resID, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
@@ -307,7 +303,6 @@ public class Image extends DatabaseInstance<Image> {
      * @param loadedPicasso The picasso element that is loaded with the image.
      * @param option How to format the image
      * @return The loaded picasso after formatting
-     * @see #getDefaultImage(Database.Collections)
      */
     public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
@@ -415,6 +410,10 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     //https://stackoverflow.com/questions/26112150/android-create-circular-image-with-picasso
+
+    /**
+     * Crops the image to the largest circle that fits within.
+     */
     private static class CircleTransform implements Transformation {
         @Override
         public Bitmap transform(Bitmap source) {
@@ -447,6 +446,116 @@ public class Image extends DatabaseInstance<Image> {
         @Override
         public String key() {
             return "circle";
+        }
+    }
+
+    //https://stackoverflow.com/questions/31165990/how-to-add-string-on-bitmap-image-in-android
+    //https://stackoverflow.com/questions/22077747/center-text-vertically-and-horizontally-with-canvas
+
+    /**
+     * Auto generates an avatar with initials
+     */
+    public static class InitialsTransformation implements Transformation {
+
+        private final int color, alpha, bg, bgalpha;
+        private final boolean underline;
+        private final String string;
+
+        private InitialsTransformation(int color, int alpha, int bg, int bgalpha, boolean underline, String string) {
+            this.color = color;
+            this.bg = bg;
+            this.bgalpha = bgalpha;
+            this.alpha = alpha;
+            this.underline = underline;
+            this.string = string;
+        }
+
+        @Override
+        public Bitmap transform(Bitmap source) {
+
+            int height = source.getHeight();
+            int width = source.getWidth();
+
+            Bitmap result = Bitmap.createBitmap(width, height, source.getConfig());
+
+
+            Canvas canvas = new Canvas(result);
+            canvas.drawBitmap(source, 0, 0, null);
+
+            Paint bgpaint = new Paint();
+            bgpaint.setColor(bg);
+            bgpaint.setAlpha(bgalpha);
+            bgpaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(0,0,width, height, bgpaint);
+
+            Paint paint = new Paint();
+            paint.setColor(color);
+            paint.setAlpha(alpha);
+            paint.setTextSize(height/2f);
+            paint.setAntiAlias(true);
+            paint.setUnderlineText(underline);
+            paint.setTextAlign(Paint.Align.CENTER);
+            Rect r = new Rect();
+            paint.getTextBounds(string, 0, string.length(), r);
+            canvas.drawText(string, width/2f, height/2f + r.height()/2f, paint);
+            source.recycle();
+
+            return result;
+        }
+
+        @Override
+        public String key() {
+            return "text";
+        }
+
+        public static class Builder {
+            public int color=Color.WHITE, alpha=255, bg=Color.BLACK, bgalpha = 0;
+            public boolean underline=false;
+            public String text="";
+
+            /**
+             * @see Color
+             */
+            public Builder setTextColor(int color) {
+                this.color = color;
+                return this;
+            }
+
+            /**
+             * @param alpha 0-255
+             */
+            public Builder setTextAlpha(int alpha) {
+                this.alpha = alpha;
+                return this;
+            }
+
+            /**
+             * @param alpha 0-255
+             */
+            public Builder setBackgroundAlpha(int alpha){
+                this.bgalpha = alpha;
+                return this;
+            }
+
+            public Builder setUnderline(boolean underline) {
+                this.underline = underline;
+                return this;
+            }
+
+            public Builder setInitials(@NonNull String text) {
+                this.text = text;
+                return this;
+            }
+
+            //-1 for use default image as background
+            public Builder setBackgroundColor(int bg) {
+                this.bg = bg;
+                return this;
+            }
+
+            public InitialsTransformation build(){
+                return new InitialsTransformation(color, alpha, bg, bgalpha, underline, text);
+            }
         }
     }
 

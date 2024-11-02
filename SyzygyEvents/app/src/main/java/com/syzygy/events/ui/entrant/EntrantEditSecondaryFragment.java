@@ -122,7 +122,7 @@ public class EntrantEditSecondaryFragment extends Fragment {
         imageSelected = true;
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
+            Image.formatDefaultImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
             binding.entrantEditRemoveImage.setVisibility(View.INVISIBLE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);;
