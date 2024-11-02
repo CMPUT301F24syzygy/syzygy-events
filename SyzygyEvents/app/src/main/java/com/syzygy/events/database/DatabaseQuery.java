@@ -474,7 +474,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     @Database.MustStir
     public static DatabaseQuery<EventAssociation> getAttachedUsers(Database db, @Database.Observes Event e, String status, boolean returnAll){
-        Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
+        Filter f = Filter.equalTo(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
         if(status != null && !status.isBlank()){
             f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
         }

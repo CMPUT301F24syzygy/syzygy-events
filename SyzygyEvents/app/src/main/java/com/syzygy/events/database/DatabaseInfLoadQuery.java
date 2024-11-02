@@ -1,6 +1,8 @@
 package com.syzygy.events.database;
 
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Unmodifiable;
@@ -57,6 +59,8 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
             }
             clearInstances();
             addAllInstances();
+            Log.d("QueryInf", "Complete Query");
+            instances.forEach(i -> Log.d("QueryInf", "\t"+i.getDocumentID()));
             listener.onCompletion(DatabaseInfLoadQuery.this, true);
         });
     }

@@ -131,7 +131,7 @@ public class User extends DatabaseInstance<User> {
     }
 
     public String getInitials(){
-        return getName().substring(0,1);
+        return getName().substring(0,1).toUpperCase();
     }
 
     /**

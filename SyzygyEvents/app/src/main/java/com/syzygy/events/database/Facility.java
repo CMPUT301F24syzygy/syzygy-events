@@ -244,6 +244,8 @@ public class Facility extends DatabaseInstance<Facility> {
         map.put(R.string.database_fac_description, description);
         map.put(R.string.database_fac_organizer, organizerID);
 
-        return db.createNewInstance(Database.Collections.FACILITIES, organizerID, map, image, name, listener);
+        String id = Database.Collections.FACILITIES.getNewID(db);
+
+        return db.createNewInstance(Database.Collections.FACILITIES, id, map, image, name, listener);
     }
 }
