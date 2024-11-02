@@ -8,12 +8,14 @@ import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -24,9 +26,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -56,82 +65,74 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class OrgEventSecondaryFragment extends Fragment {
+public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
-    private DatabaseInfLoadQuery<EventAssociation> queryAll;
-    private DatabaseInfLoadQuery<EventAssociation> queryWaitlist;
-    private DatabaseInfLoadQuery<EventAssociation> queryInvited;
-    private DatabaseInfLoadQuery<EventAssociation> queryEnrolled;
-    private DatabaseInfLoadQuery<EventAssociation> queryCancelled;
+    private DatabaseInfLoadQuery<EventAssociation> queryAll, queryWaitlist, queryInvited, queryEnrolled, queryCancelled;
     private Event event;
+    private Marker marker;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         binding = SecondaryOrganizerEventBinding.inflate(inflater, container, false);
 
-        OrganizerActivity activity = (OrganizerActivity)getActivity();
-        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+        OrganizerActivity activity = (OrganizerActivity) getActivity();
+        SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
+
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
                 activity.navigateUp();
             }
+
             event = instance;
+            event.addListener(this);
 
-            event.addListener(new Database.UpdateListener() {
-                @Override
-                public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
-                    if (!event.isLegalState()) {
-                        OrganizerActivity activity = (OrganizerActivity)getActivity();
-                        activity.navigateUp();
-                    }
-                    ///
-                    ///
-                }
-            });
-
-            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
             binding.eventTitle.setText(event.getTitle());
-            binding.eventPriceText.setText("$ " + event.getPrice().toString());
-            binding.eventStartEndText.setText("");
-            binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
-            if (event.getRequiresLocation()) {
-                binding.eventGeoRequiredText.setVisibility(View.VISIBLE);
-            }
+            //binding.eventPriceText.setText(event.getFormattedPrice());
+            //binding.eventStartEndText.setText(event.getFormattedStartEnd());
+            //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
+            binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
 
 
-            ////
             queryAll = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter allAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryAll.getInstances());
-            queryAll.refreshData((query1, s) -> { allAdapter.notifyDataSetChanged(); });
+            queryAll.refreshData((query1, s) -> {
+                allAdapter.notifyDataSetChanged();
+            });
+            binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
 
+            ////
             queryWaitlist = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter waitlistAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryWaitlist.getInstances());
-            queryWaitlist.refreshData((query1, s) -> { waitlistAdapter.notifyDataSetChanged(); });
+            queryWaitlist.refreshData((query1, s) -> {
+                waitlistAdapter.notifyDataSetChanged();
+            });
 
             queryInvited = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter invitedAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryInvited.getInstances());
-            queryInvited.refreshData((query1, s) -> { invitedAdapter.notifyDataSetChanged(); });
+            queryInvited.refreshData((query1, s) -> {
+                invitedAdapter.notifyDataSetChanged();
+            });
 
             queryEnrolled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter enrolledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryEnrolled.getInstances());
-            queryEnrolled.refreshData((query1, s) -> { enrolledAdapter.notifyDataSetChanged(); });
+            queryEnrolled.refreshData((query1, s) -> {
+                enrolledAdapter.notifyDataSetChanged();
+            });
 
             queryCancelled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter cancelledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryCancelled.getInstances());
-            queryCancelled.refreshData((query1, s) -> { cancelledAdapter.notifyDataSetChanged(); });
-
-            binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
+            queryCancelled.refreshData((query1, s) -> {
+                cancelledAdapter.notifyDataSetChanged();
+            });
             ////
-
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
                     app.displayImage(event);
                 }
             });
-            updateView();
 
             binding.tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
                 @Override
@@ -139,37 +140,38 @@ public class OrgEventSecondaryFragment extends Fragment {
                     if (tab.getPosition() == 0) {
                         binding.actionsTabLayout.setVisibility(View.VISIBLE);
                         binding.entrantsTabLayout.setVisibility(View.GONE);
-                    }
-                    else {
+                    } else {
                         binding.actionsTabLayout.setVisibility(View.GONE);
                         binding.entrantsTabLayout.setVisibility(View.VISIBLE);
                     }
+                    updateView();
                 }
-                @Override
-                public void onTabUnselected(TabLayout.Tab tab) {return;}
-                @Override
-                public void onTabReselected(TabLayout.Tab tab) {return;}
 
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
+                }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+                }
             });
 
-
             binding.entrantFilterChips.setOnCheckedStateChangeListener(new ChipGroup.OnCheckedStateChangeListener() {
-               @Override
-               public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
-                   if (checkedIds.get(0) == R.id.all_chip) {
-                       binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
-                   } else if (checkedIds.get(0) == R.id.waitlist_chip) {
-                       binding.eventAssociatedEntrantsList.setAdapter(waitlistAdapter);
-                   } else if (checkedIds.get(0) == R.id.invited_chip) {
-                       binding.eventAssociatedEntrantsList.setAdapter(invitedAdapter);
-                   } else if (checkedIds.get(0) == R.id.enrolled_chip) {
-                       binding.eventAssociatedEntrantsList.setAdapter(enrolledAdapter);
-                   } else if (checkedIds.get(0) == R.id.cancelled_chip) {
-                       binding.eventAssociatedEntrantsList.setAdapter(cancelledAdapter);
-                   }
-               }
-           });
-
+                @Override
+                public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
+                    if (checkedIds.get(0) == R.id.all_chip) {
+                        binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
+                    } else if (checkedIds.get(0) == R.id.waitlist_chip) {
+                        binding.eventAssociatedEntrantsList.setAdapter(waitlistAdapter);
+                    } else if (checkedIds.get(0) == R.id.invited_chip) {
+                        binding.eventAssociatedEntrantsList.setAdapter(invitedAdapter);
+                    } else if (checkedIds.get(0) == R.id.enrolled_chip) {
+                        binding.eventAssociatedEntrantsList.setAdapter(enrolledAdapter);
+                    } else if (checkedIds.get(0) == R.id.cancelled_chip) {
+                        binding.eventAssociatedEntrantsList.setAdapter(cancelledAdapter);
+                    }
+                }
+            });
 
             binding.editPosterButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -182,8 +184,7 @@ public class OrgEventSecondaryFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(getContext().CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText("qr hash", event.getQrHash());
-                    clipboard.setPrimaryClip(clip);
+                    clipboard.setPrimaryClip(ClipData.newPlainText("QR hash", event.getQrHash()));
                 }
             });
 
@@ -194,17 +195,25 @@ public class OrgEventSecondaryFragment extends Fragment {
                 }
             });
 
+            binding.createNotificationButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ///compose notification popup
+                }
+            });
+
             binding.runLotteryButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///load amount cancelled
+                    ///fix display
                     Dialog dialog = new AlertDialog.Builder(getContext())
-                            .setMessage("run and send invites") //layout
-                            .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            .setView(R.layout.popup_lottery_run)
+                            .setPositiveButton("Y", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     event.getLottery(-1, (e, result, success) -> {
-                                        result.execute((ev, r, f) -> {}, true);
+                                        result.execute((ev, r, f) -> {
+                                        }, true);
                                     });
                                 }
                             })
@@ -213,42 +222,41 @@ public class OrgEventSecondaryFragment extends Fragment {
                 }
             });
 
-            binding.createNotificationButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ///compose notification popup
-                }
-            });
-
-
-
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-            if (Timestamp.now().compareTo(event.getOpenRegistrationDate()) < 0) {
-                binding.registrationDateInfoText.setText("Registration Opens " + df.format(event.getOpenRegistrationDate().toDate()));
-            }
-            else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
-                binding.registrationDateInfoText.setText("Registration Open Until " + df.format(event.getCloseRegistrationDate().toDate()));
-            }
-            else {
-                binding.registrationDateInfoText.setText("Registration Closed");
-                binding.runLotteryButton.setVisibility(View.VISIBLE);
+            if (event.getRequiresLocation()) {
+                binding.entrantLocationMap.setVisibility(View.VISIBLE);
+                SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
+                map.getMapAsync(this);
+                binding.eventAssociatedEntrantsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                        GeoPoint l = a.getItem(position).getLocation();
+                        marker.setPosition(new LatLng(l.getLatitude(), l.getLongitude()));
+                        marker.setVisible(false);
+                    }
+                });
             }
 
-            ///
-
+            updateView();
         });
 
         return binding.getRoot();
     }
 
+
     @Override
     public void onDestroyView() {
+        event.dissolve(this);
         super.onDestroyView();
         binding = null;
     }
 
+
     private void updateView() {
-        ///
+
+        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+        SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
+
         if (!event.getQrHash().isEmpty()) {
             BitMatrix m;
             try {
@@ -263,15 +271,43 @@ public class OrgEventSecondaryFragment extends Fragment {
                 }
             }
             binding.facilityEventQrImg.setImageBitmap(bitmap);
-        }
-        else {
+            binding.copyQrButton.setVisibility(View.VISIBLE);
+            binding.downloadQrButton.setVisibility(View.VISIBLE);
+        } else {
             binding.copyQrButton.setVisibility(View.GONE);
             binding.downloadQrButton.setVisibility(View.GONE);
         }
 
-        ///
-        ///
+        if (event.isBeforeRegistration()) {
+            binding.registrationDateInfoText.setText(
+                    getString(R.string.before_reg_text, app.formatTimestamp(event.getOpenRegistrationDate())));
+        } else if (event.isRegistrationOpen()) {
+            binding.registrationDateInfoText.setText(
+                    getString(R.string.reg_open_text, app.formatTimestamp(event.getCloseRegistrationDate())));
+        } else {
+            binding.registrationDateInfoText.setText(getString(R.string.after_reg_text));
+        }
 
     }
+
+
+    @Override
+    public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+        if (!event.isLegalState()) {
+            EntrantActivity activity = (EntrantActivity) getActivity();
+            activity.navigateUp();
+        }
+        updateView();
+    }
+
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap map) {
+        marker = map.addMarker(new MarkerOptions()
+                .draggable(false)
+                .position(event.getFacility().getLatLngLocation()));
+        marker.setVisible(false);
+    }
+
 
 }

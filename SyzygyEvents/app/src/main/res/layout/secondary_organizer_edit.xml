@@ -4,108 +4,90 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
-    android:paddingBottom="?attr/actionBarSize"
-    tools:context=".ui.general.SignupFacilitySecondaryFragment">
-
-    <ImageView
-        android:id="@+id/edit_facility_profile"
-        android:layout_width="256px"
-        android:layout_height="256px"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_background" />
+    android:paddingBottom="?attr/actionBarSize">
 
     <EditText
         android:id="@+id/edit_facility_name"
-        android:layout_width="match_parent"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
         android:layout_marginTop="32dp"
-        android:hint="name"
-        android:inputType="textPersonName"
-        android:maxLength="40"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="18sp"
+        android:lines="3"
+        android:scrollbars="vertical"
+        android:hint="@string/edit_name_hint"
+        android:inputType="text|textMultiLine"
+        android:maxLength="30"
+        android:outlineProvider="bounds"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/facility_image"/>
+
+    <ImageView
+        android:id="@+id/facility_image"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/edit_facility_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="380dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_facility_profile">
+        app:layout_constraintTop_toBottomOf="@+id/edit_facility_remove_image"
+        app:mapType="terrain"
+        app:uiZoomGestures="true"
+        app:uiZoomControls="true" />
 
-    </EditText>
+    <View
+        android:id="@+id/div"
+        android:layout_width="400dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edit_facility_map" />
 
     <EditText
-        android:id="@+id/edit_facility_bio"
-        android:layout_width="match_parent"
+        android:id="@+id/edit_facility_description"
+        android:layout_width="380dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:gravity="start|top"
-        android:hint="bio"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:hint="@string/facility_description_hint"
         android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-        android:lines="5"
+        android:lines="7"
         android:maxLength="300"
         android:scrollbars="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_facility_name">
-
-    </EditText>
+        app:layout_constraintTop_toBottomOf="@+id/div" />
 
     <Button
         android:id="@+id/edit_facility_button_submit"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:layout_marginBottom="4dp"
+        android:text="Save Changes"
         app:layout_constraintBottom_toTopOf="@+id/edit_facility_button_cancel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-    </Button>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/edit_facility_button_cancel"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="Cancel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-    </Button>
-
-    <Button
-        android:id="@+id/edit_facility_editImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Edit Image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/edit_facility_profile"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/edit_facility_removeImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Remove Image"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/edit_facility_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/edit_facility_profile"
-        app:layout_constraintTop_toBottomOf="@+id/edit_facility_editImage"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <androidx.fragment.app.FragmentContainerView
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/edit_facility_map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/edit_facility_button_submit"
-        app:layout_constraintTop_toBottomOf="@+id/edit_facility_bio"
-        map:mapType="terrain"
-        map:uiZoomControls="true"
-        map:uiZoomGestures="true"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <FrameLayout
         android:id="@+id/progressBar"
@@ -123,5 +105,30 @@
             android:indeterminate="true" />
     </FrameLayout>
 
+    <Button
+        android:id="@+id/edit_facility_edit_image"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/replace_photo_button"
+        app:layout_constraintTop_toBottomOf="@+id/facility_image"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/edit_facility_remove_image"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/remove_photo_button"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@+id/edit_facility_edit_image"
+        app:layout_constraintStart_toStartOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+

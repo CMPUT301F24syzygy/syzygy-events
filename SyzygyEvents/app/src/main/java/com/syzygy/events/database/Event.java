@@ -834,7 +834,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
 
             if(collection == WEEKDAYS) return "Weekdays";
             if(collection == EVERY_DAY) return "Every day";
-            if(collection == NO_REPEAT) return "No Repetition";
+            if(collection == NO_REPEAT) return "";
 
             int count = numberOfDays(collection);
             List<String> result = new ArrayList<>();

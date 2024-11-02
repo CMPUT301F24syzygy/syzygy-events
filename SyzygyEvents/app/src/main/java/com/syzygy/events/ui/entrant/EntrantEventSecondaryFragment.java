@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
@@ -31,11 +33,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-public class EntrantEventSecondaryFragment extends Fragment implements Database.UpdateListener{
+public class EntrantEventSecondaryFragment extends Fragment implements Database.UpdateListener {
 
     private SecondaryEntrantEventBinding binding;
-    Event event;
-    EventAssociation association;
+    private Event event;
+    private EventAssociation association;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -53,12 +55,11 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             event.addListener(this);
 
             binding.eventTitle.setText(event.getTitle());
-            binding.eventPriceText.setText("");
-            binding.eventStartEndText.setText("");
-            binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
+            //binding.eventPriceText.setText(event.getFormattedPrice());
+            //binding.eventStartEndText.setText(event.getFormattedStartEnd());
+            //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
-            Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name);
             facility_name.setText(event.getFacility().getName());
@@ -110,7 +111,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
                             if (l != null) {
                                 GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
                                 event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
-                                    updateAssociation();
+                                    updateView();
                                 });
                             } else {
                                 Dialog dialog = new AlertDialog.Builder(getContext())
@@ -120,13 +121,13 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
                         });
                     } else {
                         event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
-                            updateAssociation();
+                            updateView();
                         });
                     }
                 }
             });
 
-            updateAssociation();
+            updateView();
         });
 
         return binding.getRoot();
@@ -144,8 +145,9 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
     }
 
 
-    private void updateAssociation() {
+    private void updateView() {
 
+        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
 
         binding.inWaitlistLayout.setVisibility(View.GONE);
@@ -159,7 +161,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
                 if (success && a.size()>0) {
                     association = a.result.get(0);
                     association.addListener(this);
-                    updateAssociation();
+                    updateView();
                 }
             });
         }
@@ -182,10 +184,10 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             }
         });
 
-        if (Timestamp.now().compareTo(event.getOpenRegistrationDate()) < 0) {
+        if (event.isBeforeRegistration()) {
             binding.registrationDateInfoText.setText(
                     getString(R.string.before_reg_text, app.formatTimestamp(event.getOpenRegistrationDate())));
-        } else if (Timestamp.now().compareTo(event.getCloseRegistrationDate()) < 0) {
+        } else if (event.isRegistrationOpen()) {
             binding.registrationDateInfoText.setText(
                     getString(R.string.reg_open_text, app.formatTimestamp(event.getCloseRegistrationDate())));
         } else {
@@ -200,8 +202,8 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             EntrantActivity activity = (EntrantActivity)getActivity();
             activity.navigateUp();
         }
-        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
-        updateAssociation();
+        updateView();
     }
+
 
 }

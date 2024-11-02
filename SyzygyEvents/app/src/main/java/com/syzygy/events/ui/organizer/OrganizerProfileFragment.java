@@ -29,7 +29,6 @@ import com.syzygy.events.ui.OrganizerActivity;
 public class OrganizerProfileFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private FragmentOrganizerProfileBinding binding;
     private Facility facility;
-    private SupportMapFragment mapFrag;
     private GoogleMap map;
     private Marker marker;
 
@@ -48,15 +47,15 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_map);
+        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_map);
         mapFrag.getMapAsync(this);
     }
 
     private void updateValues(){
-        binding.facilityProfileBio.setText(facility.getDescription());
-        binding.facilityProfileName.setText(facility.getName());
-        binding.facilityProfileAddress.setText(facility.getAddress());
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.facilityProfileImage);
+        binding.facilityNameText.setText(facility.getName());
+        binding.facilityAddressText.setText(facility.getAddress());
+        binding.facilityDescriptionText.setText(facility.getDescription());
+        Image.getFormatedAssociatedImage(facility, Image.Options.Square(400)).into(binding.facilityImage);
         updateMapPoints();
     }
 

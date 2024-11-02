@@ -29,7 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class EntrantFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback{
+public class EntrantFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback {
 
     private SecondaryEntrantFacilityBinding binding;
     private Facility facility;
@@ -51,8 +51,8 @@ public class EntrantFacilitySecondaryFragment extends Fragment implements OnMapR
             binding.facilityDescriptionText.setText(facility.getDescription());
             Image.getFormatedAssociatedImage(facility, Image.Options.Square(400)).into(binding.facilityImg);
 
-            SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_location_map);
-            mapFrag.getMapAsync(this);
+            SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_location_map);
+            map.getMapAsync(this);
         });
 
         return binding.getRoot();
@@ -66,7 +66,6 @@ public class EntrantFacilitySecondaryFragment extends Fragment implements OnMapR
 
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
-        Log.println(Log.DEBUG, "fac map", "Ready");
         map.addMarker(new MarkerOptions()
                 .draggable(false)
                 .position(facility.getLatLngLocation()));

@@ -54,9 +54,9 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         });
         binding.editFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);
+        Image.getFormatedAssociatedImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
         binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
-        binding.editFacilityBio.setText(facility.getDescription());
+        binding.editFacilityDescription.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
         return binding.getRoot();
     }
@@ -79,7 +79,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         Address add = Facility.getFullAddressFromGeo(getActivity(), pos);
         String address = add == null ? "" : add.getAddressLine(0);
         Log.println(Log.INFO, "Map Selection", address);
-        String bio = binding.editFacilityBio.getText().toString();
+        String bio = binding.editFacilityDescription.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
 
@@ -99,7 +99,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
             binding.editFacilityName.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_fac_description)){
-            binding.editFacilityBio.setError("Bad");
+            binding.editFacilityDescription.setError("Bad");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
         binding.progressBar.setVisibility(View.GONE);
@@ -135,10 +135,10 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         selectedImage = true;
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);
+            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
             binding.editFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.editFacilityProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);;
             binding.editFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }

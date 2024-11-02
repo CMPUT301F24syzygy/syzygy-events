@@ -39,7 +39,6 @@ public class EntrantNotificationsFragment extends Fragment {
 
         List<Notification> dataList = query.getInstances();
 
-
         EntrantNotificationsAdapter a = new EntrantNotificationsAdapter(this.getContext(), dataList);
 
         query.refreshData((query1, success) -> {
@@ -61,19 +60,18 @@ public class EntrantNotificationsFragment extends Fragment {
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
 
-                if (notification.getSender() != null) {
-                    TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
-                    sender.setText(notification.getSender().getName());
-                }
+                TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
+                sender.setText(notification.getSender() == null ? "" : notification.getSender().getName());
+
                 TextView date = dialog.findViewById(R.id.popup_notification_date_text);
-                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                date.setText(df.format(notification.getSentTime().toDate()));
+                date.setText(app.formatTimestamp(notification.getSentTime()));
 
                 TextView body = dialog.findViewById(R.id.popup_notification_body_text);
                 body.setText(notification.getBody());
 
                 ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
                 Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(Image.Options.Sizes.SMALL)).into(image);
+
 
                 if (notification.getEvent() != null) {
                     View event_card = dialog.findViewById(R.id.notification_event_card);
@@ -92,12 +90,8 @@ public class EntrantNotificationsFragment extends Fragment {
                         }
                     });
                 }
-                ///
-                ///
-
             }
         });
-
 
         return binding.getRoot();
     }
