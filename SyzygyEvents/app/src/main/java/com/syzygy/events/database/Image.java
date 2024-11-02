@@ -262,12 +262,12 @@ public class Image extends DatabaseInstance<Image> {
         }
         if(instance instanceof User){
             Random rand = new Random(instance.getDocumentID().hashCode());
-            Color c = Color.valueOf(rand.nextFloat()/3f*2, rand.nextFloat()/3f*2, rand.nextFloat()/3f*2);
+            int c = 0xFF * 1000000 + (int)((rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF)) / 3f * 2);
             Transformation t = new InitialsTransformation.Builder()
                     .setInitials(((User)instance).getInitials())
                     .setTextColor(Color.WHITE)
                     .setTextAlpha(255)
-                    .setBackgroundColor(c.toArgb())
+                    .setBackgroundColor(c)
                     .setBackgroundAlpha(255)
                     .build();
             return Picasso.get().load(R.drawable.transparent).transform(t);
