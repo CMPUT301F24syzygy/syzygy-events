@@ -246,7 +246,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
                 .create();
         dialog.show();
         ImageView v = dialog.findViewById(R.id.popup_img);
-        Image.getFormatedAssociatedImage(instance, Image.Options.Square(900)).into(v);
+        Image.getFormatedAssociatedImage(instance, Image.Options.Square(1000)).into(v);
     }
 
     /**

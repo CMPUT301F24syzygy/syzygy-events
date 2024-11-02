@@ -139,9 +139,11 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         image = uri;
         if(image == null){
             Image.formatDefaultImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
+            binding.editFacilityEditImage.setText(R.string.add_image_button);
             binding.editFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);;
+            binding.editFacilityEditImage.setText(R.string.change_image_button);
             binding.editFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }

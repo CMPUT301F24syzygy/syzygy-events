@@ -58,6 +58,8 @@
     <string name="edit_facility_name_hint">Facility Name*</string>
     <string name="edit_facility_description_hint">Description</string>
     <string name="edit_facility_description_placeholder">Add additional info about your facility!</string>
-    <string name="replace_photo_button">Edit Photo</string>
-    <string name="remove_photo_button">remove</string>
+    <string name="add_image_button">Add Photo</string>
+    <string name="change_image_button">Change Photo</string>
+    <string name="remove_image_button">Remove</string>
+    <string name="create_facility_submit_button">Create Facility</string>
 </resources>

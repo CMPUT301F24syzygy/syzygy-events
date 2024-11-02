@@ -133,7 +133,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginStart="16dp"
-        android:text="@string/replace_photo_button"
         app:layout_constraintTop_toBottomOf="@+id/facility_image"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -143,7 +142,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:layout_marginStart="16dp"
-        android:text="@string/remove_photo_button"
+        android:text="@string/remove_image_button"
         android:visibility="invisible"
         app:layout_constraintTop_toBottomOf="@+id/edit_facility_edit_image"
         app:layout_constraintStart_toStartOf="parent"/>

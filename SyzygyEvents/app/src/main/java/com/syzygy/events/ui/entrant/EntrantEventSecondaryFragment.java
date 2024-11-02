@@ -66,7 +66,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             TextView facility_address = binding.getRoot().findViewById(R.id.card_facility_address);
             facility_address.setText(event.getFacility().getAddress());
             ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
-            Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.AsIs()).into(facility_image);
+            Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(facility_image);
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override

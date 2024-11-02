@@ -69,7 +69,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         Address add = Facility.getFullAddressFromGeo(getActivity(), pos);
         String address = add == null ? "" : add.getAddressLine(0);
         Log.println(Log.INFO, "Map Selection", address);
-        String bio = binding.createFacilityBio.getText().toString();
+        String bio = binding.createFacilityDescription.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
 
@@ -90,7 +90,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
             binding.createFacilityName.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_fac_description)){
-            binding.createFacilityBio.setError("Bad");
+            binding.createFacilityDescription.setError("Bad");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
@@ -108,10 +108,12 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);
+            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
+            binding.createFacilityEditImage.setText(R.string.add_image_button);
             binding.createFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);;
+            binding.createFacilityEditImage.setText(R.string.change_image_button);
             binding.createFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }
