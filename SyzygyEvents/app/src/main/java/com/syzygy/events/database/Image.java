@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.picasso.Target;
@@ -263,6 +264,7 @@ public class Image extends DatabaseInstance<Image> {
         if(instance instanceof User){
             Random rand = new Random(instance.getDocumentID().hashCode());
             int c = 0xFF * 1000000 + (int)((rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF)) / 3f * 2);
+            Log.d("DefaultUserImage", instance.getDocumentID());
             Transformation t = new InitialsTransformation.Builder()
                     .setInitials(((User)instance).getInitials())
                     .setTextColor(Color.WHITE)
@@ -508,7 +510,7 @@ public class Image extends DatabaseInstance<Image> {
 
         @Override
         public String key() {
-            return "text";
+            return "text|"+color+"|"+alpha+"|"+bg+"|"+bgalpha+"|"+underline+"|"+string;
         }
 
         public static class Builder {

@@ -102,7 +102,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             });
             binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
 
-            ////
+            /*
             queryWaitlist = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             AssociatedEntrantsAdapter waitlistAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryWaitlist.getInstances());
             queryWaitlist.refreshData((query1, s) -> {
@@ -126,7 +126,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             queryCancelled.refreshData((query1, s) -> {
                 cancelledAdapter.notifyDataSetChanged();
             });
-            ////
+            */
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -162,7 +162,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
                     if (checkedIds.get(0) == R.id.all_chip) {
                         binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
-                    } else if (checkedIds.get(0) == R.id.waitlist_chip) {
+                    } /*else if (checkedIds.get(0) == R.id.waitlist_chip) {
                         binding.eventAssociatedEntrantsList.setAdapter(waitlistAdapter);
                     } else if (checkedIds.get(0) == R.id.invited_chip) {
                         binding.eventAssociatedEntrantsList.setAdapter(invitedAdapter);
@@ -170,7 +170,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                         binding.eventAssociatedEntrantsList.setAdapter(enrolledAdapter);
                     } else if (checkedIds.get(0) == R.id.cancelled_chip) {
                         binding.eventAssociatedEntrantsList.setAdapter(cancelledAdapter);
-                    }
+                    }*/
                 }
             });
 
