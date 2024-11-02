@@ -64,6 +64,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
@@ -88,7 +89,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             event.addListener(this);
 
             binding.eventTitle.setText(event.getTitle());
-            //binding.eventPriceText.setText(event.getFormattedPrice());
+            binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             //binding.eventStartEndText.setText(event.getFormattedStartEnd());
             //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);

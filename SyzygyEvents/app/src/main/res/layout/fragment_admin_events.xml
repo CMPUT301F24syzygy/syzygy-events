@@ -11,6 +11,8 @@
         android:id="@+id/admin_events_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="2dp"
+        android:divider="@color/white"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

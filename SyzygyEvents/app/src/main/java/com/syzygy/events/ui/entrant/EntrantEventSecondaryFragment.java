@@ -31,6 +31,7 @@ import com.syzygy.events.ui.EntrantActivity;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class EntrantEventSecondaryFragment extends Fragment implements Database.UpdateListener {
@@ -55,7 +56,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             event.addListener(this);
 
             binding.eventTitle.setText(event.getTitle());
-            //binding.eventPriceText.setText(event.getFormattedPrice());
+            binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             //binding.eventStartEndText.setText(event.getFormattedStartEnd());
             //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);

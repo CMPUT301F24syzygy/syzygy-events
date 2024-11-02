@@ -610,7 +610,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     /**
      * @return Returns if now is between the closed and open registration date.
      */
-    public boolean isRegistrationOpen(){
+    public boolean isRegistrationOpen() {
         Timestamp now = Timestamp.now();
         return now.compareTo(getOpenRegistrationDate()) >= 0 && now.compareTo(getCloseRegistrationDate()) <= 0;
     }
@@ -875,5 +875,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             }
             return String.join(", ", result);
         }
+
     }
+
+
 }

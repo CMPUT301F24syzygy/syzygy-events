@@ -1,5 +1,7 @@
 package com.syzygy.events.ui.entrant;
 
+import static java.lang.String.format;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
 
 import java.util.List;
+import java.util.Locale;
 
 public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
 
@@ -36,6 +39,9 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
 
         TextView title = view.findViewById(R.id.entrant_events_item_title_text);
         title.setText(association.getEvent().getTitle());
+
+        TextView price = view.findViewById(R.id.entrant_events_item_price_text);
+        price.setText(String.format(Locale.getDefault(), "$ %3.2f", association.getEvent().getPrice()));
 
         ImageView image = view.findViewById(R.id.entrant_events_item_poster_img);
         Image.getFormatedAssociatedImage(association.getEvent(), Image.Options.AsIs()).into(image);
