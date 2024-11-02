@@ -55,8 +55,9 @@
 
     <string name="date_format_basic">"dd/MM/yyyy"</string>
     <string name="edit_facility_button">Edit Facility</string>
-    <string name="edit_name_hint">name</string>
-    <string name="facility_description_hint">blurb</string>
+    <string name="edit_facility_name_hint">Facility Name*</string>
+    <string name="edit_facility_description_hint">Description</string>
+    <string name="edit_facility_description_placeholder">Add additional info about your facility!</string>
     <string name="replace_photo_button">Edit Photo</string>
     <string name="remove_photo_button">remove</string>
 </resources>

@@ -6,22 +6,32 @@
     android:layout_height="match_parent"
     android:paddingBottom="?attr/actionBarSize">
 
-    <EditText
-        android:id="@+id/edit_facility_name"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif-medium"
-        android:textSize="18sp"
-        android:lines="3"
-        android:scrollbars="vertical"
-        android:hint="@string/edit_name_hint"
-        android:inputType="text|textMultiLine"
-        android:maxLength="30"
-        android:outlineProvider="bounds"
+        android:hint="@string/edit_facility_name_hint"
+        app:expandedHintEnabled="false"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/facility_image"/>
+        app:layout_constraintStart_toEndOf="@+id/facility_image">
+
+        <com.google.android.material.textfield.TextInputEditText
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:id="@+id/edit_facility_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text|textMultiLine"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="18sp"
+            android:lines="2"
+            android:textAlignment="gravity"
+            android:gravity="top|start"
+            android:maxLength="30"
+            android:scrollbars="vertical"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
         android:id="@+id/facility_image"
@@ -55,19 +65,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_facility_map" />
 
-    <EditText
-        android:id="@+id/edit_facility_description"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="380dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:hint="@string/facility_description_hint"
-        android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-        android:lines="7"
-        android:maxLength="300"
-        android:scrollbars="vertical"
+        android:hint="@string/edit_facility_description_hint"
+        app:placeholderText="@string/edit_facility_description_placeholder"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/div"
+        app:expandedHintEnabled="false">
+
+        <com.google.android.material.textfield.TextInputEditText
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:id="@+id/edit_facility_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
+            android:lines="7"
+            android:textAlignment="gravity"
+            android:gravity="top|start"
+            android:maxLength="300"
+            android:scrollbars="vertical" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/edit_facility_button_submit"
