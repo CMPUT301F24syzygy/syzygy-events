@@ -66,7 +66,7 @@ public class OrganizerCreateFragment extends Fragment {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
+            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
             binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);;

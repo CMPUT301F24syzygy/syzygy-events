@@ -1,5 +1,6 @@
 package com.syzygy.events.database;
 
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
@@ -127,6 +128,10 @@ public class User extends DatabaseInstance<User> {
     @Override
     public String getAssociatedImageLocName() {
         return getName();
+    }
+
+    public String getInitials(){
+        return getName().substring(0,1);
     }
 
     /**

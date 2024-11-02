@@ -108,7 +108,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);
+            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);
             binding.createFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.createFacilityProfile);;

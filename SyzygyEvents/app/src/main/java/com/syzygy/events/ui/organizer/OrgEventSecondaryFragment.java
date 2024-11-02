@@ -81,6 +81,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
                 activity.navigateUp();
+                return;
             }
 
             event = instance;
