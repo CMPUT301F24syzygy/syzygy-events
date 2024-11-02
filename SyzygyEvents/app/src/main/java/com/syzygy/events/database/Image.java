@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -260,14 +261,16 @@ public class Image extends DatabaseInstance<Image> {
             return Picasso.get().load(R.drawable.penguin_blue);
         }
         if(instance instanceof User){
+            Random rand = new Random(instance.getDocumentID().hashCode());
+            Color c = Color.valueOf(rand.nextFloat()/3f*2, rand.nextFloat()/3f*2, rand.nextFloat()/3f*2);
             Transformation t = new InitialsTransformation.Builder()
                     .setInitials(((User)instance).getInitials())
                     .setTextColor(Color.WHITE)
                     .setTextAlpha(255)
-                    .setBackgroundColor(Color.GRAY)
+                    .setBackgroundColor(c.toArgb())
                     .setBackgroundAlpha(255)
                     .build();
-            return Picasso.get().load(R.drawable.penguin_blue).transform(t);
+            return Picasso.get().load(R.drawable.transparent).transform(t);
         }else{
             return Picasso.get().load(R.drawable.penguin_blue);
         }
