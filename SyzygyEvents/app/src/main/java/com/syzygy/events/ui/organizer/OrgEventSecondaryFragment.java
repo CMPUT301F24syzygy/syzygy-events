@@ -6,11 +6,13 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -30,6 +32,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
@@ -38,6 +41,7 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
+import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
@@ -45,6 +49,7 @@ import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
@@ -136,7 +141,13 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.editPosterButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///edit poster
+                    ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
+                        if(uri == null){
+                            return;
+                        }
+                        Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
+                        imageSelected(uri);
+                    });
                 }
             });
 
@@ -214,7 +225,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
 
     private void updateView() {
 
-        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
 
         if (!event.getQrHash().isEmpty()) {
@@ -268,6 +279,20 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 .position(event.getFacility().getLatLngLocation()));
         this.map = map;
         marker.setVisible(false);
+    }
+
+
+    private void posterUpdatedSuccess(Boolean success) {
+        updateView();
+    }
+    private void imageSelected(Uri uri) {
+        event.update(event.getTitle(),
+                "",
+                event.getDescription(),
+                uri,
+                event.getQrHash(),
+                event.getPrice(),
+                this::posterUpdatedSuccess);
     }
 
 

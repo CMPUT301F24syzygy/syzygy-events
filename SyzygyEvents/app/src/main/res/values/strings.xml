@@ -27,6 +27,14 @@
 
     <string name="title_signup_organizer">Create Facility</string>
 
+
+    <string name="add_image_button">Add Photo</string>
+    <string name="change_image_button">Change Photo</string>
+    <string name="remove_image_button">Remove</string>
+    <string name="opt_in_admin_notifications_checkbox">Allow Notifications From Admin</string>
+    <string name="opt_in_organizer_notifications_checkbox">Allow Notifications From Organizers</string>
+
+
     <string name="acc_title_entrant">My Account</string>
     <string name="add_acc_title_organizer">Create Facility</string>
     <string name="acc_title_organizer">Facility</string>
@@ -58,8 +66,8 @@
     <string name="edit_facility_name_hint">Facility Name*</string>
     <string name="edit_facility_description_hint">Description</string>
     <string name="edit_facility_description_placeholder">Add additional info about your facility!</string>
-    <string name="add_image_button">Add Photo</string>
-    <string name="change_image_button">Change Photo</string>
-    <string name="remove_image_button">Remove</string>
     <string name="create_facility_submit_button">Create Facility</string>
+
+
+
 </resources>

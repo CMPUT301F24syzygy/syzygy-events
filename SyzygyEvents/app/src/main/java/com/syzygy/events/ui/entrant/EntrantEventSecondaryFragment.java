@@ -149,7 +149,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
 
     private void updateView() {
 
-        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(binding.eventImg);
+        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
 
         binding.inWaitlistLayout.setVisibility(View.GONE);
