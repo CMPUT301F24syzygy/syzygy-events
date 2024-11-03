@@ -36,23 +36,23 @@ public class OrganizerCreateFragment extends Fragment {
 
         binding.eventCreateButtonSubmit.setOnClickListener(view -> submitData());
         binding.eventCreateEditImage.setOnClickListener(view -> choosePhoto());
-        /*binding.eventCreateRemoveImage.setOnClickListener(view -> setImage(null));
+        binding.eventCreateRemoveImage.setOnClickListener(view -> setImage(null));
 
-        binding.eventCreateCapWaitlist.setOnClickListener(view -> {
-            binding.eventCreateWaitlistCnt.setVisibility(binding.eventCreateCapWaitlist.isChecked() ? View.VISIBLE : View.GONE);
-        });
 
-        binding.eventCreateRepeat.setOnClickListener(view -> {
-            int v = binding.eventCreateRepeat.isChecked() ? View.VISIBLE : View.GONE;
-            binding.eventCreateEndDate.setVisibility(v);
-            binding.createEventDaysCnt.setVisibility(v);
-        });
-
-         */
+        binding.createEventSequence.setOnClickListener(view -> onChangeOfRepeat());
+        binding.createEventSingle.setOnClickListener(view -> onChangeOfRepeat());
 
         setImage(null);
 
         return binding.getRoot();
+    }
+
+    private void onChangeOfRepeat(){
+        int v = binding.createEventSequence.isChecked() ? View.VISIBLE : View.GONE;
+        binding.inputLayout8.setVisibility(v);
+        binding.createEventDaysCnt.setVisibility(v);
+        binding.inputLayout50.setVisibility(v==View.GONE?View.VISIBLE:View.INVISIBLE);
+        binding.inputLayout7.setVisibility(v==View.GONE?View.INVISIBLE:v);
     }
 
     private void choosePhoto(){
@@ -68,11 +68,13 @@ public class OrganizerCreateFragment extends Fragment {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
-            //binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
+            binding.eventCreateEditImage.setText(R.string.add_image_button);
+            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
+            binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);;
-            //binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
+            binding.eventCreateEditImage.setText(R.string.change_image_button);
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
+            binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
         }
     }
 
@@ -86,17 +88,24 @@ public class OrganizerCreateFragment extends Fragment {
         Long capacity;
         Long waitlistCapacity;
         Double price;
-        /*
+
         try{
             capacity = Long.parseLong(binding.eventCreateCapacity.getText().toString());
         }catch (NumberFormatException ex){
             capacity = null;
         }
-        try{
-            waitlistCapacity = binding.eventCreateCapWaitlist.isChecked() ? Long.parseLong(binding.eventCreateWaitlist.getText().toString()) : -1;
-        }catch (NumberFormatException ex){
-            waitlistCapacity = null;
+
+        String waitListTxt = binding.waitlistLimit.getText().toString();
+        if(waitListTxt.isBlank()) {
+            waitlistCapacity = -1L;
+        }else{
+            try{
+                waitlistCapacity = Long.parseLong(waitListTxt);
+            }catch (NumberFormatException ex){
+                waitlistCapacity = null;
+            }
         }
+
         try{
             price = Double.parseDouble(binding.eventCreatePrice.getText().toString());
         }catch (NumberFormatException ex){
@@ -108,36 +117,33 @@ public class OrganizerCreateFragment extends Fragment {
         Timestamp startDate;
         Timestamp endDate;
 
-        boolean repeat = binding.eventCreateRepeat.isChecked();
+        boolean repeat = binding.createEventSequence.isChecked();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        String startDay = binding.eventCreateStartDate.getText().toString();
-        String startTime = binding.eventCreateStartTime.getText().toString();
-        String endTime = binding.eventCreateEndTime.getText().toString();
-        String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
+        String startDay = repeat?binding.eventCreateStartDate.getText().toString():binding.eventCreateDate.getText().toString();
+
         try{
-            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " " + startTime)));
+            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 12:01")));
         }catch (ParseException | NullPointerException ex){
             startDate = null;
         }
 
+        String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
         try{
-            endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " " + endTime)));
+            endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " 23:59")));
         }catch (ParseException | NullPointerException ex){
             endDate = null;
         }
 
         String openDay = binding.eventCreateOpenDate.getText().toString();
-        String openTime = binding.eventCreateOpenTime.getText().toString();
-        String closeTime = binding.eventCreateCloseTime.getText().toString();
         String closeDay = binding.eventCreateCloseDate.getText().toString();
         try{
-            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " " + openTime)));
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
         }catch (ParseException | NullPointerException ex){
             openDate = null;
         }
 
         try{
-            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " " + closeTime)));
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
         }catch (ParseException | NullPointerException ex){
             closeDate = null;
         }
@@ -169,6 +175,7 @@ public class OrganizerCreateFragment extends Fragment {
         });
 
         if(invalidIds.isEmpty()) return;
+        binding.progressBar.setVisibility(View.GONE);
 
         if(invalidIds.contains(R.string.database_event_title)){
             binding.eventCreateName.setError("Bad");
@@ -180,33 +187,28 @@ public class OrganizerCreateFragment extends Fragment {
             binding.eventCreateCapacity.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_event_waitlist)){
-            binding.eventCreateWaitlist.setError("Bad");
+            binding.waitlistLimit.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_event_price)){
             binding.eventCreatePrice.setError("Bad");
         }
         if(invalidIds.contains(R.string.database_event_openDate)){
             binding.eventCreateOpenDate.setError("Badopen");
-            binding.eventCreateOpenTime.setError("Badopen");
         }
         if(invalidIds.contains(R.string.database_event_closedDate)){
             binding.eventCreateCloseDate.setError("Badclose");
-            binding.eventCreateCloseTime.setError("Badclose");
         }
         if(invalidIds.contains(R.string.database_event_start)){
-            binding.eventCreateStartDate.setError("Bad");
-            binding.eventCreateStartTime.setError("Bad");
+            if(repeat){
+                binding.eventCreateStartDate.setError("Bad");
+            }else{
+                binding.eventCreateDate.setError("Bad");
+            }
         }
         if(invalidIds.contains(R.string.database_event_end)){
             binding.eventCreateEndDate.setError("Bad");
-            binding.eventCreateEndTime.setError("Bad");
-        }
-        if(invalidIds.contains(R.string.database_event_dates)){
-            binding.eventCreateRepeat.setError("Baddates");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
-
-         */
     }
 
     @Override
