@@ -159,14 +159,6 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 }
             });
 
-
-            binding.createNotificationButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ///compose notification popup (dev)
-                }
-            });
-
             binding.openLotteryButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
