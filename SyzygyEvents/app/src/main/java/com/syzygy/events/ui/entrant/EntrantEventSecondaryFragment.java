@@ -50,6 +50,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
                 activity.navigateUp();
+                return;
             }
 
             event = instance;
@@ -202,6 +203,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
         if (!event.isLegalState()) {
             EntrantActivity activity = (EntrantActivity)getActivity();
             activity.navigateUp();
+            return;
         }
         updateView();
     }

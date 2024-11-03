@@ -83,6 +83,10 @@ public class Notification extends DatabaseInstance<Notification> {
         return getPropertyInstanceI(R.string.database_not_receiverID);
     }
 
+    public Boolean setIsRead(Boolean b) {
+        return setPropertyValue(R.string.database_not_read, b, s -> {});
+    }
+
     /**
      * The list of the fields defined for a User
      */

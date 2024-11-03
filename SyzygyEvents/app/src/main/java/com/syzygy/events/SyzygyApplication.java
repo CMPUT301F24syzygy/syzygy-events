@@ -283,6 +283,11 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         return format.format(t.toDate());
     }
 
+    public String formatTime(Timestamp t) {
+        DateFormat format = new SimpleDateFormat(getString(R.string.date_format_basic));
+        return format.format(t.toDate());
+    }
+
     /**
      * Called on errors in the database
      */

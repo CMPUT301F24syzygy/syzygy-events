@@ -4,28 +4,18 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContextWrapper;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TabHost;
-import android.widget.TabWidget;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -34,7 +24,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -49,27 +38,22 @@ import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.Notification;
-import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
-import com.syzygy.events.ui.entrant.EntrantNotificationsAdapter;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
-    private DatabaseInfLoadQuery<EventAssociation> queryAll, queryWaitlist, queryInvited, queryEnrolled, queryCancelled;
+    private DatabaseInfLoadQuery<EventAssociation> queryAll;
+    /*
+    private DatabaseInfLoadQuery<EventAssociation> queryWaitlist, queryInvited, queryEnrolled, queryCancelled;
+    */
+
     private Event event;
+    private GoogleMap map;
     private Marker marker;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -97,37 +81,38 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
 
 
             queryAll = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
-            AssociatedEntrantsAdapter allAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryAll.getInstances());
+            AssociatedEntrantsAdapter allAdapter = new AssociatedEntrantsAdapter(getContext(), queryAll.getInstances());
             queryAll.refreshData((query1, s) -> {
                 allAdapter.notifyDataSetChanged();
             });
             binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
 
             /*
-            queryWaitlist = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            queryWaitlist = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
+                    app.getDatabase(), event, getString(R.string.event_assoc_status_waitlist), false));
             AssociatedEntrantsAdapter waitlistAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryWaitlist.getInstances());
             queryWaitlist.refreshData((query1, s) -> {
                 waitlistAdapter.notifyDataSetChanged();
             });
-
-            queryInvited = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            queryInvited = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
+                    app.getDatabase(), event, getString(R.string.event_assoc_status_invited), false));
             AssociatedEntrantsAdapter invitedAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryInvited.getInstances());
             queryInvited.refreshData((query1, s) -> {
                 invitedAdapter.notifyDataSetChanged();
             });
-
-            queryEnrolled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            queryEnrolled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
+                    app.getDatabase(), event, getString(R.string.event_assoc_status_enrolled), false));
             AssociatedEntrantsAdapter enrolledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryEnrolled.getInstances());
             queryEnrolled.refreshData((query1, s) -> {
                 enrolledAdapter.notifyDataSetChanged();
             });
-
-            queryCancelled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            queryCancelled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
+                    app.getDatabase(), event, getString(R.string.event_assoc_status_cancelled), false));
             AssociatedEntrantsAdapter cancelledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryCancelled.getInstances());
             queryCancelled.refreshData((query1, s) -> {
                 cancelledAdapter.notifyDataSetChanged();
             });
-            */
+            *////
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -161,6 +146,9 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.entrantFilterChips.setOnCheckedStateChangeListener(new ChipGroup.OnCheckedStateChangeListener() {
                 @Override
                 public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
+                    if (marker != null) {
+                        marker.setVisible(false);
+                    }
                     if (checkedIds.get(0) == R.id.all_chip) {
                         binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
                     } /*else if (checkedIds.get(0) == R.id.waitlist_chip) {
@@ -178,7 +166,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.editPosterButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///run edit poster
+                    ///edit poster
                 }
             });
 
@@ -190,6 +178,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 }
             });
 
+
             binding.downloadQrButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -200,44 +189,50 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.createNotificationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///compose notification popup
+                    ///compose notification popup (dev)
                 }
             });
 
-            binding.runLotteryButton.setOnClickListener(new View.OnClickListener() {
+            binding.openLotteryButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ///fix display
                     Dialog dialog = new AlertDialog.Builder(getContext())
-                            .setView(R.layout.popup_lottery_run)
-                            .setPositiveButton("Y", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    event.getLottery(-1, (e, result, success) -> {
-                                        result.execute((ev, r, f) -> {
-                                        }, true);
-                                    });
-                                }
-                            })
+                            .setView(R.layout.popup_lottery)
                             .create();
                     dialog.show();
+                    ///fix layout & set layout values
+                    dialog.findViewById(R.id.lottery_run).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            event.getLottery(-1, (e, result, success) -> {
+                                result.execute((ev, r, f) -> {
+                                }, true);
+                            });
+                        }
+                    });
                 }
             });
 
             if (event.getRequiresLocation()) {
                 binding.entrantLocationMap.setVisibility(View.VISIBLE);
-                SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
-                map.getMapAsync(this);
-                binding.eventAssociatedEntrantsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
+                mapFragment.getMapAsync(this);
+            }
+
+            binding.eventAssociatedEntrantsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (event.getRequiresLocation()) {
                         AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
                         GeoPoint l = a.getItem(position).getLocation();
-                        marker.setPosition(new LatLng(l.getLatitude(), l.getLongitude()));
-                        marker.setVisible(false);
+                        LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
+                        marker.setPosition(latLng);
+                        marker.setVisible(true);
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
                     }
-                });
-            }
+                }
+            });
+            ///ability to cancel individual entrants
 
             updateView();
         });
@@ -288,6 +283,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                     getString(R.string.reg_open_text, app.formatTimestamp(event.getCloseRegistrationDate())));
         } else {
             binding.registrationDateInfoText.setText(getString(R.string.after_reg_text));
+            binding.openLotteryButton.setVisibility(View.VISIBLE);
         }
 
     }
@@ -298,6 +294,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
         if (!event.isLegalState()) {
             EntrantActivity activity = (EntrantActivity) getActivity();
             activity.navigateUp();
+            return;
         }
         updateView();
     }
@@ -308,6 +305,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
         marker = map.addMarker(new MarkerOptions()
                 .draggable(false)
                 .position(event.getFacility().getLatLngLocation()));
+        this.map = map;
         marker.setVisible(false);
     }
 

@@ -36,7 +36,7 @@ public class OrganizerCreateFragment extends Fragment {
 
         binding.eventCreateButtonSubmit.setOnClickListener(view -> submitData());
         binding.eventCreateEditImage.setOnClickListener(view -> choosePhoto());
-        binding.eventCreateRemoveImage.setOnClickListener(view -> setImage(null));
+        /*binding.eventCreateRemoveImage.setOnClickListener(view -> setImage(null));
 
         binding.eventCreateCapWaitlist.setOnClickListener(view -> {
             binding.eventCreateWaitlistCnt.setVisibility(binding.eventCreateCapWaitlist.isChecked() ? View.VISIBLE : View.GONE);
@@ -47,6 +47,8 @@ public class OrganizerCreateFragment extends Fragment {
             binding.eventCreateEndDate.setVisibility(v);
             binding.createEventDaysCnt.setVisibility(v);
         });
+
+         */
 
         setImage(null);
 
@@ -67,14 +69,15 @@ public class OrganizerCreateFragment extends Fragment {
         image = uri;
         if(image == null){
             Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
-            binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
+            //binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);;
-            binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
+            //binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
         }
     }
 
     private void submitData(){
+
         String title = binding.eventCreateName.getText().toString();
         String facilityID = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacilityID();
         Boolean requiresGeo = binding.eventCreateRequireGeo.isChecked();
@@ -83,6 +86,7 @@ public class OrganizerCreateFragment extends Fragment {
         Long capacity;
         Long waitlistCapacity;
         Double price;
+        /*
         try{
             capacity = Long.parseLong(binding.eventCreateCapacity.getText().toString());
         }catch (NumberFormatException ex){
@@ -201,6 +205,8 @@ public class OrganizerCreateFragment extends Fragment {
             binding.eventCreateRepeat.setError("Baddates");
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
+
+         */
     }
 
     @Override
@@ -209,4 +215,6 @@ public class OrganizerCreateFragment extends Fragment {
         if(event!=null) event.dissolve();
         binding = null;
     }
+
+
 }
