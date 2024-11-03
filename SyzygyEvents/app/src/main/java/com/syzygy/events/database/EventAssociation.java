@@ -296,6 +296,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                         NotificationResult n = new NotificationResult(successNotifications, failedNotifications);
                         listener.onCompletion(querrier, n, true);
                         n.dissolve();
+                        return;
                     }
 
 

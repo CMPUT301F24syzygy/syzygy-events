@@ -22,6 +22,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.GeoPoint;
@@ -47,10 +48,7 @@ import java.util.Locale;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
-    private DatabaseInfLoadQuery<EventAssociation> queryAll;
-    /*
-    private DatabaseInfLoadQuery<EventAssociation> queryWaitlist, queryInvited, queryEnrolled, queryCancelled;
-    */
+    private DatabaseInfLoadQuery<EventAssociation> query;
 
     private Event event;
     private GoogleMap map;
@@ -75,44 +73,16 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             //binding.eventStartEndText.setText(event.getFormattedStartEnd());
-            //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
+            binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
 
-
-            queryAll = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
-            AssociatedEntrantsAdapter allAdapter = new AssociatedEntrantsAdapter(getContext(), queryAll.getInstances());
-            queryAll.refreshData((query1, s) -> {
-                allAdapter.notifyDataSetChanged();
+            query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
+            AssociatedEntrantsAdapter adapter = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
+            query.refreshData((query1, s) -> {
+                adapter.notifyDataSetChanged();
             });
-            binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
-
-            /*
-            queryWaitlist = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
-                    app.getDatabase(), event, getString(R.string.event_assoc_status_waitlist), false));
-            AssociatedEntrantsAdapter waitlistAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryWaitlist.getInstances());
-            queryWaitlist.refreshData((query1, s) -> {
-                waitlistAdapter.notifyDataSetChanged();
-            });
-            queryInvited = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
-                    app.getDatabase(), event, getString(R.string.event_assoc_status_invited), false));
-            AssociatedEntrantsAdapter invitedAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryInvited.getInstances());
-            queryInvited.refreshData((query1, s) -> {
-                invitedAdapter.notifyDataSetChanged();
-            });
-            queryEnrolled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
-                    app.getDatabase(), event, getString(R.string.event_assoc_status_enrolled), false));
-            AssociatedEntrantsAdapter enrolledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryEnrolled.getInstances());
-            queryEnrolled.refreshData((query1, s) -> {
-                enrolledAdapter.notifyDataSetChanged();
-            });
-            queryCancelled = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(
-                    app.getDatabase(), event, getString(R.string.event_assoc_status_cancelled), false));
-            AssociatedEntrantsAdapter cancelledAdapter = new AssociatedEntrantsAdapter(this.getContext(), queryCancelled.getInstances());
-            queryCancelled.refreshData((query1, s) -> {
-                cancelledAdapter.notifyDataSetChanged();
-            });
-            *////
+            binding.eventAssociatedEntrantsList.setAdapter(adapter);
 
             binding.eventImg.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -149,17 +119,17 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                     if (marker != null) {
                         marker.setVisible(false);
                     }
-                    if (checkedIds.get(0) == R.id.all_chip) {
-                        binding.eventAssociatedEntrantsList.setAdapter(allAdapter);
-                    } /*else if (checkedIds.get(0) == R.id.waitlist_chip) {
-                        binding.eventAssociatedEntrantsList.setAdapter(waitlistAdapter);
-                    } else if (checkedIds.get(0) == R.id.invited_chip) {
-                        binding.eventAssociatedEntrantsList.setAdapter(invitedAdapter);
-                    } else if (checkedIds.get(0) == R.id.enrolled_chip) {
-                        binding.eventAssociatedEntrantsList.setAdapter(enrolledAdapter);
-                    } else if (checkedIds.get(0) == R.id.cancelled_chip) {
-                        binding.eventAssociatedEntrantsList.setAdapter(cancelledAdapter);
-                    }*/
+                    String status = null;
+                    if (checkedIds.get(0) != R.id.all_chip) {
+                        Chip chip = binding.getRoot().findViewById(checkedIds.get(0));
+                        status = chip.getText().toString();
+                    }
+                    query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, status, false));
+                    AssociatedEntrantsAdapter adapter = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
+                    query.refreshData((query1, s) -> {
+                        adapter.notifyDataSetChanged();
+                    });
+                    binding.eventAssociatedEntrantsList.setAdapter(adapter);
                 }
             });
 
@@ -178,13 +148,6 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 }
             });
 
-
-            binding.downloadQrButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ///download qr
-                }
-            });
 
             binding.createNotificationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -269,10 +232,8 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             }
             binding.facilityEventQrImg.setImageBitmap(bitmap);
             binding.copyQrButton.setVisibility(View.VISIBLE);
-            binding.downloadQrButton.setVisibility(View.VISIBLE);
         } else {
             binding.copyQrButton.setVisibility(View.GONE);
-            binding.downloadQrButton.setVisibility(View.GONE);
         }
 
         if (event.isBeforeRegistration()) {

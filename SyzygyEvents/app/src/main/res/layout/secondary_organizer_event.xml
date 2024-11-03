@@ -58,7 +58,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:text="dates format TBD"
         app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
         app:layout_constraintTop_toBottomOf="@+id/event_price_text" />
 
@@ -68,7 +67,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="8dp"
-        android:text="M, Tu, W, Th, F, Sa  at 3:00 pm"
         app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
         app:layout_constraintTop_toBottomOf="@+id/event_start_end_text" />
 
@@ -207,20 +205,10 @@
             android:id="@+id/copy_qr_button"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="48dp"
             android:text="@string/button_copy_qr_hash"
             app:layout_constraintStart_toEndOf="@+id/facility_event_qr_img"
             app:layout_constraintTop_toBottomOf="@+id/div4"/>
-
-        <Button
-            android:id="@+id/download_qr_button"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/button_download_qr_image"
-            android:drawableStart="@android:drawable/stat_sys_download"
-            app:layout_constraintStart_toEndOf="@+id/facility_event_qr_img"
-            app:layout_constraintTop_toBottomOf="@+id/copy_qr_button"/>
 
     <View
         android:id="@+id/div5"
@@ -268,28 +256,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
-            android:text="Waitlist" />
+            android:text="@string/event_assoc_status_waitlist" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/invited_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
-            android:text="Invited" />
+            android:text="@string/event_assoc_status_invited" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/enrolled_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
-            android:text="Enrolled" />
+            android:text="@string/event_assoc_status_enrolled" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/cancelled_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
-            android:text="Cancelled" />
+            android:text="@string/event_assoc_status_cancelled" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/all_chip"

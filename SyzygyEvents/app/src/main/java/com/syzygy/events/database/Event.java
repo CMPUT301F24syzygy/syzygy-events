@@ -114,7 +114,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 return;
             }
             int getCount = count;
-            if(getCount <= 0) getCount = currentEnrolled - currentWaitlist;
+            if(getCount <= 0) getCount = (int) (getCapacity() - currentEnrolled);
             shuffleWaitlist(getCount, listener);
         });
     }
@@ -143,7 +143,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             if(count == 0){
                 chosen = unChosen;
                 unChosen = users;
-            }else if(count > users.size()){
+            }else if(count < users.size()){
                 Collections.shuffle(users);
                 chosen = users.subList(0,count);
                 unChosen = users.subList(count, users.size());

@@ -59,7 +59,7 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             //binding.eventStartEndText.setText(event.getFormattedStartEnd());
-            //binding.eventWeekdaysTimeText.setText(getString(R.string.weekdays_time, event.getFormattedEventDates(), event.getFormattedTime()));
+            binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
 
@@ -196,7 +196,6 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             binding.registrationDateInfoText.setText(getString(R.string.after_reg_text));
         }
     }
-
 
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
