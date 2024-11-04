@@ -42,8 +42,6 @@ import java.util.function.Consumer;
  * @author Gareth Kmet
  * @version 1.0
  * @since 19oct24
- *
- * TODO on image delete
  */
 @Database.Dissovable
 public class Image extends DatabaseInstance<Image> {
@@ -157,6 +155,8 @@ public class Image extends DatabaseInstance<Image> {
             if((deletionType & DeletionType.HARD_DELETE) != 0){
                 Database.Collections col = getLocType();
                 db.modifyField(getLocType(), getLocID(), col.getAssociatedImagePropertyId(), "", listener);
+            }else{
+                listener.accept(true);
             }
         });
     }
