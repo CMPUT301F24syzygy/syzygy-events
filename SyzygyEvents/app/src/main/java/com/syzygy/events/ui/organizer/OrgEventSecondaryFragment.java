@@ -49,6 +49,7 @@ import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
@@ -124,6 +125,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                     if (marker != null) {
                         marker.setVisible(false);
                     }
+                    binding.cancelEntrantButton.setVisibility(View.GONE);
                     String status = null;
                     if (checkedIds.get(0) != R.id.all_chip) {
                         Chip chip = binding.getRoot().findViewById(checkedIds.get(0));
@@ -178,6 +180,21 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                     });
                 }
             });
+            binding.cancelEntrantButton.setOnClickListener(view -> {
+                if (marker != null) {
+                    marker.setVisible(false);
+                }
+                binding.cancelEntrantButton.setVisibility(View.GONE);
+                AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                EventAssociation association = a.getItem(binding.eventAssociatedEntrantsList.getCheckedItemPosition());
+                association.setStatus(R.string.event_assoc_status_cancelled);
+                binding.eventAssociatedEntrantsList.clearChoices();
+                query.refreshData((query1, s) -> {
+                    a.notifyDataSetChanged();
+                });
+                binding.eventAssociatedEntrantsList.setAdapter(a);
+
+            });
 
             if (event.getRequiresLocation()) {
                 binding.entrantLocationMap.setVisibility(View.VISIBLE);
@@ -188,8 +205,13 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.eventAssociatedEntrantsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    binding.cancelEntrantButton.setVisibility(View.GONE);
+                    AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                    if (Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_waitlist)) ||
+                            Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_invited))) {
+                        binding.cancelEntrantButton.setVisibility(View.VISIBLE);
+                    }
                     if (event.getRequiresLocation()) {
-                        AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
                         GeoPoint l = a.getItem(position).getLocation();
                         LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
                         marker.setPosition(latLng);
