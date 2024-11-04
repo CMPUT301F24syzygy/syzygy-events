@@ -65,69 +65,52 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
 
-            TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name);
+            TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name_text);
             facility_name.setText(event.getFacility().getName());
-            TextView facility_address = binding.getRoot().findViewById(R.id.card_facility_address);
+            TextView facility_address = binding.getRoot().findViewById(R.id.card_facility_location_text);
             facility_address.setText(event.getFacility().getAddress());
-            ImageView facility_image = binding.getRoot().findViewById(R.id.facility_image);
+            ImageView facility_image = binding.getRoot().findViewById(R.id.card_facility_image_img);
             Image.getFormatedAssociatedImage(event.getFacility(), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(facility_image);
 
-            binding.eventImg.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    app.displayImage(event);
-                }
+            binding.eventImg.setOnClickListener(view -> {
+                app.displayImage(event);
             });
 
-            binding.eventFacilityCard.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    activity.openFacility();
-                }
+            View facility_card = binding.getRoot().findViewById(R.id.facility_card);
+            facility_card.setOnClickListener(view -> {
+                activity.openFacility();
             });
 
-            binding.eventExitWaitlistButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    association.setStatus(R.string.event_assoc_status_cancelled);
-                }
+            binding.eventExitWaitlistButton.setOnClickListener(view -> {
+                association.setStatus(R.string.event_assoc_status_cancelled);
             });
 
-            binding.buttonReject.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    association.setStatus(R.string.event_assoc_status_cancelled);
-                }
+            binding.buttonReject.setOnClickListener(view -> {
+                association.setStatus(R.string.event_assoc_status_cancelled);
             });
 
-            binding.buttonAccept.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    event.acceptInvite(app.getUser(), (e, a, success) -> {});
-                }
+            binding.buttonAccept.setOnClickListener(view -> {
+                event.acceptInvite(app.getUser(), (e, a, s) -> {});
             });
 
-            binding.eventJoinWaitlistButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (event.getRequiresLocation()) {
-                        app.getLocation((l) -> {
-                            if (l != null) {
-                                GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
-                                event.addUserToWaitlist(app.getUser(), geo, (e, a, success) -> {
-                                    updateView();
-                                });
-                            } else {
-                                Dialog dialog = new AlertDialog.Builder(getContext())
-                                        .setMessage(R.string.failed_get_location).create();
-                                dialog.show();
-                            }
-                        });
-                    } else {
-                        event.addUserToWaitlist(app.getUser(), null, (e, a, success) -> {
-                            updateView();
-                        });
-                    }
+            binding.eventJoinWaitlistButton.setOnClickListener(view -> {
+                if (event.getRequiresLocation()) {
+                    app.getLocation((l) -> {
+                        if (l != null) {
+                            GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
+                            event.addUserToWaitlist(app.getUser(), geo, (e, a, s) -> {
+                                updateView();
+                            });
+                        } else {
+                            Dialog dialog = new AlertDialog.Builder(getContext())
+                                    .setMessage(R.string.failed_get_location).create();
+                            dialog.show();
+                        }
+                    });
+                } else {
+                    event.addUserToWaitlist(app.getUser(), null, (e, a, s) -> {
+                        updateView();
+                    });
                 }
             });
 

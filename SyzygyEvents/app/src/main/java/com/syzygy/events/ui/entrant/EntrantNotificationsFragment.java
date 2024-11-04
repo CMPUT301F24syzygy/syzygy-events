@@ -17,6 +17,7 @@ import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
@@ -74,11 +75,18 @@ public class EntrantNotificationsFragment extends Fragment {
 
 
                 if (notification.getEvent() != null) {
-                    View event_card = dialog.findViewById(R.id.notification_event_card);
+                    View event_card = dialog.findViewById(R.id.event_card);
                     event_card.setVisibility(View.VISIBLE);
-                    TextView event_title = dialog.findViewById(R.id.card_event_name);
+
+                    TextView event_title = dialog.findViewById(R.id.card_event_title_text);
                     event_title.setText(notification.getEvent().getTitle());
-                    ImageView event_image = dialog.findViewById(R.id.card_event_image);
+
+                    TextView event_details = dialog.findViewById(R.id.card_event_details_text);
+                    String start = app.formatTimestamp(notification.getEvent().getStartDate());
+                    String start_end = String.format("%s - %s", start, app.formatTimestamp(notification.getEvent().getEndDate()));
+                    event_details.setText(notification.getEvent().getEventDates() == Event.Dates.NO_REPEAT ? start : start_end);
+
+                    ImageView event_image = dialog.findViewById(R.id.card_event_poster_img);
                     Image.getFormatedAssociatedImage(notification.getEvent(), Image.Options.Square(Image.Options.Sizes.LARGE)).into(event_image);
 
                     event_card.setOnClickListener(new View.OnClickListener() {
