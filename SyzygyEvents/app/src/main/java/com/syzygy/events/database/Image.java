@@ -69,6 +69,23 @@ public class Image extends DatabaseInstance<Image> {
         return Database.Collections.valueOf((String)getPropertyValue(R.string.database_img_locType));
     }
 
+    /**
+     * Returns the loc type as a formatted string
+     */
+    public String getFormatedLocType(){
+        Database.Collections loc = getLocType();
+        switch(loc){
+            case USERS:
+                return "User Profile";
+            case EVENTS:
+                return "Event Poster";
+            case FACILITIES:
+                return "Facility Profile";
+            default:
+                return "Not Applicable";
+        }
+    }
+
     public String getLocName(){
         return getPropertyValueI(R.string.database_img_locName);
     }
