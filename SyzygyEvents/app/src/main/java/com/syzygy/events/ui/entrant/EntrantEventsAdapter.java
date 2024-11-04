@@ -44,7 +44,7 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
         price.setText(String.format(Locale.getDefault(), "$ %3.2f", association.getEvent().getPrice()));
 
         ImageView image = view.findViewById(R.id.entrant_events_item_poster_img);
-        Image.getFormatedAssociatedImage(association.getEvent(), Image.Options.AsIs()).into(image);
+        Image.getFormatedAssociatedImage(association.getEvent(), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(image);
 
 
         ///

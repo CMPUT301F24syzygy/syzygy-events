@@ -78,7 +78,9 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
 
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
-            //binding.eventStartEndText.setText(event.getFormattedStartEnd());
+            String start = app.formatTimestamp(event.getStartDate());
+            String start_end = String.format ("%s - %s", start, app.formatTimestamp(event.getEndDate()));
+            binding.eventStartEndText.setText(event.getEventDates() == Event.Dates.NO_REPEAT ? start : start_end);
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
@@ -90,11 +92,8 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             });
             binding.eventAssociatedEntrantsList.setAdapter(adapter);
 
-            binding.eventImg.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    app.displayImage(event);
-                }
+            binding.eventImg.setOnClickListener(view -> {
+                app.displayImage(event);
             });
 
             binding.tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -119,72 +118,52 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 }
             });
 
-            binding.entrantFilterChips.setOnCheckedStateChangeListener(new ChipGroup.OnCheckedStateChangeListener() {
-                @Override
-                public void onCheckedChanged(@NonNull ChipGroup group, @NonNull List<Integer> checkedIds) {
-                    if (marker != null) {
-                        marker.setVisible(false);
+            binding.entrantFilterChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+                entrantUnselected();
+                String status = null;
+                if (checkedIds.get(0) != R.id.all_chip) {
+                    Chip chip = binding.getRoot().findViewById(checkedIds.get(0));
+                    status = chip.getText().toString();
+                }
+                query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, status, false));
+                AssociatedEntrantsAdapter a = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
+                query.refreshData((query1, s) -> {
+                    a.notifyDataSetChanged();
+                });
+                binding.eventAssociatedEntrantsList.setAdapter(a);
+            });
+
+            binding.editPosterButton.setOnClickListener(view -> {
+                ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
+                    if(uri == null){
+                        return;
                     }
-                    binding.cancelEntrantButton.setVisibility(View.GONE);
-                    String status = null;
-                    if (checkedIds.get(0) != R.id.all_chip) {
-                        Chip chip = binding.getRoot().findViewById(checkedIds.get(0));
-                        status = chip.getText().toString();
-                    }
-                    query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, status, false));
-                    AssociatedEntrantsAdapter adapter = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
-                    query.refreshData((query1, s) -> {
-                        adapter.notifyDataSetChanged();
-                    });
-                    binding.eventAssociatedEntrantsList.setAdapter(adapter);
-                }
+                    event.setPoster(uri, this::posterUpdatedSuccess);
+                });
             });
 
-            binding.editPosterButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
-                        if(uri == null){
-                            return;
-                        }
-                        Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
-                        imageSelected(uri);
-                    });
-                }
+            binding.copyQrButton.setOnClickListener(view -> {
+                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(getContext().CLIPBOARD_SERVICE);
+                clipboard.setPrimaryClip(ClipData.newPlainText("QR hash", event.getQrHash()));
             });
 
-            binding.copyQrButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(getContext().CLIPBOARD_SERVICE);
-                    clipboard.setPrimaryClip(ClipData.newPlainText("QR hash", event.getQrHash()));
-                }
-            });
-
-            binding.openLotteryButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Dialog dialog = new AlertDialog.Builder(getContext())
-                            .setView(R.layout.popup_lottery)
-                            .create();
-                    dialog.show();
-                    ///fix layout & set layout values
-                    dialog.findViewById(R.id.lottery_run).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            event.getLottery(-1, (e, result, success) -> {
-                                result.execute((ev, r, f) -> {
-                                }, true);
-                            });
-                        }
+            binding.openLotteryButton.setOnClickListener(view -> {
+                Dialog dialog = new AlertDialog.Builder(getContext())
+                        .setView(R.layout.popup_lottery)
+                        .create();
+                dialog.show();
+                ///fix layout & set layout values
+                dialog.findViewById(R.id.lottery_run).setOnClickListener(v -> {
+                    event.getLottery(-1, (e, result, s) -> {
+                        result.execute((ev, r, f) -> {
+                            dialog.dismiss();
+                            updateView();
+                        }, true);
                     });
-                }
+                });
             });
             binding.cancelEntrantButton.setOnClickListener(view -> {
-                if (marker != null) {
-                    marker.setVisible(false);
-                }
-                binding.cancelEntrantButton.setVisibility(View.GONE);
+                entrantUnselected();
                 AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
                 EventAssociation association = a.getItem(binding.eventAssociatedEntrantsList.getCheckedItemPosition());
                 association.setStatus(R.string.event_assoc_status_cancelled);
@@ -202,25 +181,21 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                 mapFragment.getMapAsync(this);
             }
 
-            binding.eventAssociatedEntrantsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    binding.cancelEntrantButton.setVisibility(View.GONE);
-                    AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
-                    if (Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_waitlist)) ||
-                            Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_invited))) {
-                        binding.cancelEntrantButton.setVisibility(View.VISIBLE);
-                    }
-                    if (event.getRequiresLocation()) {
-                        GeoPoint l = a.getItem(position).getLocation();
-                        LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
-                        marker.setPosition(latLng);
-                        marker.setVisible(true);
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-                    }
+            binding.eventAssociatedEntrantsList.setOnItemClickListener((parent, view, position, id) -> {
+                entrantUnselected();
+                AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                if (Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_waitlist)) ||
+                        Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_invited))) {
+                    binding.cancelEntrantButton.setVisibility(View.VISIBLE);
+                }
+                if (event.getRequiresLocation()) {
+                    GeoPoint l = a.getItem(position).getLocation();
+                    LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
+                    marker.setPosition(latLng);
+                    marker.setVisible(true);
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
                 }
             });
-            ///ability to cancel individual entrants
 
             updateView();
         });
@@ -295,18 +270,15 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
         marker.setVisible(false);
     }
 
-
     private void posterUpdatedSuccess(Boolean success) {
         updateView();
     }
-    private void imageSelected(Uri uri) {
-        event.update(event.getTitle(),
-                "",
-                event.getDescription(),
-                uri,
-                event.getQrHash(),
-                event.getPrice(),
-                this::posterUpdatedSuccess);
+
+    private void entrantUnselected() {
+        if (marker != null) {
+            marker.setVisible(false);
+        }
+        binding.cancelEntrantButton.setVisibility(View.GONE);
     }
 
 

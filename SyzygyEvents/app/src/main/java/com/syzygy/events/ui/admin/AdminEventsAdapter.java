@@ -41,7 +41,7 @@ public class AdminEventsAdapter extends ArrayAdapter<Event> {
         price.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
 
         ImageView image = view.findViewById(R.id.admin_events_item_poster_img);
-        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(image);
+        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(image);
 
 
         ///

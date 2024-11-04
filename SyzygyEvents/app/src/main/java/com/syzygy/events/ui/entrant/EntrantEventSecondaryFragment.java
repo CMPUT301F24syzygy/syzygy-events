@@ -58,7 +58,9 @@ public class EntrantEventSecondaryFragment extends Fragment implements Database.
 
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
-            //binding.eventStartEndText.setText(event.getFormattedStartEnd());
+            String start = app.formatTimestamp(event.getStartDate());
+            String start_end = String.format ("%s - %s", start, app.formatTimestamp(event.getEndDate()));
+            binding.eventStartEndText.setText(event.getEventDates() == Event.Dates.NO_REPEAT ? start : start_end);
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());

@@ -37,7 +37,7 @@ public class OrganizerEventsAdapter extends ArrayAdapter<Event> {
         TextView title = view.findViewById(R.id.organizer_events_item_title_text);
         title.setText(event.getTitle());
         ImageView image = view.findViewById(R.id.organizer_events_item_poster_img);
-        Image.getFormatedAssociatedImage(event, Image.Options.AsIs()).into(image);
+        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(image);
 
         ///
         ///
