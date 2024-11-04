@@ -792,6 +792,9 @@ public class Database implements EventListener<DocumentSnapshot> {
              * A property of the instance has been modified
              */
             UPDATE,
+            /**
+             * A property of a subinstance was updated
+             */
             SUBUPDATE,
             /**
              * The instance was deleted
@@ -804,7 +807,7 @@ public class Database implements EventListener<DocumentSnapshot> {
             /**
              * The instance was deallocated from the cache
              */
-            DEREFERENCED
+            DEREFERENCED;
         };
         public <T extends DatabaseInstance <T>> void onUpdate(@Observes DatabaseInstance<T> instance, Type type);
     }
