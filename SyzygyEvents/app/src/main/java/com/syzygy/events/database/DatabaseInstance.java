@@ -1131,7 +1131,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             public void accept(Boolean success) {
                 s = s || success;
                 i ++;
-                if(i > queries.size()){
+                if(i >= queries.size()){
                     listener.accept(s);
                     return;
                 }
@@ -1166,7 +1166,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             public void accept(Boolean success) {
                 s = s || success;
                 i ++;
-                if(i > iproperties.size()){
+                if(i >= iproperties.size()){
                     l2.accept(s);
                     return;
                 }
