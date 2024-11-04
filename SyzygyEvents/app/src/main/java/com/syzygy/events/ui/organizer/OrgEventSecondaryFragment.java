@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -146,8 +148,11 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
                         .setView(R.layout.popup_lottery)
                         .create();
                 dialog.show();
-                ///fix layout & set layout values
-                dialog.findViewById(R.id.lottery_run).setOnClickListener(v -> {
+                setLotteryPopupView(dialog);
+                event.refreshData((e, s) -> {
+                    setLotteryPopupView(dialog);
+                });
+                dialog.findViewById(R.id.lottery_run_button).setOnClickListener(v -> {
                     event.getLottery(-1, (e, result, s) -> {
                         result.execute((ev, r, f) -> {
                             dialog.dismiss();
@@ -273,6 +278,41 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             marker.setVisible(false);
         }
         binding.cancelEntrantButton.setVisibility(View.GONE);
+    }
+
+    private void setLotteryPopupView(Dialog dialog) {
+
+        TextView message_enrolled_full = dialog.findViewById(R.id.lottery_full_enrolled_message);
+        TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
+        Button button = dialog.findViewById(R.id.lottery_run_button);
+
+        message_enrolled_full.setVisibility(View.GONE);
+        message_waitlist_empty.setVisibility(View.GONE);
+        button.setVisibility(View.GONE);
+
+        TextView enrolled = dialog.findViewById(R.id.lottery_enrolled_text);
+        enrolled.setText(getString(R.string.lottery_enrolled_count, event.getCurrentEnrolled()));
+
+        TextView invited = dialog.findViewById(R.id.lottery_invited_text);
+        //invited.setText(getString(R.string.lottery_invited_count, event.getCurrentInvited()));
+
+        TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
+        waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
+
+        TextView capacity = dialog.findViewById(R.id.lottery_capacity_text);
+        capacity.setText(getString(R.string.lottery_capacity, event.getCapacity()));
+
+        TextView open = dialog.findViewById(R.id.lottery_open_text);
+        //int n = event.getCapacity() - event.getCurrentEnrolled() - event.getCurrentInvited();
+        //open.setText((getString(R.string.lottery_waitlist_count, n)));
+
+        if (event.getCurrentEnrolled() == event.getCapacity()) {
+            message_enrolled_full.setVisibility(View.VISIBLE);
+        } else if (event.getCurrentWaitlist() == 0) {
+            message_waitlist_empty.setVisibility(View.VISIBLE);
+        } else {
+            button.setVisibility(View.VISIBLE);
+        }
     }
 
 

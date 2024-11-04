@@ -59,7 +59,7 @@
             android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/add_image_button"
+            android:text="@string/add_poster_button"
             app:layout_constraintTop_toBottomOf="@+id/event_img_card_view"
             app:layout_constraintStart_toStartOf="@+id/event_img_card_view"
             app:layout_constraintEnd_toEndOf="@+id/event_img_card_view"/>
@@ -191,7 +191,7 @@
                 android:hint="Open Waitlist*"
                 android:inputType="date"
                 android:lines="1"
-                android:maxLength="9"
+                android:maxLength="10"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -217,7 +217,7 @@
                 android:hint="Close Waitlist*"
                 android:inputType="date"
                 android:lines="1"
-                android:maxLength="9"
+                android:maxLength="10"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -290,7 +290,7 @@
                 android:hint="Start Date*"
                 android:inputType="date"
                 android:lines="1"
-                android:maxLength="9"
+                android:maxLength="10"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -317,7 +317,7 @@
                 android:hint="Date*"
                 android:inputType="date"
                 android:lines="1"
-                android:maxLength="9"
+                android:maxLength="10"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -345,7 +345,7 @@
                 android:hint="End Date*"
                 android:inputType="date"
                 android:lines="1"
-                android:maxLength="9"
+                android:maxLength="10"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>

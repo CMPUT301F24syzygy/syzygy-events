@@ -38,9 +38,7 @@ public class EntrantNotificationsFragment extends Fragment {
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
         query = new DatabaseInfLoadQuery<>(DatabaseQuery.getMyNotifications(app.getDatabase(), app.getUser()));
 
-        List<Notification> dataList = query.getInstances();
-
-        EntrantNotificationsAdapter a = new EntrantNotificationsAdapter(this.getContext(), dataList);
+        EntrantNotificationsAdapter a = new EntrantNotificationsAdapter(this.getContext(), query.getInstances());
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();

@@ -68,11 +68,11 @@ public class OrganizerCreateFragment extends Fragment {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            binding.eventCreateEditImage.setText(R.string.add_image_button);
+            binding.eventCreateEditImage.setText(R.string.add_poster_button);
             Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
             binding.eventCreateRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            binding.eventCreateEditImage.setText(R.string.change_image_button);
+            binding.eventCreateEditImage.setText(R.string.change_poster_button);
             Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreateProfile);
             binding.eventCreateRemoveImage.setVisibility(View.VISIBLE);
         }

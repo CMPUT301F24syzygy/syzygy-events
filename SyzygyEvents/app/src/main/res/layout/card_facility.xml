@@ -24,7 +24,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-medium"
-            android:maxLength="20"
+            android:maxLength="50"
             android:textSize="20sp"
             app:layout_constraintStart_toEndOf="@+id/card_facility_image_img"
             app:layout_constraintTop_toTopOf="parent" />

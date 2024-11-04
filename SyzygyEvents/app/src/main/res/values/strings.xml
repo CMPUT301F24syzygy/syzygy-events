@@ -27,10 +27,18 @@
 
     <string name="title_signup_organizer">Create Facility</string>
 
+    <string name="lottery_enrolled_count">Enrolled: %d</string>
+    <string name="lottery_invited_count">Invited: %d</string>
+    <string name="lottery_waitlist_count">Waitlist: %d</string>
+    <string name="lottery_open_count">Open: %d</string>
+    <string name="lottery_capacity">Capacity: %d</string>
+
 
     <string name="add_image_button">Add Photo</string>
     <string name="change_image_button">Change Photo</string>
     <string name="remove_image_button">Remove</string>
+    <string name="add_poster_button">Add Poster</string>
+    <string name="change_poster_button">Change Poster</string>
     <string name="opt_in_admin_notifications_checkbox">Allow Notifications From Admin</string>
     <string name="opt_in_organizer_notifications_checkbox">Allow Notifications From Organizers</string>
 
