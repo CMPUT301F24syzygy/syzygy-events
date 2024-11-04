@@ -38,7 +38,7 @@ public class AdminImagesAdapter extends ArrayAdapter<Image> {
         user.setText(img.getLocName());
 
         TextView type = view.findViewById(R.id.admin_image_item_type_text);
-        user.setText(img.getLocType().toString().toLowerCase());
+        type.setText(img.getFormatedLocType());
 
         ImageView image = view.findViewById(R.id.admin_image_item_img);
         if (img.getLocType() == Database.Collections.USERS) {

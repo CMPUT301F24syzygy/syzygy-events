@@ -42,9 +42,9 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/admin_image_item_img"
-            android:layout_width="90dp"
-            android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
