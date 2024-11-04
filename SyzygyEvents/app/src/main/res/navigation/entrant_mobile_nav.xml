@@ -15,7 +15,7 @@
         android:id="@+id/nav_entrant_events"
         android:name="com.syzygy.events.ui.entrant.EntrantEventsFragment"
         android:label="@string/title_entrant_events"
-        tools:layout="@layout/fragment_entrant_events" />
+        tools:layout="@layout/frag_entrant_events_list" />
 
     <fragment
         android:id="@+id/nav_entrant_qr"

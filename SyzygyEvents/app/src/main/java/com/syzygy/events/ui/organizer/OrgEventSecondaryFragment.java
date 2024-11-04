@@ -4,15 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -25,14 +23,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
@@ -41,16 +37,13 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
-import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private SecondaryOrganizerEventBinding binding;
@@ -79,7 +72,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             String start = app.formatTimestamp(event.getStartDate());
-            String start_end = String.format ("%s - %s", start, app.formatTimestamp(event.getEndDate()));
+            String start_end = String.format("%s - %s", start, app.formatTimestamp(event.getEndDate()));
             binding.eventStartEndText.setText(event.getEventDates() == Event.Dates.NO_REPEAT ? start : start_end);
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
@@ -134,8 +127,8 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             });
 
             binding.editPosterButton.setOnClickListener(view -> {
-                ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
-                    if(uri == null){
+                ((SyzygyApplication) getActivity().getApplication()).getImage(uri -> {
+                    if (uri == null) {
                         return;
                     }
                     event.setPoster(uri, this::posterUpdatedSuccess);
@@ -143,7 +136,8 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             });
 
             binding.copyQrButton.setOnClickListener(view -> {
-                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(getContext().CLIPBOARD_SERVICE);
+                getContext();
+                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(ClipData.newPlainText("QR hash", event.getQrHash()));
             });
 
