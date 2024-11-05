@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="?attr/actionBarSize">
@@ -11,7 +10,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_1"
+            android:id="@+id/event_create_name_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="360dp"
             android:layout_height="wrap_content"
@@ -39,7 +38,7 @@
 
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/event_img_card_view"
+            android:id="@+id/event_poster_container"
             android:layout_width="160dp"
             android:layout_height="160dp"
             android:layout_marginStart="24dp"
@@ -47,37 +46,38 @@
             app:cardCornerRadius="5dp"
             app:cardElevation="3dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_1">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_name_layout">
+
             <ImageView
-                android:id="@+id/event_create_profile"
+                android:id="@+id/event_create_poster_img"
                 android:layout_width="160dp"
-                android:layout_height="160dp"/>
+                android:layout_height="160dp" />
         </androidx.cardview.widget.CardView>
 
         <Button
-            android:id="@+id/event_create_editImage"
+            android:id="@+id/event_create_edit_poster_button"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/add_poster_button"
-            app:layout_constraintTop_toBottomOf="@+id/event_img_card_view"
-            app:layout_constraintStart_toStartOf="@+id/event_img_card_view"
-            app:layout_constraintEnd_toEndOf="@+id/event_img_card_view"/>
+            app:layout_constraintEnd_toEndOf="@+id/event_poster_container"
+            app:layout_constraintStart_toStartOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_poster_container" />
 
         <Button
-            android:id="@+id/event_create_removeImage"
+            android:id="@+id/event_create_remove_poster_button"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
             android:text="@string/remove_image_button"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_editImage"
-            app:layout_constraintStart_toStartOf="@+id/event_img_card_view"
-            app:layout_constraintEnd_toEndOf="@+id/event_img_card_view"/>
+            app:layout_constraintEnd_toEndOf="@+id/event_poster_container"
+            app:layout_constraintStart_toStartOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_edit_poster_button" />
 
 
         <CheckBox
-            android:id="@+id/event_create_requireGeo"
+            android:id="@+id/event_create_require_location_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="190dp"
@@ -86,19 +86,20 @@
             android:text="Require Geolocation"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_editImage" />
+            app:layout_constraintTop_toBottomOf="@+id/event_create_edit_poster_button" />
 
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_2"
+            android:id="@+id/event_create_price_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             app:expandedHintEnabled="false"
-            app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_1">
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_name_layout">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_price"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -115,15 +116,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_3"
+            android:id="@+id/event_create_capacity_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             app:expandedHintEnabled="false"
-            app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_2">
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_price_layout">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_capacity"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -140,17 +142,18 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_4"
+            android:id="@+id/event_create_waitlist_cap_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             app:expandedHintEnabled="false"
-            app:layout_constraintStart_toEndOf="@+id/event_img_card_view"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_3">
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_capacity_layout">
+
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/waitlist_limit"
+                android:id="@+id/event_create_waitlist_cap"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -165,22 +168,18 @@
         </com.google.android.material.textfield.TextInputLayout>
 
 
-
-
-
-
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_5"
+            android:id="@+id/event_create_open_date_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            app:placeholderText="dd/mm/yyyy"
             app:expandedHintEnabled="false"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_requireGeo">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_require_location_checkbox"
+            app:placeholderText="dd/mm/yyyy">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_open_date"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -197,16 +196,17 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_6"
+            android:id="@+id/event_create_close_date_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"
-            app:placeholderText="dd/mm/yyyy"
+            android:layout_marginEnd="16dp"
             app:expandedHintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_requireGeo">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_require_location_checkbox"
+            app:placeholderText="dd/mm/yyyy">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_close_date"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -231,11 +231,11 @@
             android:background="?android:attr/listDivider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_5" />
+            app:layout_constraintTop_toBottomOf="@+id/event_create_open_date_layout" />
 
 
         <com.google.android.material.chip.ChipGroup
-            android:id="@+id/event_create_chips"
+            android:id="@+id/event_create_option_chips"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -246,17 +246,17 @@
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_single"
+                android:id="@+id/create_event_single_chip"
                 android:layout_width="160dp"
                 android:layout_height="wrap_content"
-                android:checkable="true"
                 android:layout_margin="8dp"
-                android:textAlignment="center"
+                android:checkable="true"
                 android:checked="true"
-                android:text="Single Event" />
+                android:text="Single Event"
+                android:textAlignment="center" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_sequence"
+                android:id="@+id/create_event_sequence_chip"
                 android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
@@ -268,17 +268,17 @@
 
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_7"
+            android:id="@+id/event_create_start_date_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            app:placeholderText="dd/mm/yyyy"
+            android:visibility="invisible"
             app:expandedHintEnabled="false"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_chips">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:placeholderText="dd/mm/yyyy">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_start_date"
@@ -296,16 +296,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_50"
+            android:id="@+id/event_create_date_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            app:placeholderText="dd/mm/yyyy"
             app:expandedHintEnabled="false"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_chips">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:placeholderText="dd/mm/yyyy">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_date"
@@ -323,7 +323,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_8"
+            android:id="@+id/event_create_end_date_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
@@ -332,7 +332,7 @@
             android:visibility="gone"
             app:expandedHintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_chips"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
             app:placeholderText="dd/mm/yyyy">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -352,59 +352,59 @@
 
 
         <com.google.android.material.chip.ChipGroup
-            android:id="@+id/create_event_days_cnt"
+            android:id="@+id/create_event_weekday_chips"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_7">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_start_date_layout">
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_m"
+                android:id="@+id/mon_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="M" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_t"
+                android:id="@+id/tue_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="T" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_w"
+                android:id="@+id/wed_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="W" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_r"
+                android:id="@+id/thu_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="T" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_f"
+                android:id="@+id/fri_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="F" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_sat"
+                android:id="@+id/sat_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
                 android:text="S" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/create_event_days_sun"
+                android:id="@+id/sun_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="true"
@@ -412,82 +412,56 @@
         </com.google.android.material.chip.ChipGroup>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layout_d"
+            android:id="@+id/event_create_bio_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="380dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Event Description"
-            app:layout_constraintStart_toStartOf="parent"
+            app:expandedHintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/create_event_days_cnt"
-            app:expandedHintEnabled="false">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_event_weekday_chips">
+
             <com.google.android.material.textfield.TextInputEditText
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:id="@+id/event_create_bio"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="top|start"
                 android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
                 android:lines="5"
-                android:textAlignment="gravity"
-                android:gravity="top|start"
                 android:maxLength="300"
-                android:scrollbars="vertical" />
+                android:scrollbars="vertical"
+                android:textAlignment="gravity" />
         </com.google.android.material.textfield.TextInputLayout>
 
 
-
-
         <Button
-            android:id="@+id/event_create_button_submit"
+            android:id="@+id/event_create_submit_button"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Create Event"
-            app:layout_constraintTop_toBottomOf="@+id/layout_d"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_bio_layout" />
 
         <FrameLayout
             android:id="@+id/progressBar"
-            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:alpha="0.4"
             android:background="#000000"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:visibility="gone">
 
             <ProgressBar
                 style="?android:attr/progressBarStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:indeterminate="true"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:indeterminate="true" />
         </FrameLayout>
 
 

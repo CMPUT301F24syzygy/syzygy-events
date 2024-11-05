@@ -20,20 +20,16 @@ import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
-import com.syzygy.events.databinding.FragmentEntrantNotificationsBinding;
+import com.syzygy.events.databinding.FragEntrantNotificationsListBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
 public class EntrantNotificationsFragment extends Fragment {
-    private FragmentEntrantNotificationsBinding binding;
+    private FragEntrantNotificationsListBinding binding;
 
     private DatabaseInfLoadQuery<Notification> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentEntrantNotificationsBinding.inflate(inflater, container, false);
+        binding = FragEntrantNotificationsListBinding.inflate(inflater, container, false);
 
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
         query = new DatabaseInfLoadQuery<>(DatabaseQuery.getMyNotifications(app.getDatabase(), app.getUser()));
@@ -52,7 +48,7 @@ public class EntrantNotificationsFragment extends Fragment {
                 Notification notification = a.getItem(position);
                 //notification.setIsRead(true);
                 Dialog dialog = new AlertDialog.Builder(getContext())
-                        .setView(R.layout.popup_entrant_notification)
+                        .setView(R.layout.popup_notification)
                         .create();
                 dialog.show();
 

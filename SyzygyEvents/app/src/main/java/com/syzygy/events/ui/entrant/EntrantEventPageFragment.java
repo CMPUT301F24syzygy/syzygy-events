@@ -8,14 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
@@ -24,25 +20,21 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.SecondaryEntrantEventBinding;
+import com.syzygy.events.databinding.FragEntrantEventPageBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
-public class EntrantEventSecondaryFragment extends Fragment implements Database.UpdateListener {
+public class EntrantEventPageFragment extends Fragment implements Database.UpdateListener {
 
-    private SecondaryEntrantEventBinding binding;
+    private FragEntrantEventPageBinding binding;
     private Event event;
     private EventAssociation association;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        binding = SecondaryEntrantEventBinding.inflate(inflater, container, false);
+        binding = FragEntrantEventPageBinding.inflate(inflater, container, false);
 
         EntrantActivity activity = (EntrantActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();

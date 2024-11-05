@@ -23,18 +23,18 @@ import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.FragmentOrganizerProfileBinding;
+import com.syzygy.events.databinding.FragOrgFacilityProfileBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
-public class OrganizerProfileFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
-    private FragmentOrganizerProfileBinding binding;
+public class OrganizerFacilityFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
+    private FragOrgFacilityProfileBinding binding;
     private Facility facility;
     private GoogleMap map;
     private Marker marker;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentOrganizerProfileBinding.inflate(inflater, container, false);
+        binding = FragOrgFacilityProfileBinding.inflate(inflater, container, false);
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch(this);
         binding.facilityButtonEdit.setOnClickListener(v -> {
             ((OrganizerActivity)getActivity()).openEdit();

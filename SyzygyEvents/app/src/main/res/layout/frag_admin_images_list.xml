@@ -11,8 +11,8 @@
         android:id="@+id/admin_images_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
         android:divider="@color/white"
+        android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

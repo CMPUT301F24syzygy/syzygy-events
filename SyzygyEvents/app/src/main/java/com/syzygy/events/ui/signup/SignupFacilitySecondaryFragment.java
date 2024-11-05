@@ -1,4 +1,4 @@
-package com.syzygy.events.ui.general;
+package com.syzygy.events.ui.signup;
 
 import android.location.Address;
 import android.net.Uri;
@@ -23,24 +23,23 @@ import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
+import com.syzygy.events.databinding.FragSignupOrganizerBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
 
 public class SignupFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
-    private SecondarySignupFacilityBinding binding;
+    private FragSignupOrganizerBinding binding;
     private Uri image;
     private SupportMapFragment mapFrag;
     private Marker marker = null;
     private GoogleMap map = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = SecondarySignupFacilityBinding.inflate(inflater, container, false);
+        binding = FragSignupOrganizerBinding.inflate(inflater, container, false);
 
         binding.createFacilityButtonSubmit.setOnClickListener(view -> submitData());
         binding.createFacilityEditImage.setOnClickListener(view -> choosePhoto());

@@ -28,9 +28,9 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
 
         setContentView(binding.getRoot());
 
-        binding.signupButtonSubmit.setOnClickListener(view -> submitData());
-        binding.signupEditImage.setOnClickListener(view -> choosePhoto());
-        binding.signupRemoveImage.setOnClickListener(view -> setImage(null));
+        binding.signupSubmitButton.setOnClickListener(view -> submitData());
+        binding.signupEditImageButton.setOnClickListener(view -> choosePhoto());
+        binding.signupRemoveImageButton.setOnClickListener(view -> setImage(null));
 
         setImage(null);
     }
@@ -48,11 +48,11 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupProfile);
-            binding.signupRemoveImage.setVisibility(View.INVISIBLE);
+            Image.formatDefaultImage(null, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupImageImg);
+            binding.signupRemoveImageButton.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupProfile);;
-            binding.signupRemoveImage.setVisibility(View.VISIBLE);
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupImageImg);;
+            binding.signupRemoveImageButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -61,8 +61,8 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         String phone = binding.signupPhone.getText().toString();
         String email = binding.signupEmail.getText().toString();
         String bio = binding.signupBio.getText().toString();
-        Boolean admin = binding.signupAdminNotifications.isChecked();
-        Boolean org = binding.signupOrgNotifications.isChecked();
+        Boolean admin = binding.signupAdminNotificationsCheckbox.isChecked();
+        Boolean org = binding.signupOrgNotificationsCheckbox.isChecked();
 
 
         SyzygyApplication app = (SyzygyApplication) getApplication();

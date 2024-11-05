@@ -40,15 +40,15 @@ import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.SecondaryOrganizerEventBinding;
+import com.syzygy.events.databinding.FragOrgEventPageBinding;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Locale;
 import java.util.Objects;
 
-public class OrgEventSecondaryFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
-    private SecondaryOrganizerEventBinding binding;
+public class OrganizerEventFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
+    private FragOrgEventPageBinding binding;
     private DatabaseInfLoadQuery<EventAssociation> query;
 
     private Event event;
@@ -57,7 +57,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        binding = SecondaryOrganizerEventBinding.inflate(inflater, container, false);
+        binding = FragOrgEventPageBinding.inflate(inflater, container, false);
 
         OrganizerActivity activity = (OrganizerActivity) getActivity();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
@@ -283,6 +283,7 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
     private void setLotteryPopupView(Dialog dialog) {
 
         TextView message_enrolled_full = dialog.findViewById(R.id.lottery_full_enrolled_message);
+        TextView message_invited_full = dialog.findViewById(R.id.lottery_full_invited_message);
         TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
         Button button = dialog.findViewById(R.id.lottery_run_button);
 
@@ -310,7 +311,10 @@ public class OrgEventSecondaryFragment extends Fragment implements Database.Upda
             message_enrolled_full.setVisibility(View.VISIBLE);
         } else if (event.getCurrentWaitlist() == 0) {
             message_waitlist_empty.setVisibility(View.VISIBLE);
-        } else {
+        } //else if (event.getCurrentEnrolled() + event.getCurrentInvited() == event.getCapacity()) {
+            //message_waitlist_empty.setVisibility(View.VISIBLE);
+        //}
+        else {
             button.setVisibility(View.VISIBLE);
         }
     }

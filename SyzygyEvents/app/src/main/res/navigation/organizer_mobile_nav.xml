@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/nav_organizer_profile"
-        android:name="com.syzygy.events.ui.organizer.OrganizerProfileFragment"
+        android:name="com.syzygy.events.ui.organizer.OrganizerFacilityFragment"
         android:label="@string/title_organizer_profile"
-        tools:layout="@layout/fragment_organizer_profile" />
+        tools:layout="@layout/frag_org_facility_profile" />
 
     <fragment
         android:id="@+id/nav_organizer_events"
@@ -19,20 +19,20 @@
 
     <fragment
         android:id="@+id/nav_organizer_create"
-        android:name="com.syzygy.events.ui.organizer.OrganizerCreateFragment"
+        android:name="com.syzygy.events.ui.organizer.OrganizerCreateEventFragment"
         android:label="@string/title_organizer_create"
-        tools:layout="@layout/fragment_organizer_create" />
+        tools:layout="@layout/frag_org_create_event" />
 
     <fragment
         android:id="@+id/nav_organizer_event_secondary"
-        android:name="com.syzygy.events.ui.organizer.OrgEventSecondaryFragment"
+        android:name="com.syzygy.events.ui.organizer.OrganizerEventFragment"
         android:label="@string/title_organizer_sec_event"
-        tools:layout="@layout/secondary_organizer_event" />
+        tools:layout="@layout/frag_org_event_page" />
 
     <fragment
         android:id="@+id/nav_organizer_edit_secondary"
-        android:name="com.syzygy.events.ui.organizer.OrgEditSecondaryFragment"
+        android:name="com.syzygy.events.ui.organizer.OrganizerEditFacilityFragment"
         android:label="@string/title_organizer_sec_edit"
-        tools:layout="@layout/secondary_organizer_edit" />
+        tools:layout="@layout/frag_org_edit_facility" />
 
 </navigation>

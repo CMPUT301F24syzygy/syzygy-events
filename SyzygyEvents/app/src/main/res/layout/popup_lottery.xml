@@ -6,13 +6,12 @@
     android:minHeight="500dp">
 
 
-
     <TextView
         android:id="@+id/lottery_enrolled_text"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
         android:layout_marginStart="64dp"
+        android:layout_marginTop="48dp"
         android:fontFamily="sans-serif-medium"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,10 +21,10 @@
         android:id="@+id/lottery_invited_text"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="64dp"
-        android:textSize="16sp"
+        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
+        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lottery_enrolled_text" />
 
@@ -33,10 +32,10 @@
         android:id="@+id/lottery_open_text"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"
         android:layout_marginStart="64dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
+        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lottery_invited_text" />
 
@@ -44,10 +43,10 @@
         android:id="@+id/lottery_waitlist_text"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="64dp"
-        android:textSize="16sp"
+        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
+        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lottery_open_text" />
 
@@ -55,10 +54,10 @@
         android:id="@+id/lottery_capacity_text"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"
         android:layout_marginStart="64dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
+        android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lottery_waitlist_text" />
 
@@ -70,25 +69,38 @@
         android:layout_marginStart="48dp"
         android:layout_marginBottom="48dp"
         android:fontFamily="sans-serif-medium"
-        android:textSize="22sp"
         android:text="Waitlist is empty :("
+        android:textSize="22sp"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
     <TextView
         android:id="@+id/lottery_full_enrolled_message"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="48dp"
         android:layout_marginStart="48dp"
-        android:textSize="22sp"
+        android:layout_marginBottom="48dp"
         android:fontFamily="sans-serif-medium"
         android:text="Your event has reached capacity!"
+        android:textSize="22sp"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/lottery_full_invited_message"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginBottom="48dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="There are no open spots."
+        android:textSize="22sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/lottery_run_button"
@@ -97,7 +109,7 @@
         android:layout_marginBottom="48dp"
         android:text="Fill Open Spots"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

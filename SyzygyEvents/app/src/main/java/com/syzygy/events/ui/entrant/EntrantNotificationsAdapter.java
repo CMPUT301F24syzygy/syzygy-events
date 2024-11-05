@@ -1,11 +1,7 @@
 package com.syzygy.events.ui.entrant;
 
-import static java.lang.Math.min;
 import static java.lang.Math.max;
-
-import com.syzygy.events.R;
-import com.syzygy.events.database.Image;
-import com.syzygy.events.database.Notification;
+import static java.lang.Math.min;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -17,6 +13,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.syzygy.events.R;
+import com.syzygy.events.database.Image;
+import com.syzygy.events.database.Notification;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

@@ -9,7 +9,7 @@
         android:id="@+id/nav_admin_profiles"
         android:name="com.syzygy.events.ui.admin.AdminProfilesFragment"
         android:label="@string/title_admin_profiles"
-        tools:layout="@layout/fragment_admin_profiles" />
+        tools:layout="@layout/frag_admin_profiles_list" />
 
     <fragment
         android:id="@+id/nav_admin_events"
@@ -21,12 +21,12 @@
         android:id="@+id/nav_admin_images"
         android:name="com.syzygy.events.ui.admin.AdminImagesFragment"
         android:label="@string/title_admin_images"
-        tools:layout="@layout/fragment_admin_images" />
+        tools:layout="@layout/frag_admin_images_list" />
 
     <fragment
         android:id="@+id/nav_signup_facility_secondary"
-        android:name="com.syzygy.events.ui.general.SignupFacilitySecondaryFragment"
+        android:name="com.syzygy.events.ui.signup.SignupFacilitySecondaryFragment"
         android:label="@string/title_signup_organizer"
-        tools:layout="@layout/secondary_signup_facility" />
+        tools:layout="@layout/frag_signup_organizer" />
 
 </navigation>

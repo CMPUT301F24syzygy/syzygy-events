@@ -7,7 +7,7 @@
 
 
     <ImageView
-        android:id="@+id/entrant_profile_image"
+        android:id="@+id/entrant_profile_image_img"
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginStart="16dp"
@@ -17,28 +17,28 @@
 
 
     <TextView
-        android:id="@+id/entrant_profile_name"
+        android:id="@+id/entrant_profile_name_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="48dp"
         android:fontFamily="sans-serif-medium"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_profile_image"
+        app:layout_constraintStart_toEndOf="@+id/entrant_profile_image_img"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/entrant_profile_phone"
+        android:id="@+id/entrant_profile_phone_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_profile_image"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_name" />
+        app:layout_constraintStart_toEndOf="@+id/entrant_profile_image_img"
+        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_name_text" />
 
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/text0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -46,48 +46,48 @@
         android:text="Email Address: "
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image" />
+        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image_img" />
 
     <TextView
-        android:id="@+id/entrant_profile_email"
+        android:id="@+id/entrant_profile_email_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        app:layout_constraintStart_toEndOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image" />
+        app:layout_constraintStart_toEndOf="@+id/text0"
+        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image_img" />
 
 
     <View
-        android:id="@+id/divider"
+        android:id="@+id/div0"
         android:layout_width="360dp"
         android:layout_height="1dp"
         android:layout_marginTop="24dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_email" />
+        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_email_text" />
 
     <TextView
-        android:id="@+id/entrant_profile_bio"
+        android:id="@+id/entrant_profile_bio_text"
         android:layout_width="380dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divider" />
+        app:layout_constraintTop_toBottomOf="@+id/div0" />
 
     <View
-        android:id="@+id/divider2"
+        android:id="@+id/div1"
         android:layout_width="360dp"
         android:layout_height="1dp"
         android:layout_marginTop="16dp"
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_bio" />
+        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_bio_text" />
 
     <Button
-        android:id="@+id/entrant_button_edit"
+        android:id="@+id/entrant_profile_edit_button"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"

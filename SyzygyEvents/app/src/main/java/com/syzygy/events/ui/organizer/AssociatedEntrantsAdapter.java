@@ -1,7 +1,5 @@
 package com.syzygy.events.ui.organizer;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,13 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.syzygy.events.R;
-import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
 
 import java.util.List;
-import java.util.Objects;
 
 public class AssociatedEntrantsAdapter extends ArrayAdapter<EventAssociation> {
 

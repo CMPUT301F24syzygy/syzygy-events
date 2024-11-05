@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import com.syzygy.events.R;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
 
 import java.util.List;
 

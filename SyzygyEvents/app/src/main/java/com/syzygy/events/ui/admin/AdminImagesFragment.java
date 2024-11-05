@@ -4,29 +4,22 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.FragmentAdminImagesBinding;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.syzygy.events.databinding.FragAdminImagesListBinding;
 
 public class AdminImagesFragment extends Fragment {
-    private com.syzygy.events.databinding.FragmentAdminImagesBinding binding;
+    private com.syzygy.events.databinding.FragAdminImagesListBinding binding;
     private DatabaseInfLoadQuery<Image> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentAdminImagesBinding.inflate(inflater, container, false);
+        binding = FragAdminImagesListBinding.inflate(inflater, container, false);
 
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
         query = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(app.getDatabase()));

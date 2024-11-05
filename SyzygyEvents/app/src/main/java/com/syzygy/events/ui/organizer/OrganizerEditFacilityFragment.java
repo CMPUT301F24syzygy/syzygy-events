@@ -1,6 +1,5 @@
 package com.syzygy.events.ui.organizer;
 
-import android.graphics.Color;
 import android.location.Address;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,8 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.textfield.TextInputEditText;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,19 +24,17 @@ import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.SecondaryOrganizerEditBinding;
-import com.syzygy.events.ui.EntrantActivity;
+import com.syzygy.events.databinding.FragOrgEditFacilityBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+public class OrganizerEditFacilityFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
-    private SecondaryOrganizerEditBinding binding;
+    private FragOrgEditFacilityBinding binding;
     private Facility facility;
     private Uri image;
     private boolean selectedImage = false;
@@ -47,7 +42,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
     private Marker marker = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = SecondaryOrganizerEditBinding.inflate(inflater, container, false);
+        binding = FragOrgEditFacilityBinding.inflate(inflater, container, false);
 
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch();
 

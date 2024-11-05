@@ -14,24 +14,23 @@ import androidx.fragment.app.Fragment;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.SecondaryEntrantEditBinding;
+import com.syzygy.events.databinding.FragEntrantEditProfileBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class EntrantEditSecondaryFragment extends Fragment {
+public class EntrantEditProfileFragment extends Fragment {
 
-    private SecondaryEntrantEditBinding binding;
+    private FragEntrantEditProfileBinding binding;
     private User user;
     private Uri image;
     private boolean imageSelected = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = SecondaryEntrantEditBinding.inflate(inflater, container, false);
+        binding = FragEntrantEditProfileBinding.inflate(inflater, container, false);
 
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch();
 
@@ -39,8 +38,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
         binding.entrantEditEmail.setText(user.getEmail());
         binding.entrantEditName.setText(user.getName());
         binding.entrantEditPhone.setText(user.getPhoneNumber());
-        binding.entrantEditOrgNotifications.setChecked(user.getOrganizerNotifications());
-        binding.entrantEditAdminNotifications.setChecked(user.getAdminNotifications());
+        binding.orgNotificationsCheckbox.setChecked(user.getOrganizerNotifications());
+        binding.adminNotificationsCheckbox.setChecked(user.getAdminNotifications());
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
 
         binding.entrantEditButtonSubmit.setOnClickListener(view -> submitData());
@@ -58,8 +57,8 @@ public class EntrantEditSecondaryFragment extends Fragment {
         String phone = binding.entrantEditPhone.getText().toString();
         String email = binding.entrantEditEmail.getText().toString();
         String bio = binding.entrantEditBio.getText().toString();
-        Boolean admin = binding.entrantEditAdminNotifications.isChecked();
-        Boolean org = binding.entrantEditOrgNotifications.isChecked();
+        Boolean admin = binding.adminNotificationsCheckbox.isChecked();
+        Boolean org = binding.orgNotificationsCheckbox.isChecked();
 
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         Set<Integer> invalidIds;
