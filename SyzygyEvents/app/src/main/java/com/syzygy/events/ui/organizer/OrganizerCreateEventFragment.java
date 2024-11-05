@@ -38,8 +38,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.eventCreateRemovePosterButton.setOnClickListener(view -> setImage(null));
 
 
-        binding.createEventSequenceChip.setOnClickListener(view -> onChangeOfRepeat());
-        binding.createEventSingleChip.setOnClickListener(view -> onChangeOfRepeat());
+        binding.eventCreateOptionChips.setOnCheckedStateChangeListener((group, checkedIds) -> onChangeOfRepeat());
 
         setImage(null);
 
@@ -48,10 +47,10 @@ public class OrganizerCreateEventFragment extends Fragment {
 
     private void onChangeOfRepeat() {
         int v = binding.createEventSequenceChip.isChecked() ? View.VISIBLE : View.GONE;
-        binding.eventCreateEndDate.setVisibility(v);
+        binding.eventCreateEndDateLayout.setVisibility(v);
+        binding.eventCreateStartDateLayout.setVisibility(v);
         binding.createEventWeekdayChips.setVisibility(v);
-        binding.eventCreateDate.setVisibility(v == View.GONE ? View.VISIBLE : View.INVISIBLE);
-        binding.eventCreateStartDate.setVisibility(v == View.GONE ? View.INVISIBLE : v);
+        binding.eventCreateDateLayout.setVisibility(v == View.GONE ? View.VISIBLE : View.GONE);
     }
 
     private void choosePhoto() {
