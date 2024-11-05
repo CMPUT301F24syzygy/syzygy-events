@@ -30,7 +30,7 @@
                 android:hint="Event Title*"
                 android:inputType="text|textMultiLine"
                 android:lines="1"
-                android:maxLength="20"
+                android:maxLength="18"
                 android:scrollbars="vertical"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
@@ -432,7 +432,7 @@
                 android:gravity="top|start"
                 android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
                 android:lines="5"
-                android:maxLength="300"
+                android:maxLength="250"
                 android:scrollbars="vertical"
                 android:textAlignment="gravity" />
         </com.google.android.material.textfield.TextInputLayout>
