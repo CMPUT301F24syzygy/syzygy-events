@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,19 +23,18 @@ import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.FragmentOrganizerProfileBinding;
+import com.syzygy.events.databinding.FragOrgFacilityProfileBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
-public class OrganizerProfileFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
-    private FragmentOrganizerProfileBinding binding;
+public class OrganizerFacilityFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
+    private FragOrgFacilityProfileBinding binding;
     private Facility facility;
-    private SupportMapFragment mapFrag;
     private GoogleMap map;
     private Marker marker;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentOrganizerProfileBinding.inflate(inflater, container, false);
+        binding = FragOrgFacilityProfileBinding.inflate(inflater, container, false);
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch(this);
         binding.facilityButtonEdit.setOnClickListener(v -> {
             ((OrganizerActivity)getActivity()).openEdit();
@@ -49,15 +47,15 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_map);
+        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_map);
         mapFrag.getMapAsync(this);
     }
 
     private void updateValues(){
-        binding.facilityProfileBio.setText(facility.getDescription());
-        binding.facilityProfileName.setText(facility.getName());
-        binding.facilityProfileAddress.setText(facility.getAddress());
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(256)).into(binding.facilityProfileImage);
+        binding.facilityNameText.setText(facility.getName());
+        binding.facilityAddressText.setText(facility.getAddress());
+        binding.facilityDescriptionText.setText(facility.getDescription());
+        Image.getFormatedAssociatedImage(facility, Image.Options.Square(400)).into(binding.facilityImage);
         updateMapPoints();
     }
 
@@ -74,7 +72,6 @@ public class OrganizerProfileFragment extends Fragment implements Database.Updat
         this.map = map;
         marker = map.addMarker(new MarkerOptions().draggable(false).position(new LatLng(0,0)));
         updateMapPoints();
-
     }
 
     @Override

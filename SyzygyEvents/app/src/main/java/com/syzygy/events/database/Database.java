@@ -2,8 +2,6 @@ package com.syzygy.events.database;
 
 import android.content.ContentResolver;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -21,8 +19,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.syzygy.events.R;
 
-import java.io.File;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -31,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -138,11 +138,29 @@ public class Database implements EventListener<DocumentSnapshot> {
     }
 
     /**
+     * Updates the field in the instance given by the collection and documentID without loading the instance.
+     * <p>
+     *     Does not do any cascading.
+     * </p>
+     * @param collection The collection of the instance to update
+     * @param documentId The documentID of the instance to update
+     * @param propertyNameId The id of the property to update
+     * @param newValue The new value to be put in the property
+     * @param onComplete called on completion with if the update occurred successfully.
+     */
+    void modifyField(@NonNull Collections collection, @NonNull String documentId, int propertyNameId, Object newValue, Consumer<Boolean> onComplete){
+        DocumentReference doc = collection.getDocument(this, documentId);
+        doc.update(constants.getString(propertyNameId), newValue).addOnCompleteListener(task -> {
+            onComplete.accept(task.isSuccessful());
+        });
+    }
+
+    /**
      * Retrieves the document properties of the instance and updates the instance to match
      * @param instance The database instance
      * @param <T> The instance type
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
-     * @see DatabaseInstance#updateDataFromDatabase(Map, Querrier.EmptyListener)
+     * @see DatabaseInstance#updateDataFromDatabase(Map, Consumer)
      * @see DatabaseInstance#getDocumentReference()
      */
     <T extends DatabaseInstance<T>> void updateFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
@@ -211,9 +229,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * If provided, the {@code }initializeListener} will be triggered once the instance has been
      * populated.
      * <p>
-     *     <b>Important</b>: The returned instance should not be used until the {@code InitializationListener} is called
-     * </p>
-     * <p>
      *     If the id does not exists, the listener will be called with {@code success = false} and in
      *     an illegal state
      * </p>
@@ -240,9 +255,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * </p>
      * If provided, the {@code }initializeListener} will be triggered once the instance has been
      * populated.
-     * <p>
-     *     <b>Important</b>: The returned instance should not be used until the {@code InitializationListener} is called
-     * </p>
      * <p>
      *     If the id does not exists, the listener will be called with {@code success = false} and in
      *     an illegal state
@@ -317,43 +329,226 @@ public class Database implements EventListener<DocumentSnapshot> {
     };
 
     /**
-     * Creates a new instance of the collection
+     * Creates the image then calls the method. One completion of both or failure of one, calls the onComplete.
+     * Dissolves the image before calling onComplete.
+     * All data is passed from oldImage to newImage. If oldImage is null, then the data passed as arguments is used
+     * @param newImage The image to create and set
+     * @param oldImage The previous image that will be deleted on the successful set of the new image
+     * @param locName The name of the instance that will contain the image if oldImage is null
+     * @param collection The collection of the instance that will contain the image if oldImage is null
+     * @param documentID The documentId of the instance that will contain the image if oldImage is null
+     * @param updateVariable The method to call after creating the image. This method should update the variable to the new image
+     *               The consumer must be called with if the setting succeeded.
+     *               If false is returned, deletes the new image.
+     *               If true is returned, deletes the old image
+     *               Any data that should be passed to the onComplete method can be given by the first param.
+     *               Success should be passed in the second param.
+     * @param onComplete The method to call after all has succeeded.
+     *                   The data returned by the method will be passed in the first argument.
+     * @param <W> The type of data to be passed from the method to the onComplete
+     */
+    @StirsDeep(what = "The image given to the method")
+    public <W> void replaceImage(@Nullable Uri newImage, @Nullable @Stirs(when = "if new image is set successfully") Image oldImage, String locName, Collections collection, String documentID, BiConsumer<Image, BiConsumer<W, Boolean>> updateVariable, BiConsumer<W, Boolean> onComplete){
+        if(newImage == null && oldImage == null){
+            updateVariable.accept(null, onComplete);
+            return;
+        }
+
+        if(oldImage == null){
+            createImageAndThen(newImage, locName, collection, documentID, updateVariable, onComplete);
+            return;
+        }
+
+        replaceImage(newImage, oldImage, updateVariable, onComplete);
+    }
+
+    /**
+     * Creates the image then calls the method. One completion of both or failure of one, calls the onComplete.
+     * Dissolves the image before calling onComplete.
+     * All data is passed from oldImage to newImage.
+     * @param newImage The image to create and set
+     * @param oldImage The previous image that will be deleted on the successful set of the new image
+     * @param updateVariable The method to call after creating the image. This method should update the variable to the new image
+     *               The consumer must be called with if the setting succeeded.
+     *               If false is returned, deletes the new image.
+     *               If true is returned, deletes the old image
+     *               Any data that should be passed to the onComplete method can be given by the first param.
+     *               Success should be passed in the second param.
+     * @param onComplete The method to call after all has succeeded.
+     *                   The data returned by the method will be passed in the first argument.
+     * @param <W> The type of data to be passed from the method to the onComplete
+     */
+    @StirsDeep(what = "The image given to the method")
+    public <W> void replaceImage(@Nullable Uri newImage, @NonNull @Stirs(when = "if new image is set successfully") Image oldImage, BiConsumer<Image, BiConsumer<W, Boolean>> updateVariable, BiConsumer<W, Boolean> onComplete){
+        oldImage.fetch();
+        if(newImage == null){
+            Log.println(Log.DEBUG, "UpdateVariable", "Before Remove");
+            updateVariable.accept(null, (passData, success) -> {
+                Log.println(Log.DEBUG, "UpdateVariable", success+" Remove");
+                if(success){
+                    oldImage.deleteInstance(DatabaseInstance.DeletionType.REPLACMENT, s -> {
+                        if (!s) {
+                            Log.println(Log.ERROR, "ReplaceImage", "Hanging image");
+                        }
+                    });
+                    onComplete.accept(passData, true);
+                    return;
+                }
+                oldImage.dissolve();
+                onComplete.accept(passData, false);
+            });
+            return;
+        }
+        Log.println(Log.DEBUG, "UpdateVariable", "Before Create");
+        this.createImageAndThen(newImage, oldImage.getLocName(), oldImage.getCollection(), oldImage.getDatabaseID(), updateVariable, (passData, success) -> {
+            Log.println(Log.DEBUG, "UpdateVariable", success+" Create");
+            if(success){
+                oldImage.deleteInstance(DatabaseInstance.DeletionType.REPLACMENT, s -> {
+                    if (!s) {
+                        Log.println(Log.ERROR, "ReplaceImage", "Hanging image");
+                    }
+                });
+                onComplete.accept(passData, true);
+                return;
+            }
+            oldImage.dissolve();
+            onComplete.accept(passData, false);
+        });
+    }
+
+    /**
+     * Creates the image then calls the method. One completion of both or failure of one, calls the onComplete.
+     * Dissolves the image before calling onComplete
+     * @param image The image to create
+     * @param locName The name of the instance that will contain the image
+     * @param collection The collection of the instance that will contain the image
+     * @param documentID The documentId of the instance that will contain the image
+     * @param method The method to call after creating the image.
+     *               The consumer must be called with if the method succeeded.
+     *               If false if returned, deletes the image.
+     *               Any data that should be passed to the onComplete method can be given by the first param.
+     *               Success should be passed in the second param
+     * @param onComplete The method to call after all has succeeded.
+     *                   The data returned by the method will be passed in the first argument.
+     * @param <W> The type of data to be passed from the method to the onComplete
+     */
+    @Observes
+    @StirsDeep(what = "The image given to the method")
+    public <W> void createImageAndThen(@NonNull Uri image, String locName, Database.Collections collection, String documentID, BiConsumer<Image, BiConsumer<W, Boolean>> method, BiConsumer<W, Boolean> onComplete){
+        Image.NewInstance(this, locName, collection, documentID, image, (img, img_success) -> {
+            Log.println(Log.DEBUG, "CreateImage", "called");
+            if(!img_success){
+                onComplete.accept(null, false);
+                return;
+            }
+            method.accept(img, (passData, m_success) -> {
+                if(m_success){
+                    img.dissolve();
+                    onComplete.accept(passData, true);
+                }else{
+                    String img_id = img.getDocumentID();
+                    img.deleteInstance(DatabaseInstance.DeletionType.ERROR, s -> {
+                        if(!s) {
+                            Log.println(Log.ERROR, "CreateInstance", "Hanging image: " + img_id);
+                        }
+                    });
+                    onComplete.accept(passData, false);
+                }
+            });
+        });
+    }
+
+    /**
+     * Validates the information and creates a new instance of the collection and the associated image.
      * <p>
-     *      <b>Important</b>: The returned instance should not be used until the {@code InitializationListener} is called
+     *     If one or more properties are invalid, does not create the instance, and the listener is not called.
+     * </p>
+     * <p>
+     *     Creates the image, if the image is created successfully, creates the instance.
      * </p>
      * @param collection The collection to which the instance belongs
      * @param documentID The documentID of the instance
-     * @param data The data to initialize the instance with
+     * @param data The data to initialize the instance with (resId -> value)
+     * @param image The uri of the image
+     * @param locName The name of the location where the image is stored
      * @param listener The initialization listener.
      *                 The listener will be called once the instance is populated. If the documentID
      *                 already exists in the database, the listener is called with {@code success = false}
      *                 and the instance in an illegal state.
      *                 The listener is called before the database is updated with information
      * @param <T> The type of instance
+     * @return The invalid property ids
+     * @see #createImageAndThen(Uri, String, Collections, String, BiConsumer, BiConsumer) 
+     * @see #createNewInstance(Collections, String, Map, InitializationListener)
+     */
+    @MustStir
+    public <T extends DatabaseInstance<T>> Set<Integer> createNewInstance(Collections collection, String documentID, @Dilutes Map<Integer, Object> data , @Nullable Uri image, String locName, InitializationListener<T> listener){
+        Set<Integer> invalidProperties = DatabaseInstance.isDataValid(data, collection);
+        if(!invalidProperties.isEmpty()){
+            return invalidProperties;
+        }
+
+        if(image != null){
+            this.createImageAndThen(image, locName, collection, documentID, (img, returnSuccess) -> {
+                data.put(collection.getAssociatedImagePropertyId(), img.getDocumentID());
+                Set<Integer> ids = this.createNewInstance(collection, documentID, data, returnSuccess::accept);
+                if(!ids.isEmpty()){
+                    returnSuccess.accept(null, false);
+                };
+            }, listener::onInitialization);
+            return invalidProperties;
+        }else{
+            data.put(collection.getAssociatedImagePropertyId(), "");
+            return this.createNewInstance(collection, documentID, data, listener);
+        }
+    }
+
+    /**
+     * Validates the information and creates a new instance of the collection.
+     * <p>
+     *     If one or more properties are invalid, does not create the instance, and the listener is not called.
+     * </p>
+     * @param collection The collection to which the instance belongs
+     * @param documentID The documentID of the instance
+     * @param data The data to initialize the instance with (resid -> value)
+     * @param listener The initialization listener.
+     *                 The listener will be called once the instance is populated. If the documentID
+     *                 already exists in the database, the listener is called with {@code success = false}
+     *                 and the instance in an illegal state.
+     *                 The listener is called before the database is updated with information
+     * @param <T> The type of instance
+     * @returns The set of invalid properties.
      */
     @SuppressWarnings("unchecked")
-    @MustStir()
-    public <T extends DatabaseInstance<T>> void createNewInstance(Collections collection, String documentID, Map<String, Object> data, InitializationListener<T> listener){
+    @MustStir
+    public <T extends DatabaseInstance<T>> Set<Integer> createNewInstance(Collections collection, String documentID, @Dilutes Map<Integer, Object> data, InitializationListener<T> listener){
+        Set<Integer> invalidProperties = DatabaseInstance.isDataValid(data, collection);
+        if(!invalidProperties.isEmpty()) {
+            Log.println(Log.DEBUG, "NewInstance", "invalid properties");
+            for(int i : invalidProperties){
+                Log.println(Log.DEBUG, "NewInstance", "\t"+constants.getString(i));
+            }
+            return invalidProperties;
+        }
+
         DatabaseInstance<T> instance = (DatabaseInstance<T>) cache.computeIfAbsent(collection.getDatabaseID(documentID), k -> collection.newInstance(this, documentID));
-        instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(!task.isSuccessful()) return;
-                DocumentSnapshot doc = task.getResult();
-                if(doc.exists()){
-                    instance.fullDissolve();
-                    listener.onInitialization(instance.cast(), false);
-                }else{
-                    instance.addInitializationListener(listener);
-                    instance.initializeData(data, true, (instance1, success) -> {
-                        if(success)
-                            addToDatabase(instance);
-                        //TODO error
-                    });
-                }
+        instance.getDocumentReference().get().addOnCompleteListener(task -> {
+            if(!task.isSuccessful()) return;
+            DocumentSnapshot doc = task.getResult();
+            if(doc.exists()){
+                instance.fullDissolve();
+                listener.onInitialization(instance.cast(), false);
+            }else{
+                instance.addInitializationListener(listener);
+                instance.initializeData(convertIDMapToNames(data), true, (instance1, success) -> {
+                    if(success)
+                        addToDatabase(instance);
+                    //TODO error
+                });
             }
         });
-    };
+        return invalidProperties;
+    }
 
     /**
      * Converts an ID property map to a Name property map
@@ -407,6 +602,7 @@ public class Database implements EventListener<DocumentSnapshot> {
     public void deleteImage(String fileName, Consumer<Boolean> listener){
         StorageReference ref = storage.child(fileName);
         ref.delete().addOnCompleteListener(runnable -> {
+            Log.println(Log.DEBUG, "DeleteImage", ""+runnable.isSuccessful());
             listener.accept(runnable.isSuccessful());
         });
     }
@@ -565,6 +761,31 @@ public class Database implements EventListener<DocumentSnapshot> {
             }
           throw new IllegalStateException("All cases covered, so can't reach this point");
         };
+
+        public static final int DOES_NOT_HAVE_ASSOCIATED_IMAGE = -1,
+                                IS_ITS_OWN_ASSOCIATED_IMAGE = -2;
+
+        /**
+         * Returns the property id of the associated image for a instance of this collection.
+         * If this collection does not have associated images, returns {@code -1}.
+         * If the instance is itself the associated image, returns {@code -2}
+         */
+        public int getAssociatedImagePropertyId() {
+            switch(this){
+                case USERS:
+                    return R.string.database_user_profileID;
+                case EVENTS:
+                    return R.string.database_event_posterID;
+                case IMAGES:
+                    return IS_ITS_OWN_ASSOCIATED_IMAGE;
+                case FACILITIES:
+                    return R.string.database_fac_imageID;
+                case NOTIFICATIONS:
+                case EVENT_ASSOCIATIONS:
+                default:
+                    return DOES_NOT_HAVE_ASSOCIATED_IMAGE;
+            }
+        }
     }
 
     /**
@@ -579,6 +800,9 @@ public class Database implements EventListener<DocumentSnapshot> {
              * A property of the instance has been modified
              */
             UPDATE,
+            /**
+             * A property of a subinstance was updated
+             */
             SUBUPDATE,
             /**
              * The instance was deleted
@@ -591,7 +815,7 @@ public class Database implements EventListener<DocumentSnapshot> {
             /**
              * The instance was deallocated from the cache
              */
-            DEREFERENCED
+            DEREFERENCED;
         };
         public <T extends DatabaseInstance <T>> void onUpdate(@Observes DatabaseInstance<T> instance, Type type);
     }
@@ -621,17 +845,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      */
     public interface Querrier<T extends Querrier<T>>{
 
-        public void refreshData(Listener<T> listener);
-
-        /**
-         * Listener that is called when a query finishes loading and processing data
-         */
-        interface EmptyListener{
-            /**
-             * Called when the query has completed loading and processing data
-             */
-            public void onCompletion(boolean success);
-        }
+        void refreshData(Listener<T> listener);
 
         /**
          * Listener that is called when a query finishes loading data

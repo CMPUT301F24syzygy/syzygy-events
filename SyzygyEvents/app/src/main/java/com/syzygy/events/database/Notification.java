@@ -83,20 +83,18 @@ public class Notification extends DatabaseInstance<Notification> {
         return getPropertyInstanceI(R.string.database_not_receiverID);
     }
 
-    @Override
-    @Database.Observes
-    public Image getAssociatedImage() {
-        return null;
+    public Boolean setIsRead(Boolean b) {
+        return setPropertyValue(R.string.database_not_read, b, s -> {});
     }
 
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_subject, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_body, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_not_time, o -> o instanceof Timestamp, false),
-            new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, false),
+            new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, true),
             new PropertyField<String, Event>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, true, false),
             new PropertyField<String, User>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
             new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, true, false)
@@ -108,13 +106,7 @@ public class Notification extends DatabaseInstance<Notification> {
     }
 
     /**
-     * Creates a new Image instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
+     * Validates and creates a new notification instance in the database using the given data.
      * <p>
      *     Sets {@code isRead} to {@code false}
      * </p>
@@ -124,10 +116,12 @@ public class Notification extends DatabaseInstance<Notification> {
      * @param eventID The ID of the event associated to the notification
      * @param receiverID The id of the receiver
      * @param senderID The id of the sender
+     * @param listener Will be called once the notification is initialized. Is not called if the data is invalid
+     * @return The property id of all invalid properties
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                        String subject,
                                        String body,
                                        @Database.Dilutes String eventID,
@@ -136,54 +130,18 @@ public class Notification extends DatabaseInstance<Notification> {
                                        Database.InitializationListener<Notification> listener
     ){
         Timestamp sentTime = Timestamp.now();
-        Map<Integer,Object> map = createDataMap(subject, body, sentTime, false, eventID, receiverID, senderID);
 
-        if(!validateDataMap(map).isEmpty()){
-            listener.onInitialization(null, false);
-            return;
-        }
+        String id = Database.Collections.NOTIFICATIONS.getNewID(db);
 
-        db.createNewInstance(Database.Collections.NOTIFICATIONS, senderID + "-"+receiverID+"-"+sentTime.toString(), db.convertIDMapToNames(map), listener);
-    }
-
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param subject The subject of the notification
-     * @param body The body of the notification
-     * @param sentTime The time the notification was sent
-     * @param isRead If the notification is read
-     * @param eventID The ID of the event associated to the notification
-     * @param receiverID The id of the receiver
-     * @param senderID The id of the sender
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(String subject,
-                                                     String  body,
-                                                     Timestamp sentTime,
-                                                     Boolean isRead,
-                                                     @Database.Observes String eventID,
-                                                     @Database.Observes String receiverID,
-                                                     @Database.Observes String senderID
-
-    ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_not_subject, subject);
         map.put(R.string.database_not_body, body);
         map.put(R.string.database_not_time, sentTime);
-        map.put(R.string.database_not_read, isRead);
+        map.put(R.string.database_not_read, false);
         map.put(R.string.database_not_eventID, eventID);
         map.put(R.string.database_not_senderID, senderID);
         map.put(R.string.database_not_receiverID, receiverID);
-        return map;
-    }
 
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return @return The invalid ids
-     * @see #createDataMap(String, String, Timestamp, Boolean, String, String, String) 
-     */
-    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
+        return db.createNewInstance(Database.Collections.NOTIFICATIONS, id, map, listener);
     }
 }

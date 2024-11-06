@@ -1,49 +1,46 @@
 package com.syzygy.events.ui.entrant;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.squareup.picasso.Picasso;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
-import com.syzygy.events.databinding.FragmentEntrantProfileBinding;
+import com.syzygy.events.databinding.FragEntrantProfileBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
 public class EntrantProfileFragment extends Fragment implements Database.UpdateListener {
-    private FragmentEntrantProfileBinding binding;
+    private FragEntrantProfileBinding binding;
     private User user;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentEntrantProfileBinding.inflate(inflater, container, false);
+        binding = FragEntrantProfileBinding.inflate(inflater, container, false);
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch(this);
 
         updateValues();
-        binding.entrantProfileImage.setOnClickListener(v -> {
+        binding.entrantProfileImageImg.setOnClickListener(v -> {
             ((SyzygyApplication)getActivity().getApplication()).displayImage(user);
         });
 
-        binding.entrantButtonEdit.setOnClickListener(v -> {
+        binding.entrantProfileEditButton.setOnClickListener(v -> {
             ((EntrantActivity)getActivity()).openEditProfile();
         });
         return binding.getRoot();
     }
 
     private void updateValues(){
-        binding.entrantProfileBio.setText(user.getDescription());
-        binding.entrantProfileEmail.setText(user.getEmail());
-        binding.entrantProfileName.setText(user.getName());
-        binding.entrantProfilePhone.setText(user.getPhoneNumber());
-        Image.getFormatedAssociatedImage(user, Image.Options.Circle(256)).into(binding.entrantProfileImage);
+        binding.entrantProfileBioText.setText(user.getDescription());
+        binding.entrantProfileEmailText.setText(user.getEmail());
+        binding.entrantProfileNameText.setText(user.getName());
+        binding.entrantProfilePhoneText.setText(user.getPhoneNumber());
+        Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantProfileImageImg);
     }
 
 

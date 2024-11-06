@@ -10,21 +10,32 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.syzygy.events.R;
-import com.syzygy.events.databinding.FragmentAdminImagesBinding;
+import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
+import com.syzygy.events.database.DatabaseQuery;
+import com.syzygy.events.database.Image;
+import com.syzygy.events.database.User;
+import com.syzygy.events.databinding.FragAdminImagesListBinding;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AdminImagesFragment extends Fragment {
-    private com.syzygy.events.databinding.FragmentAdminImagesBinding binding;
+    private com.syzygy.events.databinding.FragAdminImagesListBinding binding;
+    private DatabaseInfLoadQuery<Image> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentAdminImagesBinding.inflate(inflater, container, false);
+        binding = FragAdminImagesListBinding.inflate(inflater, container, false);
 
-        String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
-        ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_admin_images, dataList);
-        binding.adminImagesList.setAdapter(adapter);
+        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+        query = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(app.getDatabase()));
+        AdminImagesAdapter a = new AdminImagesAdapter(this.getContext(), query.getInstances());
+
+        query.refreshData((query1, success) -> {
+            a.notifyDataSetChanged();
+        });
+        binding.adminImagesList.setAdapter(a);
 
         return binding.getRoot();
     }

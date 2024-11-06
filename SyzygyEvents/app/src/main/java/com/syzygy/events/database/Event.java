@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.net.Uri;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -111,7 +114,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 return;
             }
             int getCount = count;
-            if(getCount <= 0) getCount = currentEnrolled - currentWaitlist;
+            if(getCount <= 0) getCount = (int) (getCapacity() - currentEnrolled);
             shuffleWaitlist(getCount, listener);
         });
     }
@@ -140,7 +143,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             if(count == 0){
                 chosen = unChosen;
                 unChosen = users;
-            }else if(count > users.size()){
+            }else if(count < users.size()){
                 Collections.shuffle(users);
                 chosen = users.subList(0,count);
                 unChosen = users.subList(count, users.size());
@@ -277,6 +280,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         getUsersByStatus(R.string.event_assoc_status_waitlist, listener);
     }
 
+    @Override
+    public String getAssociatedImageLocName() {
+        return getTitle();
+    }
+
     /**
      * Returns all associated users with the given association status
      * @param statusID The res ID of the status
@@ -328,7 +336,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.Stirred
-    public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener){
+    public void cancelAllInvitedUsers(DataListener<Event, EventAssociation.NotificationResult> listener) {
         getInvitedUsers((query, data, success) -> {
             if(!success){
                 listener.onCompletion(query, null, false);
@@ -377,11 +385,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_posterID);
     }
 
-    @Database.StirsDeep(what = "The previous image")
-    public boolean setPosterID(@Database.Dilutes String val, EmptyListener onComplete){
-        return setPropertyValue(R.string.database_event_posterID, val,onComplete);
-    }
-
     public String getFacilityID(){
         return getPropertyValueI(R.string.database_event_facilityID);
     }
@@ -398,17 +401,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return setPropertyValue(R.string.database_event_description, val, s -> {});
     }
 
-    @Database.Observes
-    @Override
-    public Image getAssociatedImage() {
-        return getPoster();
-    }
-
-    public Integer getCapacity(){
+    public Long getCapacity(){
         return getPropertyValueI(R.string.database_event_capacity);
     }
 
-    public Integer getWaitlistCapacity(){
+    public Long getWaitlistCapacity(){
         return getPropertyValueI(R.string.database_event_waitlist);
     }
 
@@ -431,12 +428,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
 
 
     /**
-     * Sets the Image instance. This function will create a new reference to the instance.
-     * @param val The new instance
+     * Sets the profile image instance. This function will create a new reference to the instance.
+     * @param image The new instance
+     * @param onComplete called on completion with if the update was successful
+     * @see #setAssociatedImage(Uri, Consumer)
      */
-    @Database.StirsDeep(what = "The previous image")
-    public boolean setPoster(@Nullable @Database.Dilutes Image val){
-        return setPropertyInstance(R.string.database_event_posterID, val);
+    @Database.StirsDeep(what = "The previous Image")
+    public void setPoster(@Nullable Uri image, Consumer<Boolean> onComplete){
+        setAssociatedImage(image, onComplete);
     }
 
     @Database.Observes
@@ -452,7 +451,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return getPropertyValueI(R.string.database_event_closedDate);
     }
 
-    public Integer getEventDates(){
+    public Long getEventDates(){
         return getPropertyValueI(R.string.database_event_dates);
     }
 
@@ -499,21 +498,21 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         }
 
         GeoPoint finalLocation = getRequiresLocation() ? location : null;
-
         if(!isRegistrationOpen()){
             listener.onCompletion(this, null, false);
             return;
         }
+
         refreshData((query, success) -> {
             if(!success) {
                 listener.onCompletion(this, null, false);
                 return;
             }
-            if(getCurrentWaitlist() >= getWaitlistCapacity()){
+            long waitListCapacity = getWaitlistCapacity();
+            if(waitListCapacity >= 0 && getCurrentWaitlist() >= waitListCapacity){
                 listener.onCompletion(this, null, false);
                 return;
             }
-
             getUserAssociation(user, (query1, data, success1) -> {
                 if(!success1){
                     listener.onCompletion(this, null, false);
@@ -524,7 +523,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     return;
                 }
                 if(data.size() == 1) {
-                    data.setStatus(R.string.event_assoc_status_waitlist);
                     EventAssociation e = data.result.get(0).fetch();
                     String status = e.getStatus();
 
@@ -534,7 +532,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                         data.dissolve();
                         return;
                     }
-                    e.setStatus(R.string.database_event_waitlist);
+                    e.setStatus(R.string.event_assoc_status_waitlist);
                     listener.onCompletion(this, new QueryResult<>(e), true);
                     data.dissolve();
                     return;
@@ -544,6 +542,56 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     listener.onCompletion(this, new QueryResult<>(instance), success2);
                     data.dissolve();
                 });
+            });
+
+        });
+    }
+
+    /**
+     * Adds a user to the enrolled given that the user is currently invited
+     * <p>
+     *     The listener will be returned with false success if an error occurs or the user cannot be enrolled. If the this is because the user in a not invite status, the association is returned with false success
+     * </p>
+     * @param user
+     * @param listener
+     */
+    @Database.MustStir
+    public void acceptInvite(@Database.Observes User user, DataListener<Event, QueryResult<EventAssociation>> listener){
+
+        refreshData((query, success) -> {
+            if(!success) {
+                listener.onCompletion(this, null, false);
+                return;
+            }
+
+            if(getCurrentEnrolled() >= getCapacity()){
+                listener.onCompletion(this, null, false);
+                return;
+            }
+
+            getUserAssociation(user, (query1, data, success1) -> {
+                if(!success1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+                if(data.size() != 1){
+                    listener.onCompletion(this, null, false);
+                    return;
+                }
+
+                EventAssociation e = data.result.get(0).fetch();
+                String status = e.getStatus();
+
+                if (!Objects.equals(status, db.constants.getString(R.string.event_assoc_status_invited))) {
+                    //Not in state where can become enrolled
+                    listener.onCompletion(this, new QueryResult<>(e), false);
+                    data.dissolve();
+                    return;
+                }
+
+                e.setStatus(R.string.event_assoc_status_cancelled);
+                listener.onCompletion(this, new QueryResult<>(e), true);
+                data.dissolve();
             });
 
         });
@@ -562,51 +610,92 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     /**
      * @return Returns if now is between the closed and open registration date.
      */
-    public boolean isRegistrationOpen(){
+    public boolean isRegistrationOpen() {
         Timestamp now = Timestamp.now();
         return now.compareTo(getOpenRegistrationDate()) >= 0 && now.compareTo(getCloseRegistrationDate()) <= 0;
     }
 
     /**
+     * @return Returns if now is after the close date
+     */
+    public boolean isAfterRegistration(){
+        Timestamp now = Timestamp.now();
+        return now.compareTo(getCloseRegistrationDate()) > 0;
+    }
+
+    /**
+     * @return Returns if now is before the open date
+     */
+    public boolean isBeforeRegistration(){
+        Timestamp now = Timestamp.now();
+        return now.compareTo(getOpenRegistrationDate()) < 0;
+    }
+
+    /**
      * Updates all properties of the event. If the event changes, a notification is sent to listeners once and the database is updated once
      * @param title The title of the event
-     * @param posterID The id of the poster image
      * @param description the description of the event
+     * @param posterImage The new Poster image
      * @param qrHash the cashed qr code data for the event
      * @param price The price of the event
-     * @param onComplete called on completion
-     * @return If the event changed as a result
+     * @param onComplete called on completion. Not called if properties are invalid
+     * @return All invalid ids
+     * @see #updateDataFromMap(Map, Uri, String, Consumer)
      */
     @Database.StirsDeep(what = "The previous image")
-    public boolean update(String title,
-                          @Database.Dilutes String posterID,
-                          String description,
-                          String qrHash,
-                          Double price,
-
-                          EmptyListener onComplete
+    public Set<Integer> update(String title,
+                               @Database.Dilutes String posterID,
+                               String description,
+                               Uri posterImage,
+                               String qrHash,
+                               Double price,
+                               Consumer<Boolean> onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_event_title, title);
-        map.put(R.string.database_event_posterID, posterID);
         map.put(R.string.database_event_description, description);
         map.put(R.string.database_event_qrHash, qrHash);
         map.put(R.string.database_event_price, price);
 
-        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
+        return updateDataFromMap(map, posterImage, title, onComplete);
+    }
+
+    /**
+     * Updates all properties of the event. If the event changes, a notification is sent to listeners once and the database is updated once
+     * @param title The title of the event
+     * @param description the description of the event
+     * @param qrHash the cashed qr code data for the event
+     * @param price The price of the event
+     * @param onComplete will always be true and will be called before return
+     * @return All invalid ids
+     * @see #updateDataFromMap(Map, Consumer)
+     */
+    public Set<Integer> update(String title,
+                          String description,
+                          String qrHash,
+                          Double price,
+                          Consumer<Boolean> onComplete
+    ){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_event_title, title);
+        map.put(R.string.database_event_description, description);
+        map.put(R.string.database_event_qrHash, qrHash);
+        map.put(R.string.database_event_price, price);
+
+        return updateDataFromMap(map, onComplete);
     }
 
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_title, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
             new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String, true),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Integer && (Integer)o > 0, false),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Integer && ((Integer)o > 0 || (Integer)o == -1), false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Long && (Long)o > 0, false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_waitlist, o -> o instanceof Long && ((Long)o > 0 || (Long)o == -1), false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String, true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double) o) >= 0, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
@@ -614,7 +703,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_start, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_end, o -> o instanceof Timestamp, false),
-            new PropertyField<Integer, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Integer, false),
+            new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Long, false),
     };
 
     @Override
@@ -626,16 +715,10 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     /**
-     * Creates a new Image instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
+     * Validates and creates a new Image instance in the database using the given data.
      * @param db The database
      * @param title The title of the event
-     * @param posterID The id of the poster image
+     * @param posterImage The the poster image
      * @param facilityID the id of the facility
      * @param requiresLocation If the users geolocation is recorded on signup
      * @param description the description of the event
@@ -647,36 +730,48 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param startDate The datetime that the event starts
      * @param endDate The datetime that the event stored
      * @param eventDates The days of the week that the event occurs {@link Dates}
-     * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
+     * @param listener Will be called once the event is initialized. Is not called if the data is invalid
+     * @return The property id of all invalid properties
+     * @see Database#createNewInstance(Database.Collections, String, Map, Uri, String, Database.InitializationListener)
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                        String title,
-                                       @Database.Dilutes String posterID,
+                                       Uri posterImage,
                                        @Database.Dilutes String facilityID,
                                        Boolean requiresLocation,
                                        String description,
-                                       Integer capacity,
-                                       Integer waitlistCapacity,
+                                       Long capacity,
+                                       Long waitlistCapacity,
                                        Double price,
                                        @Nullable Timestamp openRegistrationDate,
                                        Timestamp closedRegistrationDate,
                                        Timestamp startDate,
                                        Timestamp endDate,
-                                       Integer eventDates,
+                                       Long eventDates,
                                        Database.InitializationListener<Event> listener
     ){
         Timestamp now = Timestamp.now();
         openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
         String id = Database.Collections.EVENTS.getNewID(db);
-        Map<Integer,Object> map = createDataMap(title,posterID, facilityID, requiresLocation, description, capacity, waitlistCapacity, id, price, openRegistrationDate, closedRegistrationDate, startDate, endDate, eventDates,  now);
 
-        if(!validateDataMap(map).isEmpty()){
-            listener.onInitialization(null, false);
-            return;
-        }
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_event_title, title);
+        map.put(R.string.database_event_facilityID, facilityID);
+        map.put(R.string.database_event_geo, requiresLocation);
+        map.put(R.string.database_event_description, description);
+        map.put(R.string.database_event_capacity, capacity);
+        map.put(R.string.database_event_waitlist, waitlistCapacity);
+        map.put(R.string.database_event_qrHash, id);
+        map.put(R.string.database_event_price, price);
+        map.put(R.string.database_event_createdTime, now);
+        map.put(R.string.database_event_openDate, openRegistrationDate);
+        map.put(R.string.database_event_closedDate, closedRegistrationDate);
+        map.put(R.string.database_event_start, startDate);
+        map.put(R.string.database_event_end, endDate);
+        map.put(R.string.database_event_dates, eventDates);
 
-        db.createNewInstance(Database.Collections.EVENTS, id, db.convertIDMapToNames(map), listener);
+        return db.createNewInstance(Database.Collections.EVENTS, id, map, posterImage, title, listener);
     }
 
     /**
@@ -694,17 +789,17 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     public enum Dates { // used as a namespace
         ;
-        public static final int
-                NO_REPEAT   = 0b0000000,
-                MONDAY      = 0b1000000,
-                TUESDAY     = 0b0100000,
-                WEDNESDAY   = 0b0010000,
-                THURSDAY    = 0b0001000,
-                FRIDAY      = 0b0000100,
-                SATURDAY    = 0b0000010,
-                SUNDAY      = 0b0000001,
-                WEEKDAYS    = 0b1111100,
-                EVERY_DAY   = 0b1111111;
+        public static final long
+                NO_REPEAT   = 0b0000000L,
+                MONDAY      = 0b1000000L,
+                TUESDAY     = 0b0100000L,
+                WEDNESDAY   = 0b0010000L,
+                THURSDAY    = 0b0001000L,
+                FRIDAY      = 0b0000100L,
+                SATURDAY    = 0b0000010L,
+                SUNDAY      = 0b0000001L,
+                WEEKDAYS    = 0b1111100L,
+                EVERY_DAY   = 0b1111111L;
 
         /**
          * Checks if the collection of dates contains the specific day
@@ -713,7 +808,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @return {@code true} if the collection contains the day. Will return {@code true} if the
          * collection contains other days as well
          */
-        public static boolean collectionContainsDay(int collection, int day){
+        public static boolean collectionContainsDay(long collection, long day){
             return (collection & day) == day;
         }
 
@@ -722,7 +817,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param collection The set of {@link Dates} to check
          * @return The number of days in the selection
          */
-        public static int numberOfDays(int collection){
+        public static int numberOfDays(long collection){
             int count = 0;
             for(int i=0; i<7; i++){
                 if(collectionContainsDay(collection, 1<<i)) count ++;
@@ -735,11 +830,11 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param collection The set of days
          * @return The formated string
          */
-        public static String format(int collection){
+        public static String format(Long collection){
 
             if(collection == WEEKDAYS) return "Weekdays";
             if(collection == EVERY_DAY) return "Every day";
-            if(collection == NO_REPEAT) return "No Repetition";
+            if(collection == NO_REPEAT) return "";
 
             int count = numberOfDays(collection);
             List<String> result = new ArrayList<>();
@@ -780,71 +875,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             }
             return String.join(", ", result);
         }
+
     }
 
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param title The title of the event
-     * @param posterID The id of the poster image
-     * @param facilityID the id of the facility
-     * @param requiresLocation If the users geolocation is recorded on signup
-     * @param description the description of the event
-     * @param capacity The max capacity of the event
-     * @param waitlistCapacity the max waitlist capacity of the event
-     * @param qrHash the cashed qr code data for the event
-     * @param price The price of the event
-     * @param openRegistrationDate The date that registration opens
-     * @param closedRegistrationDate The date that registration closes and the lottery opens
-     * @param startDate The datetime that the event starts
-     * @param endDate The datetime that the event ends
-     * @param eventDates The dates that the event occurs {@link Dates}
-     * @param createdTime The time when the event was created
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(String title,
-                                                     @Database.Observes String posterID,
-                                                     @Database.Observes String facilityID,
-                                                     Boolean requiresLocation,
-                                                     String description,
-                                                     Integer capacity,
-                                                     Integer waitlistCapacity,
-                                                     String qrHash,
-                                                     Double price,
-                                                     Timestamp openRegistrationDate,
-                                                     Timestamp closedRegistrationDate,
-                                                     Timestamp startDate,
-                                                     Timestamp endDate,
-                                                     Integer eventDates,
-                                                     Timestamp createdTime
 
-    ){
-        Map<Integer,Object> map = new HashMap<>();
-        map.put(R.string.database_event_title, title);
-        map.put(R.string.database_event_posterID, posterID);
-        map.put(R.string.database_event_facilityID, facilityID);
-        map.put(R.string.database_event_geo, requiresLocation);
-        map.put(R.string.database_event_description, description);
-        map.put(R.string.database_event_capacity, capacity);
-        map.put(R.string.database_event_waitlist, waitlistCapacity);
-        map.put(R.string.database_event_qrHash, qrHash);
-        map.put(R.string.database_event_price, price);
-        map.put(R.string.database_event_createdTime, createdTime);
-        map.put(R.string.database_event_openDate, openRegistrationDate);
-        map.put(R.string.database_event_closedDate, closedRegistrationDate);
-        map.put(R.string.database_event_start, startDate);
-        map.put(R.string.database_event_end, endDate);
-        map.put(R.string.database_event_dates, eventDates);
-
-        return map;
-    }
-
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return The invalid ids
-     * @see #createDataMap(String, String, String, Boolean, String, Integer, Integer, String, Double, Timestamp, Timestamp, Timestamp, Timestamp, Integer, Timestamp)
-     */
-    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
-    }
 }

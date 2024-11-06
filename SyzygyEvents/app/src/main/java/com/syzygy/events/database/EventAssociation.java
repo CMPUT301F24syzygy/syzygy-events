@@ -78,33 +78,29 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         return getPropertyInstanceI(R.string.database_assoc_event);
     }
 
-    @Override
-    @Database.Observes
-    public Image getAssociatedImage() {
-        return null;
-    }
 
     public Timestamp getJoinTime(){
         return getPropertyValueI(R.string.database_assoc_time);
     }
 
     /**
-     * Updates all properties of the assoc. If the assoc changes, a notification is sent to listeners once and the database is updated once
+     * Validates and updates all properties of the assoc. If the assoc changes, a notification is sent to listeners once and the database is updated once
      * @param location The location where the user signed into the event
      * @param status The status of the association
-     * @return If the assoc changed as a result
+     * @return The ids of all invalid properties
+     * @see #updateDataFromMap(Map, Consumer)
      */
-    public boolean update(GeoPoint location, String status){
+    public Set<Integer> update(GeoPoint location, String status){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_assoc_geo, location);
         map.put(R.string.database_assoc_status, status);
-        return updateDataFromMap(db.convertIDMapToNames(map), s->{});
+        return updateDataFromMap(map, s->{});
     }
 
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, User>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
             new PropertyField<String, Event>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, false, false),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint || o == null, true),
@@ -118,72 +114,34 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     }
 
     /**
-     * Creates a new Image instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
+     * Validates and creates a new Image instance in the database using the given data.
      * @param db The database
      * @param eventID The ID of the event
      * @param location The location where the user signed into the event
      * @param status The status of the association
      * @param userID The id of the user
-     * @param listener The initializer listener: this will be called once the user is ready
+     * @param listener Called once the instance is initialized. Not called if properties are invalid
+     * @return The property id of all invalid properties
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                     @Database.Dilutes String eventID,
                                     GeoPoint location,
                                     String status,
                                     @Database.Dilutes String userID,
                                     Database.InitializationListener<EventAssociation> listener
     ){
-        Map<Integer,Object> map = createDataMap(eventID, location, status, userID, Timestamp.now());
-
-        if(!validateDataMap(map).isEmpty()){
-            listener.onInitialization(null, false);
-            return;
-        }
-
-        db.createNewInstance(Database.Collections.EVENT_ASSOCIATIONS, eventID+"-"+userID, db.convertIDMapToNames(map), listener);
-    }
-
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param eventID The ID of the event
-     * @param location The location where the user signed into the event
-     * @param status The status of the association
-     * @param userID The id of the user
-     * @param time When the user first became associated to the event
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(@Database.Observes String eventID,
-                                                     GeoPoint location,
-                                                     String status,
-                                                     @Database.Observes String userID,
-                                                     Timestamp time
-
-    ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_assoc_geo, location);
         map.put(R.string.database_assoc_event, eventID);
         map.put(R.string.database_assoc_status, status);
         map.put(R.string.database_assoc_user, userID);
-        map.put(R.string.database_assoc_time, time);
-        return map;
-    }
+        map.put(R.string.database_assoc_time, Timestamp.now());
 
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return The invalid ids
-     * @see #createDataMap(String, GeoPoint, String, String, Timestamp)  
-     */
-    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
+        String id = Database.Collections.EVENT_ASSOCIATIONS.getNewID(db);
+
+        return db.createNewInstance(Database.Collections.EVENT_ASSOCIATIONS, id, map, listener);
     }
 
     /**
@@ -263,7 +221,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         @Database.StirsDeep(what="Deletes the result instances")
         @Database.AutoStir
         public void delete(){
-            result.forEach(i -> i.deleteInstance(success -> {}));
+            result.forEach(i -> i.deleteInstance(DeletionType.HARD_DELETE, success -> {}));
             dissolve();
         }
 
@@ -338,6 +296,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                         NotificationResult n = new NotificationResult(successNotifications, failedNotifications);
                         listener.onCompletion(querrier, n, true);
                         n.dissolve();
+                        return;
                     }
 
 

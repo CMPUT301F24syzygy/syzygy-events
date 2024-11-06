@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="?attr/actionBarSize">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_name_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_name"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Event Title*"
+                android:inputType="text|textMultiLine"
+                android:lines="1"
+                android:maxLength="16"
+                android:scrollbars="vertical"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/event_poster_container"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="3dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_name_layout">
+
+            <ImageView
+                android:id="@+id/event_create_poster_img"
+                android:layout_width="160dp"
+                android:layout_height="160dp" />
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/event_create_edit_poster_button"
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/add_poster_button"
+            app:layout_constraintEnd_toEndOf="@+id/event_poster_container"
+            app:layout_constraintStart_toStartOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_poster_container" />
+
+        <Button
+            android:id="@+id/event_create_remove_poster_button"
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:text="@string/remove_image_button"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/event_poster_container"
+            app:layout_constraintStart_toStartOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_edit_poster_button" />
+
+
+        <CheckBox
+            android:id="@+id/event_create_require_location_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="190dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Require Geolocation"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_edit_poster_button" />
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_price_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_name_layout">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_price"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Price*"
+                android:inputType="numberDecimal"
+                android:lines="1"
+                android:maxLength="9"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_capacity_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_price_layout">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_capacity"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Capacity*"
+                android:inputType="number"
+                android:lines="1"
+                android:maxLength="9"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_waitlist_cap_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toEndOf="@+id/event_poster_container"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_capacity_layout">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_waitlist_cap"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Waitlist Cap"
+                android:inputType="number"
+                android:lines="1"
+                android:maxLength="9"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_open_date_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_require_location_checkbox"
+            app:placeholderText="dd/mm/yyyy">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_open_date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Open Waitlist*"
+                android:inputType="date"
+                android:lines="1"
+                android:maxLength="10"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_close_date_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_require_location_checkbox"
+            app:placeholderText="dd/mm/yyyy">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_close_date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Close Waitlist*"
+                android:inputType="date"
+                android:lines="1"
+                android:maxLength="10"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <View
+            android:id="@+id/div1"
+            android:layout_width="350dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="32dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_open_date_layout" />
+
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/event_create_option_chips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/div1"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_single_chip"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:checkable="true"
+                android:checked="true"
+                android:text="Single Event"
+                android:textAlignment="center" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/create_event_sequence_chip"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:checkable="true"
+                android:text="Event Sequence"
+                android:textAlignment="center" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_start_date_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:placeholderText="dd/mm/yyyy">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_start_date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Start Date*"
+                android:inputType="date"
+                android:lines="1"
+                android:maxLength="10"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_date_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:expandedHintEnabled="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:placeholderText="dd/mm/yyyy">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="Date*"
+                android:inputType="date"
+                android:lines="1"
+                android:maxLength="10"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_end_date_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:visibility="gone"
+            app:expandedHintEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:placeholderText="dd/mm/yyyy">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_end_date"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="top|start"
+                android:hint="End Date*"
+                android:inputType="date"
+                android:lines="1"
+                android:maxLength="10"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/create_event_weekday_chips"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="90dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/mon_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="M" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/tue_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="T" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/wed_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="W" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/thu_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="T" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/fri_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="F" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/sat_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="S" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/sun_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:text="S" />
+        </com.google.android.material.chip.ChipGroup>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_create_bio_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="380dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="140dp"
+            android:hint="Event Description"
+            app:expandedHintEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_create_bio"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|start"
+                android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
+                android:lines="5"
+                android:maxLength="250"
+                android:scrollbars="vertical"
+                android:textAlignment="gravity" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <Button
+            android:id="@+id/event_create_submit_button"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Create Event"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_bio_layout" />
+
+        <FrameLayout
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:background="#000000"
+            android:visibility="gone">
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminate="true" />
+        </FrameLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

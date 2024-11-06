@@ -4,27 +4,33 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.syzygy.events.R;
-import com.syzygy.events.databinding.FragmentAdminEventsBinding;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
+import com.syzygy.events.database.DatabaseQuery;
+import com.syzygy.events.database.Event;
+import com.syzygy.events.databinding.FragAdminEventsListBinding;
 
 public class AdminEventsFragment extends Fragment {
-    private com.syzygy.events.databinding.FragmentAdminEventsBinding binding;
+    private FragAdminEventsListBinding binding;
+    private DatabaseInfLoadQuery<Event> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentAdminEventsBinding.inflate(inflater, container, false);
+        binding = FragAdminEventsListBinding.inflate(inflater, container, false);
 
-        String[] alpha = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
-        ArrayList<String> dataList = new ArrayList<>(Arrays.asList(alpha));
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(), R.layout.item_admin_events, dataList);
-        binding.adminEventsList.setAdapter(adapter);
+        SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
+        query = new DatabaseInfLoadQuery<>(DatabaseQuery.getEvents(app.getDatabase()));
+
+        AdminEventsAdapter a = new AdminEventsAdapter(this.getContext(), query.getInstances());
+
+        query.refreshData((query1, success) -> {
+            a.notifyDataSetChanged();
+        });
+
+        binding.adminEventsList.setAdapter(a);
 
         return binding.getRoot();
     }
@@ -33,6 +39,7 @@ public class AdminEventsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        query.dissolve();
     }
 
 }

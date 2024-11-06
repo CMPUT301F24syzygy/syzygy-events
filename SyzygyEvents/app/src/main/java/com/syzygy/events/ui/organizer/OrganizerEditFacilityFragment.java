@@ -24,18 +24,17 @@ import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
-import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
-import com.syzygy.events.databinding.SecondaryOrganizerEditBinding;
-import com.syzygy.events.databinding.SecondarySignupFacilityBinding;
+import com.syzygy.events.databinding.FragOrgEditFacilityBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
-public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
+public class OrganizerEditFacilityFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
-    private SecondaryOrganizerEditBinding binding;
+    private FragOrgEditFacilityBinding binding;
     private Facility facility;
     private Uri image;
     private boolean selectedImage = false;
@@ -43,7 +42,7 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
     private Marker marker = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = SecondaryOrganizerEditBinding.inflate(inflater, container, false);
+        binding = FragOrgEditFacilityBinding.inflate(inflater, container, false);
 
         facility = ((SyzygyApplication)getActivity().getApplication()).getUser().getFacility().fetch();
 
@@ -53,9 +52,9 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         });
         binding.editFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
-        Image.getFormatedAssociatedImage(facility, Image.Options.Circle(256)).into(binding.editFacilityProfile);
+        Image.getFormatedAssociatedImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
         binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
-        binding.editFacilityBio.setText(facility.getDescription());
+        binding.editFacilityDescription.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
         return binding.getRoot();
     }
@@ -78,84 +77,46 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         Address add = Facility.getFullAddressFromGeo(getActivity(), pos);
         String address = add == null ? "" : add.getAddressLine(0);
         Log.println(Log.INFO, "Map Selection", address);
-        String bio = binding.editFacilityBio.getText().toString();
+        String bio = binding.editFacilityDescription.getText().toString();
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
-        Set<Integer> invalidIds = Facility.validateDataMap(Facility.createDataMap(name, loc, address, bio, "", user));
 
-        if(!invalidIds.isEmpty()){
-            for(int i : invalidIds){
-                Log.println(Log.INFO, "Fac Invalid", getString(i));
-            }
-            if(invalidIds.contains(R.string.database_fac_name)){
-                binding.editFacilityName.setError("Bad");
-            }
-            if(invalidIds.contains(R.string.database_fac_description)){
-                binding.editFacilityBio.setError("Bad");
-            }
-            Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
-            return;
+        Set<Integer> invalidIds;
+        if(selectedImage){
+            invalidIds = facility.update(name, loc, address, bio, image, this::onUpdateInstance);
+        }else{
+            invalidIds = facility.update(name, loc, address, bio, this::onUpdateInstance);
         }
 
-        Log.println(Log.DEBUG, "editfac", "valid");
         binding.progressBar.setVisibility(View.VISIBLE);
-        Image currentImage = facility.getImage();
-        if(currentImage != null) currentImage.fetch();
 
-        if(image != null){
-            Log.println(Log.DEBUG, "editfac", "image");
-            Image.NewInstance(app.getDatabase(), name, Database.Collections.FACILITIES, user, image, (img, img_success) -> {
-                if(!img_success){
-                    Log.println(Log.DEBUG, "editfac", "image fail");
-                    Toast.makeText(getActivity(), "An error occurred: Image", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                    if(currentImage!=null)currentImage.dissolve();
-                    return;
-                }
-                Log.println(Log.DEBUG, "editfac", "image good");
-                facility.update(name, loc, address, bio, img.getDocumentID(), fac_success -> {
-                    img.dissolve();
-                    if(fac_success){
-                        Log.println(Log.DEBUG, "editefac", "fac good");
-                        if(currentImage != null) currentImage.deleteInstance(s -> {
-                            if(!s){
-                                Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                            }
-                        });
-                        facility.dissolve();
-                        ((OrganizerActivity)getActivity()).navigateUp();
-                        return;
-                    }
-                    if(currentImage!=null)currentImage.dissolve();
-                    img.deleteInstance(s->{if(!s){
-                        Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                    }});
-                    Log.println(Log.DEBUG, "editfac", "fac fail");
-                    Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
-                    binding.progressBar.setVisibility(View.GONE);
-                });
-            });
-            return;
+
+        if(invalidIds.isEmpty()) return;
+
+        if(invalidIds.contains(R.string.database_fac_name)){
+            binding.editFacilityName.setError("Bad");
         }
-        Log.println(Log.DEBUG, "editfac", "no image");
-        facility.update(name, loc, address, bio, selectedImage||currentImage==null?"":currentImage.getDocumentID(), fac_success -> {
-            if(fac_success){
-                Log.println(Log.DEBUG, "editefac", "fac good");
-                if(currentImage != null && selectedImage) currentImage.deleteInstance(s -> {
-                    if(!s){
-                        Log.println(Log.ERROR, "Fac edit image", "Hanging image");
-                    }
-                });
-                facility.dissolve();
-                ((OrganizerActivity)getActivity()).navigateUp();
-                return;
-            }
-            if(currentImage!=null)currentImage.dissolve();
-            Log.println(Log.DEBUG, "editfac", "fac fail");
+        if(invalidIds.contains(R.string.database_fac_description)){
+            binding.editFacilityDescription.setError("Bad");
+        }
+        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
+        binding.progressBar.setVisibility(View.GONE);
+    }
+
+    /**
+     * Called on update of facility
+     * @param success If the success
+     * @see Facility#update(String, GeoPoint, String, String, Uri, Consumer)
+     */
+    private void onUpdateInstance(boolean success) {
+        if(success){
+            //Instead of navigating back were going to use the switch application
+            //This forces the menu icons to refresh in case the profile image was changed
+            ((SyzygyApplication)getActivity().getApplication()).switchToActivity(OrganizerActivity.class);
+        }else{
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
-        });
-
+        }
     }
 
     private void choosePhoto(){
@@ -172,10 +133,12 @@ public class OrgEditSecondaryFragment extends Fragment  implements OnMapReadyCal
         selectedImage = true;
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Circle(256)).into(binding.editFacilityProfile);
+            Image.formatDefaultImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
+            binding.editFacilityEditImage.setText(R.string.add_image_button);
             binding.editFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{
-            Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(256)).into(binding.editFacilityProfile);;
+            Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);;
+            binding.editFacilityEditImage.setText(R.string.change_image_button);
             binding.editFacilityRemoveImage.setVisibility(View.VISIBLE);
         }
     }

@@ -27,6 +27,7 @@ import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Event;
+import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
 public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
@@ -66,6 +67,7 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
+        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
         return true;
     }
 
@@ -77,9 +79,12 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
             PopupMenu m = new PopupMenu(OrganizerActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
-            SyzygyApplication app = (SyzygyApplication)getApplication();
-            m.getMenu().findItem(R.id.add_organizer_item).setVisible(false);
-            m.getMenu().findItem(R.id.organizer_item).setVisible(true);
+            SyzygyApplication app = (SyzygyApplication) getApplication();
+            Menu menu = m.getMenu();
+            app.loadMenuItemIcons(menu);
+
+            menu.findItem(R.id.add_organizer_item).setVisible(false);
+            menu.findItem(R.id.organizer_item).setVisible(true);
             if (app.getUser().isAdmin()) {
                 m.getMenu().findItem(R.id.admin_item).setVisible(true);
             }

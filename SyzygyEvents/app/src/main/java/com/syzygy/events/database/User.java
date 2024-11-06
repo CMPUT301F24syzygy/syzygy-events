@@ -1,5 +1,7 @@
 package com.syzygy.events.database;
 
+import android.graphics.Color;
+import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * An instance of a user database item
@@ -65,15 +68,11 @@ public class User extends DatabaseInstance<User> {
         return getPropertyValueI(R.string.database_user_profileID);
     }
 
-    public boolean setProfileImageID(@Database.Dilutes String val, Database.Querrier.EmptyListener onComplete){
-        return setPropertyValue(R.string.database_user_profileID, val, onComplete);
-    }
-
     public String getFacilityID(){
         return getPropertyValueI(R.string.database_user_facilityID);
     }
 
-    public boolean setFacilityID(@Database.Dilutes String val, Database.Querrier.EmptyListener onComplete){
+    public boolean setFacilityID(@Database.Dilutes String val, Consumer<Boolean> onComplete){
         return setPropertyValue(R.string.database_user_facilityID, val, onComplete);
     }
 
@@ -127,18 +126,23 @@ public class User extends DatabaseInstance<User> {
     }
 
     @Override
-    @Database.Observes
-    public Image getAssociatedImage() {
-        return getProfileImage();
+    public String getAssociatedImageLocName() {
+        return getName();
+    }
+
+    public String getInitials(){
+        return getName().substring(0,1).toUpperCase();
     }
 
     /**
      * Sets the Image instance. This function will create a new reference to the instance.
-     * @param val The new instance
+     * @param image The new instance
+     * @param onComplete called on completion with if the update was successful
+     * @see #setAssociatedImage(Uri, Consumer)  
      */
     @Database.StirsDeep(what = "The previous Image")
-    public boolean setProfileImage(@Nullable @Database.Dilutes Image val){
-        return setPropertyInstance(R.string.database_user_profileID, val);
+    public void setProfileImage(@Nullable Uri image, Consumer<Boolean> onComplete){
+        setAssociatedImage(image, onComplete);
     }
 
     @Database.Observes
@@ -153,44 +157,76 @@ public class User extends DatabaseInstance<User> {
     @Database.StirsDeep(what = "The previous Image")
     public boolean setFacility(@Nullable @Database.Dilutes Facility val){
         //Success will be called before return so no need
-
         return setPropertyInstance(R.string.database_user_facilityID, val);
     }
 
     /**
-     * Updates all properties of the user. If the user changes, a notification is sent to listeners once and the database is updated once
+     * Validates and updates all properties of the user. If the user changes, a notification is sent to listeners once and the database is updated once
      * @param name The name of the user
      * @param description The description of the user
-     * @param profileImageID The ID of the profile image
+     * @param profileImage the profile image
      * @param email The email of the user
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
      * @param isAdmin If the user has admin privileges
-     * @param onComplete called once update is complete
+     * @param onComplete called once update is complete with weather the update was successful. Not called if properties are invalid
      * @return If the user changed as a result
+     * @see #updateDataFromMap(Map, Uri, String, Consumer)
      */
     @Database.StirsDeep(what = "The previous image")
-    public boolean update(String name,
+    public Set<Integer> update(String name,
                           String description,
-                          @Database.Dilutes String profileImageID,
+                          @Nullable Uri profileImage,
                           String email,
                           String phoneNumber,
                           Boolean organizerNotifications,
                           Boolean adminNotifications,
                           Boolean isAdmin,
-                          Database.Querrier.EmptyListener onComplete
+                          Consumer<Boolean> onComplete
     ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_user_name, name);
         map.put(R.string.database_user_description, description);
-        map.put(R.string.database_user_profileID, profileImageID);
         map.put(R.string.database_user_email, email);
         map.put(R.string.database_user_phoneNumber, phoneNumber);
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
         map.put(R.string.database_user_isAdmin, isAdmin);
-        return updateDataFromMap(db.convertIDMapToNames(map), onComplete);
+        return updateDataFromMap(map, profileImage, name, onComplete);
+    }
+
+    /**
+     * Validates and updates all properties of the user. If the user changes, a notification is sent to listeners once and the database is updated once
+     * @param name The name of the user
+     * @param description The description of the user
+     * @param email The email of the user
+     * @param phoneNumber The phone number of the user
+     * @param organizerNotifications If the user should receive notifications from organizers
+     * @param adminNotifications If the user should receive notifications from admins
+     * @param isAdmin If the user has admin privileges
+     * @param onComplete will always be true and will be called before return
+     * @return All invalid ids
+     * @see #updateDataFromMap(Map, Uri, String, Consumer)
+     */
+    public Set<Integer> update(String name,
+                               String description,
+                               String email,
+                               String phoneNumber,
+                               Boolean organizerNotifications,
+                               Boolean adminNotifications,
+                               Boolean isAdmin,
+                               Consumer<Boolean> onComplete
+    ){
+        Map<Integer,Object> map = new HashMap<>();
+        map.put(R.string.database_user_name, name);
+        map.put(R.string.database_user_description, description);
+        map.put(R.string.database_user_email, email);
+        map.put(R.string.database_user_phoneNumber, phoneNumber);
+        map.put(R.string.database_user_adminNotifications, adminNotifications);
+        map.put(R.string.database_user_orgNotifications, organizerNotifications);
+        map.put(R.string.database_user_isAdmin, isAdmin);
+        return updateDataFromMap(map, onComplete);
     }
 
 
@@ -207,7 +243,7 @@ public class User extends DatabaseInstance<User> {
     /**
      * The list of the fields defined for a User
      */
-    private static final PropertyField<?, ?>[] fields = {
+    static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_name, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_description, o -> o instanceof String, true),
             new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
@@ -223,33 +259,29 @@ public class User extends DatabaseInstance<User> {
 
 
     /**
-     * Creates a new User instance in the database using the given data.
-     * <p>
-     *     Data is validated before creating. If the data is invalid, {@code null} is returned
-     * </p>
-     * <p>
-     *     The instance will be invalid on return, only use it after waiting for the initialization listener
-     * </p>
+     * Validates and creates a new User instance in the database using the given data.
      * @param db The database
      * @param deviceID The ID of the device associated with the User
      * @param name The name of the user
      * @param description The description of the user
-     * @param profileImageID The ID of the profile image
+     * @param profileImage the profileImage
      * @param facilityID The ID of the user's facility
      * @param email The email of the user
      * @param phoneNumber The phone number of the user
      * @param organizerNotifications If the user should receive notifications from organizers
      * @param adminNotifications If the user should receive notifications from admins
      * @param isAdmin If the user has admin privileges
-     * @param listener The initializer listener: this will be called once the user is ready
-     * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
+     * @param listener Will be called once the user is initialized. Is not called if the data is invalid
+     * @return The property id of all invalid properties
+     * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener) 
+     * @throws IllegalArgumentException If deviceId is invalid
      */
     @Database.MustStir
-    public static void NewInstance(Database db,
+    public static Set<Integer> NewInstance(Database db,
                                    String deviceID,
                                    String name,
                                    String description,
-                                   @Database.Dilutes String profileImageID,
+                                   @Nullable Uri profileImage,
                                    @Database.Dilutes String facilityID,
                                    String email,
                                    String phoneNumber,
@@ -258,51 +290,16 @@ public class User extends DatabaseInstance<User> {
                                    Boolean isAdmin,
                                    Database.InitializationListener<User> listener
     ){
-        Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, isAdmin, Timestamp.now());
-        if(!(validateDeviceID(deviceID) && validateDataMap(map).isEmpty())){
-            if(!(validateDeviceID(deviceID))) {
-                System.out.println("Invalid Device id");
-            }
-            listener.onInitialization(null, false);
-            return;
-        }
-        Map<String, Object> map2 = db.convertIDMapToNames(map);
-        db.createNewInstance(Database.Collections.USERS, deviceID, map2, listener);
-    }
 
-    public static boolean validateDeviceID(String deviceID){
-        return deviceID != null && !deviceID.isBlank();
-    }
+        if(deviceID == null || deviceID.isBlank()){
+            db.throwE(new IllegalArgumentException("Illegal device ID: " + deviceID));
+            return Set.of(-1);
 
-    /**
-     * Turns the properties as arguments into a map that is usable by the database
-     * @param name The name of the user
-     * @param description The description of the user
-     * @param profileImageID The ID of the profile image
-     * @param facilityID The ID of the user's facility
-     * @param email The email of the user
-     * @param phoneNumber The phone number of the user
-     * @param organizerNotifications If the user should receive notifications from organizers
-     * @param adminNotifications If the user should receive notifications from admins
-     * @param isAdmin If the user has admin privileges
-     * @param createdTime The time when the account was created
-     * @return The map
-     */
-    public static Map<Integer, Object> createDataMap(String name,String description,
-                                                      @Database.Observes String profileImageID,
-                                                      @Database.Observes String facilityID,
-                                                      String email,
-                                                      String phoneNumber,
-                                                      Boolean organizerNotifications,
-                                                      Boolean adminNotifications,
-                                                      Boolean isAdmin,
-                                                      Timestamp createdTime
+        Timestamp createdTime = Timestamp.now();
 
-    ){
         Map<Integer,Object> map = new HashMap<>();
         map.put(R.string.database_user_name, name);
         map.put(R.string.database_user_description, description);
-        map.put(R.string.database_user_profileID, profileImageID);
         map.put(R.string.database_user_facilityID, facilityID);
         map.put(R.string.database_user_email, email);
         map.put(R.string.database_user_phoneNumber, phoneNumber);
@@ -310,18 +307,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
         map.put(R.string.database_user_createdTime, createdTime);
         map.put(R.string.database_user_isAdmin, isAdmin);
-        return map;
+
+        return db.createNewInstance(Database.Collections.USERS, deviceID, map, profileImage, name, listener);
     }
-
-    /**
-     * Tests if the data is valid
-     * @param dataMap The data map
-     * @return The invalid ids
-     * @see #createDataMap(String, String, String, String, String, String, Boolean, Boolean, Boolean, Timestamp)
-     */
-    public static Set<Integer> validateDataMap(@Database.Observes Map<Integer, Object> dataMap){
-        return DatabaseInstance.isDataValid(dataMap, fields);
-    }
-
-
 }

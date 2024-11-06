@@ -105,6 +105,9 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
     @Database.StirsDeep(what = "Previous Instances", when = "All success")
     @Database.Observes
     public void refreshData(Listener<DatabaseQuery<T>> listener){
+        if(currentPage == null){
+            firstPageQuery();
+        }
         currentPage.get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
                 listener.onCompletion(this, false);
@@ -281,8 +284,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void nextPageQuery(){
         assert snapshot != null;
-        if(resultsPerPage == null) return;
-        currentPage = query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.startAfter(snapshot.getDocuments().get(snapshot.size())).limit(resultsPerPage);
     }
 
     /**
@@ -290,23 +292,20 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     private void previousPageQuery(){
         assert snapshot != null;
-        if(resultsPerPage == null) return;
-        currentPage = query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.endBefore(snapshot.getDocuments().get(0)).limitToLast(resultsPerPage);
     }
 
     /**
      * Gets the first resultsPerPage of the query
      */
     private void firstPageQuery(){
-        if(resultsPerPage == null) return;
-        currentPage = query.limit(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.limit(resultsPerPage);
     }
     /**
      * Gets the last resultsPerPage of the query
      */
     private void lastPageQuery(){
-        if(resultsPerPage == null) return;
-        currentPage = query.limitToLast(resultsPerPage);
+        currentPage = resultsPerPage == null ? query : query.limitToLast(resultsPerPage);
     }
 
 
@@ -474,8 +473,8 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * @param status iF null or blank, returns all
      */
     @Database.MustStir
-    public static DatabaseQuery<User> getAttachedUsers(Database db, @Database.Observes Event e, String status, boolean returnAll){
-        Filter f = Filter.arrayContains(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
+    public static DatabaseQuery<EventAssociation> getAttachedUsers(Database db, @Database.Observes Event e, String status, boolean returnAll){
+        Filter f = Filter.equalTo(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
         if(status != null && !status.isBlank()){
             f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
         }

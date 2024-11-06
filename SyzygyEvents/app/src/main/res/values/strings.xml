@@ -27,6 +27,22 @@
 
     <string name="title_signup_organizer">Create Facility</string>
 
+    <string name="lottery_enrolled_count">Enrolled: %d</string>
+    <string name="lottery_invited_count">Invited: %d</string>
+    <string name="lottery_waitlist_count">Waitlist: %d</string>
+    <string name="lottery_open_count">Open: %d</string>
+    <string name="lottery_capacity">Capacity: %d</string>
+
+
+    <string name="add_image_button">Add Photo</string>
+    <string name="change_image_button">Change Photo</string>
+    <string name="remove_image_button">Remove</string>
+    <string name="add_poster_button">Add Poster</string>
+    <string name="change_poster_button">Change Poster</string>
+    <string name="opt_in_admin_notifications_checkbox">Allow Notifications From Admin</string>
+    <string name="opt_in_organizer_notifications_checkbox">Allow Notifications From Organizers</string>
+
+
     <string name="acc_title_entrant">My Account</string>
     <string name="add_acc_title_organizer">Create Facility</string>
     <string name="acc_title_organizer">Facility</string>
@@ -40,4 +56,26 @@
     <string name="button_leave_waitlist">Exit Waitlist</string>
     <string name="button_join_waitlist">Join Waitlist</string>
     <string name="text_requires_geolocation">Requires Geolocation</string>
+    <string name="button_run_lottery">Fill Spots</string>
+    <string name="button_download_qr_image">download qr</string>
+    <string name="button_copy_qr_hash">copy hash</string>
+    <string name="button_scan_qr">Scan QR</string>
+
+    <string name="weekdays_time">%s  at  %s</string>
+
+    <string name="before_reg_text">Registration Opens %s</string>
+    <string name="reg_open_text">Registration Open Until %s</string>
+    <string name="after_reg_text">Registration Closed</string>
+
+    <string name="failed_get_location">Failed to get location. This event ... </string>
+
+    <string name="date_format_basic">"dd/MM/yyyy"</string>
+    <string name="edit_facility_button">Edit Facility</string>
+    <string name="edit_facility_name_hint">Facility Name*</string>
+    <string name="edit_facility_description_hint">Description</string>
+    <string name="edit_facility_description_placeholder">Add additional info about your facility!</string>
+    <string name="create_facility_submit_button">Create Facility</string>
+
+
+
 </resources>

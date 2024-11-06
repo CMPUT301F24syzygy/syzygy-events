@@ -1,8 +1,8 @@
 package com.syzygy.events.database;
 
+import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Property;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -148,8 +149,19 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     /**
      * Returns the image associated with this instance. Null if no image
      */
+    @Nullable
     @Database.Observes
-    public abstract Image getAssociatedImage();
+    public final Image getAssociatedImage(){
+        int id = collection.getAssociatedImagePropertyId();
+        if(id == Database.Collections.DOES_NOT_HAVE_ASSOCIATED_IMAGE) return null;
+        if(id == Database.Collections.IS_ITS_OWN_ASSOCIATED_IMAGE) return (Image)this;
+        return getPropertyInstanceI(id);
+    }
+
+    /**
+     * Returns the name that should be given to the image instance. If no image is associated, returns null
+     */
+    public String getAssociatedImageLocName() {return null;}
 
     /**
      * Adds a new update listener to this instance
@@ -251,6 +263,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Property Instances", when="No Longer Referenced")
     public void dissolve(){
+        if(!isReferenced()) return;
         referenceCount = Math.max(referenceCount - 1, 0);
         Log.println(Log.DEBUG, "dissolve", getDocumentID() + " " + getCollection().toString() + " " + referenceCount);
         if(!isReferenced()) dereferenceInstance();
@@ -341,6 +354,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             PropertyWrapper<?,?> prop = properties.get(name);
             assert prop != null;
             InstancePropertyWrapper<?> iprop = prop.iS();
+            if(iprop.instance == this){
+                Log.println(Log.ERROR, "SubDereference", "Recurse");
+                throw new IllegalStateException("Reference " + getDocumentID() + " " + name + " " + collection);
+            }
             if(iprop.instance != null) iprop.instance.dissolve();
         }
     }
@@ -394,7 +411,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             iprop.value = "";
             iprop.instance = null;
             if(!prop.meta.loadsNullable){
-                deleteInstance(success -> {});
+                deleteInstance(DeletionType.UP_FALL, success -> {});
             }else{
                 notifyUpdate(Type.UPDATE);
             }
@@ -445,12 +462,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @SuppressWarnings("unchecked")
     @Database.StirsDeep(what="Previous Instance")
-    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, ClassCastException{
+    private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID, Consumer<Boolean> onComplete) throws IllegalArgumentException, ClassCastException{
         if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
         InstancePropertyWrapper<W> prop = (InstancePropertyWrapper<W>) p;
 
         if(Objects.equals(newID, prop.value)) {
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
             return;
         }
         Log.println(Log.DEBUG, "modPropExchange", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
@@ -461,7 +478,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 if(!s){
                     Log.println(Log.DEBUG, "modPropLoadFail", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
                     setPropertyValue(prop.meta.propertyNameID, "", $ -> {
-                        onComplete.onCompletion(false);
+                        onComplete.accept(false);
                     });
                     return;
                 }
@@ -471,7 +488,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 }
                 prop.instance = i;
                 prop.value = newID;
-                onComplete.onCompletion(true);
+                onComplete.accept(true);
             });
         }else {
             Log.println(Log.DEBUG, "modPropNulling", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
@@ -482,7 +499,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             }
             prop.instance = null;
             prop.value = newID;
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
         }
 
     }
@@ -527,7 +544,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Database.StirsDeep(what="Old Instances of Instance properties that are modified")
-    protected final boolean modifyData(@Database.Dilutes Map<String, Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, ClassCastException{
+    protected final boolean modifyData(@Database.Dilutes Map<String, Object> data, Consumer<Boolean> onComplete) throws IllegalArgumentException, ClassCastException{
         boolean diff = false;
 
         List<Pair<PropertyWrapper<?,?>, String>> loadIds = new ArrayList<>();
@@ -556,19 +573,19 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
         }
         if(loadIds.isEmpty()){
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
             return diff;
         }
 
-        Database.Querrier.EmptyListener l = new Database.Querrier.EmptyListener() {
+        Consumer<Boolean> l = new Consumer<Boolean>() {
             private int i = -1;
             private boolean s = true;
             @Override
-            public void onCompletion(boolean success) {
+            public void accept(Boolean success) {
                 i ++;
                 s = s || success;
                 if(i >= loadIds.size()){
-                    onComplete.onCompletion(s);
+                    onComplete.accept(s);
                     return;
                 }
                 Pair<PropertyWrapper<?,?>, String> instance = loadIds.get(i);
@@ -576,7 +593,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 exchangeInstance(instance.first, instance.second, this);
             }
         };
-        l.onCompletion(true);
+        l.accept(true);
         return diff;
     }
 
@@ -595,7 +612,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Database.StirsDeep(what="The previous instance", when="Modifying an instance property")
-    public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue, Database.Querrier.EmptyListener onComplete) throws IllegalArgumentException, IllegalStateException{
+    public final boolean setPropertyValue(int resID, @Database.Dilutes Object newValue, Consumer<Boolean> onComplete) throws IllegalArgumentException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
@@ -603,28 +620,28 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
         if(!isPropertyValid(prop, newValue)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString()));
         if(Objects.equals(prop.value, newValue)) {
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
             return false;
         }
         if(!prop.meta.loads){
             prop.setValue(newValue);
             processUpdate();
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
             return true;
         }
         if(newValue instanceof DatabaseInstance) {
             exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance) newValue);
             processUpdate();
-            onComplete.onCompletion(true);
+            onComplete.accept(true);
             return true;
         }
 
         exchangeInstance(prop, (String)newValue, s -> {
             if(s){
                 processUpdate();
-                onComplete.onCompletion(true);
+                onComplete.accept(true);
             }else{
-                onComplete.onCompletion(false);
+                onComplete.accept(false);
             }
         });
 
@@ -745,29 +762,37 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
-     * Tests if the map is valid for this instance
-     * @param data The property name-value map
-     * @return {@code true} is the data is valid
+     * Gets all properties of the given collection instance
+     * @return The property fields of the instance type
      */
-    public final boolean isDataValid(@Database.Observes Map<String, Object> data){
-        for(Map.Entry<String, Object> ent : data.entrySet()){
-            PropertyWrapper<?,?> prop = properties.get(ent.getKey());
-            if(prop == null) return false;
-            if(!isPropertyValid(prop, ent.getValue())) return false;
+    public static PropertyField<?,?>[] getFields(Database.Collections collection){
+        switch (collection){
+            case NOTIFICATIONS:
+                return Notification.fields;
+            case FACILITIES:
+                return Facility.fields;
+            case EVENTS:
+                return Event.fields;
+            case USERS:
+                return User.fields;
+            case IMAGES:
+                return Image.fields;
+            case EVENT_ASSOCIATIONS:
+                return EventAssociation.fields;
+            default:
+                return new PropertyField[0];
         }
-        return true;
     }
+
 
     /**
      * Tests if the map is valid for this instance
-     * @param data The property resID-value map where resID is the res ID of the property name
-     * @return {@code true} is the data is valid
+     * @param map The property resID-value map where resID is the res ID of the property name
+     * @param collection The collection of the instance
+     * @return The set of all invalid ids
      */
-    public final boolean isDataValidIDs(@Database.Observes Map<Integer, Object> data){
-        for(Map.Entry<Integer, Object> ent : data.entrySet()){
-            if(!isPropertyValid(ent.getKey(),ent.getValue())) return false;
-        }
-        return true;
+    public static Set<Integer> isDataValid(@Database.Observes Map<Integer, Object> map, Database.Collections collection){
+        return isDataValid(map, getFields(collection));
     }
 
     /**
@@ -776,7 +801,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param fields The set of propertyFields to test against
      * @return The set of all invalid ids
      */
-    public static Set<Integer> isDataValid(@Database.Observes Map<Integer, Object> map, PropertyField<?,?>[] fields){
+    static Set<Integer> isDataValid(@Database.Observes Map<Integer, Object> map, PropertyField<?,?>[] fields){
         Set<Integer> ids = new HashSet<>(map.keySet());
         for(PropertyField<?,?> prop : fields){
             if(!map.containsKey(prop.propertyNameID)) continue;
@@ -859,32 +884,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             notifyUpdate(Type.INIT);
             snapshotListener = getDocumentReference().addSnapshotListener(db);
         });
-        /*
-        modifyData(data, successmod -> {
-            if(!successmod){
-                Log.println(Log.DEBUG, "initDataModifyFail", getDocumentID());
-                fullDissolve();
-                onComplete.onInitialization(null, false);
-                initializationListeners.forEach(l -> l.onInitialization(null, false));
-                initializationListeners.clear();
-                return;
-            }
-            Log.println(Log.DEBUG, "initDataModified", getDocumentID());
-            Log.println(Log.DEBUG, "subInitStart", "start");
-            subInitialize((instance, success) -> {
-                isInitialized = success;
-                onComplete.onInitialization(cast(), success);
-                initializationListeners.forEach(l -> l.onInitialization(cast(), success));
-                initializationListeners.clear();
-                notifyUpdate(Type.INIT);
-                if(!success){
-                    fullDissolve();
-                }else{
-                    snapshotListener = getDocumentReference().addSnapshotListener(db);
-                }
-            }, 0);
-        });
-        */
     }
 
     /**
@@ -939,31 +938,86 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
-    final boolean updateDataFromDatabase(@Database.Dilutes Map<String, Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalStateException{
+    final boolean updateDataFromDatabase(@Database.Dilutes Map<String, Object> data, Consumer<Boolean> onComplete) throws IllegalStateException{
         assertNotIllegalState();
         return modifyData(data, success -> {
             notifyUpdate(Type.UPDATE);
-            onComplete.onCompletion(success);
+            onComplete.accept(success);
         });
     }
 
     /**
-     * Updates multiple values and notifies listeners. Then updates the database.
-     * @param data The property name -> value mapping of all fields to be edited
+     * Validates the given data then creates the image and upon success updates the values and notifies listeners. Then updates the database.
+     * Updates the associated image with the new image
+     * @param data The property name id -> value mapping of all fields to be edited
+     * @param image The image
+     * @param locName The name of the location where the image is stored
      * @param onComplete called once complete, true if no errors. If not modifying any instance ids, will be called before return
-     * @return If the data was changed as a result
+     * @return The set of invalid property ids upon validation
+     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
+     * @throws IllegalArgumentException if a key is not one of the available properties to edit or a value is not valid
+     * @throws ClassCastException If a value's type does not match the property type
+     * @see #updateDataFromMap(Map, Consumer)
+     */
+    @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
+    public final Set<Integer> updateDataFromMap(@Database.Dilutes Map<Integer,Object> data, @Nullable Uri image, String locName, Consumer<Boolean> onComplete) throws IllegalStateException, IllegalArgumentException, ClassCastException{
+        assertNotIllegalState();
+        Set<Integer> ids = DatabaseInstance.isDataValid(data, getCollection());
+        if(!ids.isEmpty()){
+            Log.println(Log.DEBUG, "Listener", "skipping udfmi");
+            return ids;
+        }
+
+        db.replaceImage(image, getAssociatedImage(), locName, getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
+            data.put(collection.getAssociatedImagePropertyId(), newImage == null ? "" : newImage.getDocumentID());
+            updateDataFromMap(data, success -> returnSuccess.accept(null, success));
+        }, (_null, success) -> onComplete.accept(success));
+        return ids;
+    }
+
+    /**
+     * Validates the given data then updates the values and notifies listeners. Then updates the database.
+     * @param data The property name id -> value mapping of all fields to be edited
+     * @param onComplete called once complete, true if no errors. If not modifying any instance ids, will be called before return
+     * @return The set of invalid property ids upon validation
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws IllegalArgumentException if a key is not one of the available properties to edit or a value is not valid
      * @throws ClassCastException If a value's type does not match the property type
      */
     @Database.StirsDeep(what = "Old Instances of Instance properties that are modified")
-    public final boolean updateDataFromMap(@Database.Dilutes Map<String,Object> data, Database.Querrier.EmptyListener onComplete) throws IllegalStateException, IllegalArgumentException, ClassCastException{
+    public final Set<Integer> updateDataFromMap(@Database.Dilutes Map<Integer,Object> data, Consumer<Boolean> onComplete) throws IllegalStateException, IllegalArgumentException, ClassCastException{
         assertNotIllegalState();
-        if(!modifyData(data, success -> {
+        Set<Integer> ids = DatabaseInstance.isDataValid(data, getCollection());
+        if(!ids.isEmpty()){
+            Log.println(Log.DEBUG, "Listener", "skipping udfm");
+            for(int i : ids){
+                Log.println(Log.DEBUG, "Listener", "\t"+db.constants.getString(i));
+            }
+            return ids;
+        }
+        modifyData(db.convertIDMapToNames(data), success -> {
             processUpdate();
-            onComplete.onCompletion(success);
-        })) return false;
-        return true;
+            onComplete.accept(success);
+        });
+        return ids;
+    }
+
+    /**
+     * Sets the associated Image instance. This function will create a new reference to the instance.
+     * @param image The new instance
+     * @param onComplete called on completion with if the update was successful
+     * @throws UnsupportedOperationException if the instance type does not have an editable associated image
+     */
+    @Database.StirsDeep(what = "The previous Image")
+    public void setAssociatedImage(@Nullable Uri image, Consumer<Boolean> onComplete) throws UnsupportedOperationException{
+        int id = getCollection().getAssociatedImagePropertyId();
+        if(id == Database.Collections.IS_ITS_OWN_ASSOCIATED_IMAGE || id == Database.Collections.DOES_NOT_HAVE_ASSOCIATED_IMAGE || !isPropertyEditable(id)){
+            db.throwE(new UnsupportedOperationException("This instance does not have an editable associated image"));
+            return;
+        }
+        db.replaceImage(image, getAssociatedImage(), getAssociatedImageLocName(), getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
+            setPropertyInstance(getCollection().getAssociatedImagePropertyId(), newImage);
+        }, (_null, success) -> onComplete.accept(success));
     }
 
     /**
@@ -990,104 +1044,141 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     protected final void processUpdate() throws IllegalStateException{
         notifyUpdate(Database.UpdateListener.Type.UPDATE);
         db.updateDatabase(this);
+        Image assocImage = getAssociatedImage();
+        String assocLocName = getAssociatedImageLocName();
+        if(assocImage != null && assocLocName != null){
+            assocImage.setLocName(assocLocName);
+        }
+    }
+
+    /**
+     * @see #REPLACMENT
+     * @see #HARD_DELETE
+     * @see #CASCADE
+     * @see #ERROR
+     */
+    public enum DeletionType {;
+        /**
+         * If the instance is being deleted because it is being replaced by another version of the instance.
+         */
+        public final static int REPLACMENT = 0b00001;
+        /**
+         * If the instance is being deleted explicitly
+         */
+        public final static int HARD_DELETE = 0b00010;
+        /**
+         * If the instance is being deleted because another instance was deleted
+         */
+        public final static int CASCADE = 0b00100;
+        /**
+         * If the instance is being deleted because a non nullable sub instance was deleted
+         */
+        public final static int UP_FALL = 0b01000;
+        /**
+         * If the instance is being deleted because
+         */
+        public final static int ERROR = 0b10000;
     }
 
     /**
      * Dereferences the instance. Then cascade deletes all cascading properties. Then notifies all listeners that the instance was deleted.
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
      * @param listener called on completion of deletion, returns false if one or more errors occured
      * @see Database#deleteFromDatabase(DatabaseInstance)
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
-    public void deleteInstance(Database.Querrier.EmptyListener listener){
+    public void deleteInstance(int deletionType, Consumer<Boolean> listener){
         if(!isLegalState()) return;
-        requiredFirstDelete(success -> {
+        Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
+        requiredFirstDelete(deletionType, success -> {
             if(!success){
-                listener.onCompletion(false);
+                listener.accept(false);
                 return;
             }
             isDeleted = true;
             db.deleteFromDatabase(this);
-            deleteSubInstances(success2 -> {
+            deleteSubInstances(deletionType, success2 -> {
                 notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
                 fullDissolve();
-                listener.onCompletion(true);
+                listener.accept(true);
             });
         });
-
-
     }
 
     /**
-     * Deletes any sub objects that are not instances.
-     * Called before the instance and sub instances are deleted; they are only deleted if this returns true
+     * Deletes any sub objects that are not instances
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
+     * @param listener Called before the instance and sub instances are deleted; they are only deleted if this returns true
      */
-    protected void requiredFirstDelete(Database.Querrier.EmptyListener listener){
-        listener.onCompletion(true);
+    protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener){
+        listener.accept(true);
     }
 
     /**
      * Deletes all subinstances that are cascaded
+     * @param deletionType The {@link DeletionType} reason this instance is being deleted
      * @param listener called on completion of deletion
      */
     @Database.StirsDeep(what = "Sub instances")
-    private void deleteSubInstances(Database.Querrier.EmptyListener listener){
+    private void deleteSubInstances(int deletionType, Consumer<Boolean> listener){
         List<Pair<Query, Database.Collections>> queries = subInstanceCascadeDeleteQuery();
         //Have I ever mentioned that I hate async
-        Database.Querrier.EmptyListener l2 = new Database.Querrier.EmptyListener() {
+        Consumer<Boolean> l2 = new Consumer<Boolean>() {
             private int i = -1;
             private boolean s;
             @Override
-            public void onCompletion(boolean success) {
+            public void accept(Boolean success) {
                 s = s || success;
                 i ++;
-                if(i > queries.size()){
-                    listener.onCompletion(s);
+                if(i >= queries.size()){
+                    listener.accept(s);
                     return;
                 }
                 Pair<Query, Database.Collections> qc = queries.get(i);
                 DatabaseQuery<?> dq = new DatabaseQuery<>(db, qc.first, qc.second, null);
                 dq.refreshData((query, success2) -> {
-                    if(!success) this.onCompletion(false);
-                    Database.Querrier.EmptyListener thiser = this;
-                    Database.Querrier.EmptyListener l3 = new Database.Querrier.EmptyListener() {
+                    if(!success) this.accept(false);
+                    Consumer<Boolean> thiser = this;
+                    Consumer<Boolean> l3 = new Consumer<Boolean>() {
                         private int j = -1;
                         private boolean s2 = true;
                         @Override
-                        public void onCompletion(boolean success) {
+                        public void accept(Boolean success) {
                             s2 = s2 || success;
                             j++;
                             if(j > dq.getCurrentInstances().size()){
                                 dq.dissolve();
-                                thiser.onCompletion(s2);
+                                thiser.accept(s2);
                                 return;
                             }
-                            dq.getCurrentInstances().get(j).deleteInstance(this);
+                            dq.getCurrentInstances().get(j).deleteInstance(deletionType | DeletionType.CASCADE, this);
                         }
                     };
                 });
             }
         };
 
-        Database.Querrier.EmptyListener l1 = new Database.Querrier.EmptyListener() {
+        Consumer<Boolean> l1 = new Consumer<Boolean>() {
             private int i = -1;
             private boolean s= true;
             @Override
-            public void onCompletion(boolean success) {
+            public void accept(Boolean success) {
                 s = s || success;
                 i ++;
-                if(i > iproperties.size()){
-                    l2.onCompletion(s);
+                if(i >= iproperties.size()){
+                    l2.accept(s);
                     return;
                 }
                 PropertyWrapper<?,?> p = properties.get(iproperties.get(i));
                 assert p != null;
                 InstancePropertyWrapper<?> iprop = p.iS();
                 if(iprop.instance!=null && iprop.meta.cascadeDelete){
-                    iprop.instance.deleteInstance(this);
+                    iprop.instance.deleteInstance(deletionType | DeletionType.CASCADE, this);
                 }
             }
         };
+        l1.accept(false);
     }
 
     /**
@@ -1109,10 +1200,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      *     If the document did not exist, a new document is created
      * </p>
      * @return the database reference to this instance
-     * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @see Database.Collections#getCollection(Database)
      */
-    final DocumentReference getDocumentReference() throws IllegalStateException{
+    final DocumentReference getDocumentReference() {
         return collection.getDocument(db, documentID);
     }
 
@@ -1218,11 +1308,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             }
 
             @Override
-            public Image getAssociatedImage() {
-                return null;
-            }
-
-            @Override
             protected NullInstance cast() {
                 throw new UnsupportedOperationException();
             }
@@ -1260,6 +1345,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
          */
         @SuppressWarnings("unchecked")
         public void setValue(@Database.Observes Object value) throws ClassCastException{
+            if(!meta.isValid.test(value)) throw new ClassCastException("Invalid value: " + value + " for property id " + meta.propertyNameID);
             this.value = (V) value;
         }
 

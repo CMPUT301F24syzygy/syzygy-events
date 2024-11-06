@@ -1,145 +1,204 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.SignupActivity">
+    android:paddingBottom="?attr/actionBarSize">
+
 
     <ImageView
-        android:id="@+id/signup_profile"
-        android:layout_width="256px"
-        android:layout_height="256px"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_background" />
-
-    <EditText
-        android:id="@+id/signup_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/signup_image_img"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
-        android:hint="name"
-        android:inputType="textPersonName"
-        android:maxLength="40"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_dashboard_black_24dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_profile">
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </EditText>
-
-    <EditText
-        android:id="@+id/signup_phone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:hint="phone"
-        android:inputType="phone"
-        android:maxLength="10"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_name">
-
-    </EditText>
-
-    <EditText
-        android:id="@+id/signup_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:hint="email"
-        android:inputType="textEmailAddress"
-        android:maxLength="300"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_phone">
-
-    </EditText>
-
-    <EditText
-        android:id="@+id/signup_bio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:gravity="start|top"
-        android:hint="bio"
-        android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-        android:lines="5"
-        android:maxLength="300"
-        android:scrollbars="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_email">
-
-    </EditText>
-
-    <CheckBox
-        android:id="@+id/signup_adminNotifications"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Admin Notifications"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_bio" />
-
-    <CheckBox
-        android:id="@+id/signup_orgNotifications"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Organization Notifications"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_adminNotifications" />
 
     <Button
-        android:id="@+id/signup_button_submit"
+        android:id="@+id/signup_edit_image_button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/add_image_button"
+        app:layout_constraintEnd_toEndOf="@+id/signup_image_img"
+        app:layout_constraintStart_toStartOf="@+id/signup_image_img"
+        app:layout_constraintTop_toBottomOf="@+id/signup_image_img" />
+
+    <Button
+        android:id="@+id/signup_remove_image_button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:text="@string/remove_image_button"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/signup_image_img"
+        app:layout_constraintStart_toStartOf="@+id/signup_image_img"
+        app:layout_constraintTop_toBottomOf="@+id/signup_edit_image_button" />
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/signup_name_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="60dp"
+        app:expandedHintEnabled="false"
+        app:layout_constraintStart_toEndOf="@+id/signup_image_img"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/signup_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="top|start"
+            android:hint="Name"
+            android:inputType="textPersonName|textMultiLine"
+            android:lines="2"
+            android:scrollbars="vertical"
+            android:maxLength="20"
+            android:textAlignment="gravity"
+            android:textSize="18sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/signup_phone_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        app:expandedHintEnabled="false"
+        app:layout_constraintStart_toEndOf="@+id/signup_image_img"
+        app:layout_constraintTop_toBottomOf="@+id/signup_name_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/signup_phone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="top|start"
+            android:hint="Phone Number"
+            android:inputType="number"
+            android:lines="1"
+            android:maxLength="10"
+            android:textAlignment="gravity"
+            android:textSize="18sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <CheckBox
+        android:id="@+id/signup_admin_notifications_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/opt_in_admin_notifications_checkbox"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_bio_layout" />
+
+    <CheckBox
+        android:id="@+id/signup_org_notifications_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="44dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/opt_in_organizer_notifications_checkbox"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_bio_layout" />
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/signup_email_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:hint="Email"
+        app:expandedHintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_edit_image_button">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/signup_email"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="top|start"
+            android:inputType="textEmailAddress"
+            android:lines="1"
+            android:maxLength="30"
+            android:textAlignment="gravity"
+            android:textSize="18sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/signup_bio_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Bio"
+        app:expandedHintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_email_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/signup_bio"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="top|start"
+            android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
+            android:lines="5"
+            android:maxLength="200"
+            android:scrollbars="vertical"
+            android:textAlignment="gravity"
+            android:textSize="18sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <Button
+        android:id="@+id/signup_submit_button"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:text="Create Account"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent" />
 
-    </Button>
 
     <FrameLayout
         android:id="@+id/progressBar"
-        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:alpha="0.4"
         android:background="#000000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:visibility="gone">
 
         <ProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:indeterminate="true" />
     </FrameLayout>
-
-    <Button
-        android:id="@+id/signup_editImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Edit Image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/signup_profile"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/signup_removeImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Remove Image"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/signup_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/signup_profile"
-        app:layout_constraintTop_toBottomOf="@+id/signup_editImage" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
