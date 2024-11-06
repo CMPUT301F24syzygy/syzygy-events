@@ -1,5 +1,7 @@
 package com.syzygy.events.ui;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -128,6 +130,14 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
 
     public void navigateUp() {
         navController.navigateUp();
+    }
+
+    public void eventError() {
+        navController.navigateUp();
+        Dialog dialog = new AlertDialog.Builder(this)
+                .setMessage("Event does not exist.")
+                .create();
+        dialog.show();
     }
 
 

@@ -41,7 +41,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
 
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
-                activity.navigateUp();
+                activity.eventError();
                 return;
             }
 
@@ -87,18 +87,25 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
 
             binding.eventJoinWaitlistButton.setOnClickListener(view -> {
                 if (event.getRequiresLocation()) {
-                    app.getLocation((l) -> {
-                        if (l != null) {
-                            GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
-                            event.addUserToWaitlist(app.getUser(), geo, (e, a, s) -> {
-                                updateView();
-                            });
-                        } else {
-                            Dialog dialog = new AlertDialog.Builder(getContext())
-                                    .setMessage(R.string.failed_get_location).create();
-                            dialog.show();
-                        }
-                    });
+                    Dialog requiresGeoWarning = new AlertDialog.Builder(getContext())
+                            .setTitle("TODO")
+                            .setNegativeButton("cancel", null)
+                            .setPositiveButton("agree", (dialogInterface, i) -> {
+                                app.getLocation((l) -> {
+                                    if (l != null) {
+                                        GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
+                                        event.addUserToWaitlist(app.getUser(), geo, (e, a, s) -> {
+                                            updateView();
+                                        });
+                                    } else {
+                                        Dialog geoFailedDialog = new AlertDialog.Builder(getContext())
+                                                .setMessage(R.string.failed_get_location).create();
+                                        geoFailedDialog.show();
+                                    }
+                                });
+                            })
+                            .create();
+                    requiresGeoWarning.show();
                 } else {
                     event.addUserToWaitlist(app.getUser(), null, (e, a, s) -> {
                         updateView();
@@ -178,7 +185,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
             EntrantActivity activity = (EntrantActivity)getActivity();
-            activity.navigateUp();
+            activity.eventError();
             return;
         }
         updateView();
