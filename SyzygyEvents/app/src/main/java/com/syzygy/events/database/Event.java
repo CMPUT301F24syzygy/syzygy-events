@@ -699,7 +699,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_qrHash, o -> o instanceof String, true),
             new PropertyField<Double, PropertyField.NullInstance>(R.string.database_event_price, o -> o instanceof Double && ((Double) o) >= 0, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_createdTime, o -> o instanceof Timestamp, false),
-            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp || o == null, false),
+            new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_openDate, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_closedDate, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_start, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_end, o -> o instanceof Timestamp, false),
@@ -744,7 +744,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                        Long capacity,
                                        Long waitlistCapacity,
                                        Double price,
-                                       @Nullable Timestamp openRegistrationDate,
+                                       Timestamp openRegistrationDate,
                                        Timestamp closedRegistrationDate,
                                        Timestamp startDate,
                                        Timestamp endDate,
@@ -752,7 +752,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                                        Database.InitializationListener<Event> listener
     ){
         Timestamp now = Timestamp.now();
-        openRegistrationDate = openRegistrationDate == null ? now : openRegistrationDate;
         String id = Database.Collections.EVENTS.getNewID(db);
 
         Map<Integer,Object> map = new HashMap<>();

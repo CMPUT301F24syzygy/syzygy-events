@@ -77,18 +77,18 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
             }
         });
         if(invalidIds.isEmpty()) return;
-
+        binding.progressBar.setVisibility(View.GONE);
         if(invalidIds.contains(R.string.database_user_name)){
-            binding.signupName.setError("Bad");
+            binding.signupName.setError(getString(R.string.val_create_user_name));
         }
         if(invalidIds.contains(R.string.database_user_phoneNumber)){
-            binding.signupPhone.setError("Bad");
+            binding.signupPhone.setError(getString(R.string.val_create_user_phoneNumber));
         }
         if(invalidIds.contains(R.string.database_user_email)){
-            binding.signupEmail.setError("Bad");
+            binding.signupEmail.setError(getString(R.string.val_create_user_email));
         }
         if(invalidIds.contains(R.string.database_user_description)){
-            binding.signupBio.setError("Bad");
+            binding.signupBio.setError(getString(R.string.val_create_user_description));
         }
         Toast.makeText(this, "Invalid", Toast.LENGTH_SHORT).show();
     }

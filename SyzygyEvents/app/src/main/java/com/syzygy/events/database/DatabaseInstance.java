@@ -1052,7 +1052,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     }
 
     /**
-     * @see #REPLACMENT
+     * @see #REPLACEMENT
      * @see #HARD_DELETE
      * @see #CASCADE
      * @see #ERROR
@@ -1061,7 +1061,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         /**
          * If the instance is being deleted because it is being replaced by another version of the instance.
          */
-        public final static int REPLACMENT = 0b00001;
+        public final static int REPLACEMENT = 0b00001;
         /**
          * If the instance is being deleted explicitly
          */

@@ -2,6 +2,7 @@ package com.syzygy.events.ui.organizer;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,9 @@ import com.syzygy.events.ui.OrganizerActivity;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -119,8 +123,36 @@ public class OrganizerCreateEventFragment extends Fragment {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         String startDay = repeat ? binding.eventCreateStartDate.getText().toString() : binding.eventCreateDate.getText().toString();
 
+        String openDay = binding.eventCreateOpenDate.getText().toString();
+        String closeDay = binding.eventCreateCloseDate.getText().toString();
+        try {
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
+            Timestamp testDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 23:59")));
+            if(Timestamp.now().compareTo(testDate) >= 0){
+                openDate = null;
+            }
+        } catch (ParseException | NullPointerException ex) {
+            openDate = null;
+        }
+
+        try {
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
+            if(openDate != null && openDate.compareTo(closeDate) >= 0){
+                closeDate = null;
+            }
+        } catch (ParseException | NullPointerException ex) {
+            closeDate = null;
+        }
+
         try {
             startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 12:01")));
+            if(closeDate != null){
+                if(closeDate.compareTo(startDate) >= 0){
+                    startDate = null;
+                }
+            }else if(openDate != null && openDate.compareTo(startDate) >= 0){
+                startDate = null;
+            }
         } catch (ParseException | NullPointerException ex) {
             startDate = null;
         }
@@ -128,22 +160,19 @@ public class OrganizerCreateEventFragment extends Fragment {
         String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
         try {
             endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " 23:59")));
+            if(startDate != null) {
+                if(startDate.compareTo(endDate) >= 0){
+                    endDate = null;
+                }
+            }else if(closeDate != null){
+                if(closeDate.compareTo(endDate) >= 0){
+                    endDate = null;
+                }
+            }else if(openDate != null && openDate.compareTo(endDate) >= 0){
+                endDate = null;
+            }
         } catch (ParseException | NullPointerException ex) {
             endDate = null;
-        }
-
-        String openDay = binding.eventCreateOpenDate.getText().toString();
-        String closeDay = binding.eventCreateCloseDate.getText().toString();
-        try {
-            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
-        } catch (ParseException | NullPointerException ex) {
-            openDate = null;
-        }
-
-        try {
-            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
-        } catch (ParseException | NullPointerException ex) {
-            closeDate = null;
         }
 
         Long dates;
@@ -176,35 +205,35 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.progressBar.setVisibility(View.GONE);
 
         if (invalidIds.contains(R.string.database_event_title)) {
-            binding.eventCreateName.setError("Bad");
+            binding.eventCreateName.setError(getString(R.string.val_create_event_title));
         }
         if (invalidIds.contains(R.string.database_event_description)) {
-            binding.eventCreateBio.setError("Bad");
+            binding.eventCreateBio.setError(getString(R.string.val_create_event_description));
         }
         if (invalidIds.contains(R.string.database_event_capacity)) {
-            binding.eventCreateCapacity.setError("Bad");
+            binding.eventCreateCapacity.setError(getString(R.string.val_create_event_capacity));
         }
         if (invalidIds.contains(R.string.database_event_waitlist)) {
-            binding.eventCreateWaitlistCap.setError("Bad");
+            binding.eventCreateWaitlistCap.setError(getString(R.string.val_create_event_waitlist_cap));
         }
         if (invalidIds.contains(R.string.database_event_price)) {
-            binding.eventCreatePrice.setError("Bad");
+            binding.eventCreatePrice.setError(getString(R.string.val_create_event_price));
         }
         if (invalidIds.contains(R.string.database_event_openDate)) {
-            binding.eventCreateOpenDate.setError("Badopen");
+            binding.eventCreateOpenDate.setError(getString(R.string.val_create_event_open));
         }
         if (invalidIds.contains(R.string.database_event_closedDate)) {
-            binding.eventCreateCloseDate.setError("Badclose");
+            binding.eventCreateCloseDate.setError(getString(R.string.val_create_event_closed));
         }
         if (invalidIds.contains(R.string.database_event_start)) {
             if (repeat) {
-                binding.eventCreateStartDate.setError("Bad");
+                binding.eventCreateStartDate.setError(getString(R.string.val_create_event_start));
             } else {
-                binding.eventCreateDate.setError("Bad");
+                binding.eventCreateDate.setError(getString(R.string.val_create_event_date));
             }
         }
         if (invalidIds.contains(R.string.database_event_end)) {
-            binding.eventCreateEndDate.setError("Bad");
+            binding.eventCreateEndDate.setError(getString(R.string.val_create_event_end));
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
