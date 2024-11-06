@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -15,6 +16,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.User;
 
 import org.junit.After;
@@ -67,7 +69,7 @@ public class UserTest {
             CountDownLatch latch = new CountDownLatch(1);
 
             //create user
-            User.NewInstance(testDB, "testDeviceId1", "testName", "TEST", "", "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+            User.NewInstance(testDB, "testDeviceId1", "testName", "TEST", Uri.parse(""), "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
                     testuser = instance;
                     // Indicate that the operation is complete
@@ -87,8 +89,8 @@ public class UserTest {
     }
 
     @AfterClass
-    public static void closeDb() throws IOException {
-        testuser.deleteInstance(success -> {});
+    public static void closeDb() {
+        testuser.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {});
     }
 
 
