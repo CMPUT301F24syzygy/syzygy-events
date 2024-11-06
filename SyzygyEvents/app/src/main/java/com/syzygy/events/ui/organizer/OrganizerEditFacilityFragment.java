@@ -82,22 +82,23 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         String user = app.getUser().getDocumentID();
 
         Set<Integer> invalidIds;
+        binding.progressBar.setVisibility(View.VISIBLE);
         if(selectedImage){
             invalidIds = facility.update(name, loc, address, bio, image, this::onUpdateInstance);
         }else{
             invalidIds = facility.update(name, loc, address, bio, this::onUpdateInstance);
         }
 
-        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.progressBar.setVisibility(View.GONE);
 
 
         if(invalidIds.isEmpty()) return;
 
         if(invalidIds.contains(R.string.database_fac_name)){
-            binding.editFacilityName.setError("Bad");
+            binding.editFacilityName.setError(getString(R.string.val_create_facility_name));
         }
         if(invalidIds.contains(R.string.database_fac_description)){
-            binding.editFacilityDescription.setError("Bad");
+            binding.editFacilityDescription.setError(getString(R.string.val_create_facility_description));
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
         binding.progressBar.setVisibility(View.GONE);

@@ -328,7 +328,7 @@ public class Image extends DatabaseInstance<Image> {
      */
     public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
-        loadedPicasso.placeholder(R.drawable.transparent).error(R.drawable.transparent);
+        loadedPicasso.placeholder(R.drawable.transparent).error(R.drawable.error);
         option.modifyImage(loadedPicasso);
         return loadedPicasso;
     }
@@ -381,6 +381,7 @@ public class Image extends DatabaseInstance<Image> {
          */
         public void modifyImage(RequestCreator img){
             if(width >= 0 && height >= 0){
+                img.centerCrop();
                 img.resize(width, height);
             }
             if(isCircle){

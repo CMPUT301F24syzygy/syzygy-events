@@ -83,13 +83,14 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
                 binding.progressBar.setVisibility(View.GONE);
             }
         });
+        binding.progressBar.setVisibility(View.GONE);
         if(invalidIds.isEmpty()) return;
 
         if(invalidIds.contains(R.string.database_fac_name)){
-            binding.createFacilityName.setError("Bad");
+            binding.createFacilityName.setError(getString(R.string.val_create_facility_name));
         }
         if(invalidIds.contains(R.string.database_fac_description)){
-            binding.createFacilityDescription.setError("Bad");
+            binding.createFacilityDescription.setError(getString(R.string.val_create_facility_description));
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }

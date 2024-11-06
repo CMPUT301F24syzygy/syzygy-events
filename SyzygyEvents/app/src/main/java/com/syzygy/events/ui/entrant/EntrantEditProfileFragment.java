@@ -71,19 +71,21 @@ public class EntrantEditProfileFragment extends Fragment {
             invalidIds = user.update(name, bio, email, phone, org, admin, user.isAdmin(), this::onUpdateInstance);
         }
 
+        binding.progressBar.setVisibility(View.GONE);
+
         if(invalidIds.isEmpty()) return;
 
         if(invalidIds.contains(R.string.database_user_name)){
-            binding.entrantEditName.setError("Bad");
+            binding.entrantEditName.setError(getString(R.string.val_create_user_name));
         }
         if(invalidIds.contains(R.string.database_user_phoneNumber)){
-            binding.entrantEditPhone.setError("Bad");
+            binding.entrantEditPhone.setError(getString(R.string.val_create_user_phoneNumber));
         }
         if(invalidIds.contains(R.string.database_user_email)){
-            binding.entrantEditEmail.setError("Bad");
+            binding.entrantEditEmail.setError(getString(R.string.val_create_user_email));
         }
         if(invalidIds.contains(R.string.database_user_description)){
-            binding.entrantEditBio.setError("Bad");
+            binding.entrantEditBio.setError(getString(R.string.val_create_user_description));
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
         binding.progressBar.setVisibility(View.GONE);
