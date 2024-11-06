@@ -110,10 +110,12 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (intentResult != null && intentResult.getContents() != null) {
             openEvent(intentResult.getContents());
         }
+
     }
     public void openEditProfile() {
         navController.navigate(R.id.nav_entrant_edit_secondary);
@@ -138,6 +140,8 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
                 .setMessage("Event does not exist.")
                 .create();
         dialog.show();
+
+
     }
 
 

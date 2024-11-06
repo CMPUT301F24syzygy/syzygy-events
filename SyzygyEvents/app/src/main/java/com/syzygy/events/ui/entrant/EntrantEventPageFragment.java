@@ -117,6 +117,8 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         });
 
         return binding.getRoot();
+
+
     }
 
 
@@ -125,7 +127,9 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         if (association != null) {
             association.dissolve(this);
         }
-        event.dissolve(this);
+        if (event != null) {
+            event.dissolve(this);
+        }
         super.onDestroyView();
         binding = null;
     }

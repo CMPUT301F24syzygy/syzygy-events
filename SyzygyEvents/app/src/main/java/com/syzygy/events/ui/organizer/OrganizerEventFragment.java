@@ -282,38 +282,25 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
 
     private void setLotteryPopupView(Dialog dialog) {
 
-        TextView message_enrolled_full = dialog.findViewById(R.id.lottery_full_enrolled_message);
-        TextView message_invited_full = dialog.findViewById(R.id.lottery_full_invited_message);
+        TextView message_full = dialog.findViewById(R.id.lottery_full_message);
         TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
         Button button = dialog.findViewById(R.id.lottery_run_button);
 
-        message_enrolled_full.setVisibility(View.GONE);
+        message_full.setVisibility(View.GONE);
         message_waitlist_empty.setVisibility(View.GONE);
         button.setVisibility(View.GONE);
-
-        TextView enrolled = dialog.findViewById(R.id.lottery_enrolled_text);
-        enrolled.setText(getString(R.string.lottery_enrolled_count, event.getCurrentEnrolled()));
-
-        TextView invited = dialog.findViewById(R.id.lottery_invited_text);
-        //invited.setText(getString(R.string.lottery_invited_count, event.getCurrentInvited()));
 
         TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
         waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
 
-        TextView capacity = dialog.findViewById(R.id.lottery_capacity_text);
-        capacity.setText(getString(R.string.lottery_capacity, event.getCapacity()));
-
         TextView open = dialog.findViewById(R.id.lottery_open_text);
-        //int n = event.getCapacity() - event.getCurrentEnrolled() - event.getCurrentInvited();
-        //open.setText((getString(R.string.lottery_waitlist_count, n)));
+        open.setText((getString(R.string.lottery_waitlist_count, event.getCapacity() - event.getCurrentEnrolled())));
 
         if (event.getCurrentEnrolled() == event.getCapacity()) {
-            message_enrolled_full.setVisibility(View.VISIBLE);
+            message_full.setVisibility(View.VISIBLE);
         } else if (event.getCurrentWaitlist() == 0) {
             message_waitlist_empty.setVisibility(View.VISIBLE);
-        } //else if (event.getCurrentEnrolled() + event.getCurrentInvited() == event.getCapacity()) {
-            //message_waitlist_empty.setVisibility(View.VISIBLE);
-        //}
+        }
         else {
             button.setVisibility(View.VISIBLE);
         }
