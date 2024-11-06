@@ -290,10 +290,10 @@ public class User extends DatabaseInstance<User> {
                                    Boolean isAdmin,
                                    Database.InitializationListener<User> listener
     ){
+
         if(deviceID == null || deviceID.isBlank()){
             db.throwE(new IllegalArgumentException("Illegal device ID: " + deviceID));
             return Set.of(-1);
-        }
 
         Timestamp createdTime = Timestamp.now();
 

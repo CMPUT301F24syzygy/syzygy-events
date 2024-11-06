@@ -78,6 +78,12 @@ public class Database implements EventListener<DocumentSnapshot> {
         this.constants = constants;
     }
 
+    public Database(@NonNull Resources constants, FirebaseFirestore db, StorageReference storage) {
+        this.constants = constants;
+        this.db = db;
+        this.storage = storage;
+    }
+
     public void setConstants(@NonNull Resources constants){
         this.constants = constants;
     }
@@ -641,7 +647,9 @@ public class Database implements EventListener<DocumentSnapshot> {
     /**
      * Called to cleanup the database
      */
-    public void cleanup(){};
+    public void cleanup(){
+
+    };
 
 
     /**
