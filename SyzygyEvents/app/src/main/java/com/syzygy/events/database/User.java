@@ -260,6 +260,9 @@ public class User extends DatabaseInstance<User> {
     ){
         Map<Integer,Object> map = createDataMap(name, description, profileImageID, facilityID, email, phoneNumber, organizerNotifications, adminNotifications, isAdmin, Timestamp.now());
         if(!(validateDeviceID(deviceID) && validateDataMap(map).isEmpty())){
+            if(!(validateDeviceID(deviceID))) {
+                System.out.println("Invalid Device id");
+            }
             listener.onInitialization(null, false);
             return;
         }
