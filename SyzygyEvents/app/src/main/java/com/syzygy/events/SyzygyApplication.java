@@ -49,6 +49,8 @@ import java.util.function.Consumer;
 
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
 
+    public static final String SYSTEM_ACCOUNT_ID = "0";
+
     private static final int LOCATION_REQUEST_CODE = 359;
 
     private Database db;
@@ -74,10 +76,10 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             switchToActivity(success ? EntrantActivity.class : SignupActivity.class);
         });
 
-        Image.loadAsDrawable(Image.formatImage(R.drawable.penguin_blue, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
+        Image.loadAsDrawable(Image.formatImage(R.drawable.default_user, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
             menuAdminIcon = d;
         });
-        Image.loadAsDrawable(Image.formatImage(R.drawable.penguin_blue, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
+        Image.loadAsDrawable(Image.formatImage(R.drawable.create_facility, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
             menuAddFacilityIcon = d;
         });
 
@@ -92,11 +94,11 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     public void loadMenuIcon(Menu menu){
         Class<? extends SyzygyActivity> clazz = currentActivity.getClass();
         if(clazz == EntrantActivity.class){
-            Image.getFormatedAssociatedImageAsDrawable(getUser(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+            Image.getFormatedAssociatedImageAsDrawable(getUser(), Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
                 menu.getItem(0).setIcon(d);
             });
         }else if(clazz == OrganizerActivity.class){
-            Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+            Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
                 menu.getItem(0).setIcon(d);
             });
         }else if(clazz == AdminActivity.class){
@@ -109,10 +111,10 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      * @param menu The menu
      */
     public void loadMenuItemIcons(Menu menu){
-        Image.getFormatedAssociatedImageAsDrawable(getUser(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+        Image.getFormatedAssociatedImageAsDrawable(getUser(), Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
             menu.findItem(R.id.entrant_item).setIcon(d);
         });
-        Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+        Image.getFormatedAssociatedImageAsDrawable(getUser().getFacility(), Database.Collections.FACILITIES, Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
             menu.findItem(R.id.organizer_item).setIcon(d);
         });
         menu.findItem(R.id.admin_item).setIcon(menuAdminIcon);

@@ -23,6 +23,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragSignupOrganizerBinding;
@@ -108,7 +109,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
+            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
             binding.createFacilityEditImage.setText(R.string.add_image_button);
             binding.createFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{

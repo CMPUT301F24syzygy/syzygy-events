@@ -6,6 +6,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyApplication;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -271,7 +272,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param subject The subject of the notification
          * @param body The body of the notification
          * @param attachEvent If the event should be attached to the notification
-         * @param fromOrganizer If the even should be sent from the organizer
+         * @param fromOrganizer If the notification should be sent from the organizer
          * @param listener The listener that is called with the notification result upon completion.
          *                 Only the {@code onSuccess} is called. Ownership is passed on to the caller
          * @see NotificationResult
@@ -305,11 +306,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
 
                     //Send notification
                     Notification.NewInstance(db,
-                            db.constants.getString(R.string.notification_lottery_chosen_subject),
-                            db.constants.getString(R.string.notification_lottery_chosen_body),
+                            subject,
+                            body,
                             attachEvent ? e.getEventID() : "",
                             e.getUserID(),
-                            fromOrganizer ? e.getEvent().getFacility().getOrganizerID() : "0",
+                            fromOrganizer ? e.getEvent().getFacility().getOrganizerID() : SyzygyApplication.SYSTEM_ACCOUNT_ID,
                             this
                     );
                 }

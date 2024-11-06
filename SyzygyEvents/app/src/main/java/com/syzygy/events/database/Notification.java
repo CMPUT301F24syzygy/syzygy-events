@@ -22,6 +22,8 @@ import java.util.Set;
 @Database.Dissovable
 public class Notification extends DatabaseInstance<Notification> {
 
+
+
     /**
      * Checks to make sure the generic type is the type of this instance
      *

@@ -15,6 +15,7 @@ import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragOrgCreateEventBinding;
@@ -71,7 +72,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         image = uri;
         if (image == null) {
             binding.eventCreateEditPosterButton.setText(R.string.add_poster_button);
-            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
+            Image.formatDefaultImage(Database.Collections.EVENTS, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
             binding.eventCreateRemovePosterButton.setVisibility(View.INVISIBLE);
         } else {
             binding.eventCreateEditPosterButton.setText(R.string.change_poster_button);

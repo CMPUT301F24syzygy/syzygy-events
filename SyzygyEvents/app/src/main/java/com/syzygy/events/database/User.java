@@ -250,7 +250,7 @@ public class User extends DatabaseInstance<User> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_description, o -> o instanceof String, true),
             new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
             new PropertyField<String, Facility>(R.string.database_user_facilityID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank() && EmailValidator.getInstance(true).isValid((String)o), true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank() && EmailValidator.getInstance().isValid((String)o), true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String && (((String)o).length() >= 7 || ((String)o).isBlank()), true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_orgNotifications, o -> o instanceof Boolean, true),

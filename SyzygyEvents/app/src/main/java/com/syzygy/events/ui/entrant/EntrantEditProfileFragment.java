@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragEntrantEditProfileBinding;
@@ -48,6 +49,7 @@ public class EntrantEditProfileFragment extends Fragment {
         binding.entrantEditRemoveImage.setOnClickListener(view -> setImage(null));
 
         binding.entrantEditRemoveImage.setVisibility(user.getProfileImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.entrantEditEditImage.setText(user.getProfileImage() != null ? R.string.change_image_button : R.string.add_image_button);
 
         return binding.getRoot();
     }

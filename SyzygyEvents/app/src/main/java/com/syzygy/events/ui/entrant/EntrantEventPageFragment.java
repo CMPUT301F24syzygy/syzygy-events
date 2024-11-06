@@ -56,6 +56,11 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
+            binding.capacityInfoText.setText("Capacity: "+ event.getCapacity());
+            if(event.getWaitlistCapacity() > 0){
+                binding.waitlistCapacityInfoText.setText("Waitlist Limit: " + event.getWaitlistCapacity());
+                binding.waitlistCapacityInfoText.setVisibility(View.VISIBLE);
+            }
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name_text);
             facility_name.setText(event.getFacility().getName());
@@ -74,11 +79,11 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             });
 
             binding.eventExitWaitlistButton.setOnClickListener(view -> {
-                association.setStatus(R.string.event_assoc_status_cancelled);
+                deleteAssociation();
             });
 
             binding.buttonReject.setOnClickListener(view -> {
-                association.setStatus(R.string.event_assoc_status_cancelled);
+                deleteAssociation();
             });
 
             binding.buttonAccept.setOnClickListener(view -> {
@@ -185,12 +190,23 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         }
     }
 
+    private void deleteAssociation(){
+        association.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
+            if(!success){
+                ((EntrantActivity)getActivity()).eventError();
+            }
+        });
+    }
+
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
             EntrantActivity activity = (EntrantActivity)getActivity();
             activity.eventError();
             return;
+        }
+        if(!association.isLegalState()){
+            association = null;
         }
         updateView();
     }
