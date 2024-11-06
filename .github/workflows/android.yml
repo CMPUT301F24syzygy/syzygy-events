@@ -22,7 +22,10 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x SyzygyEvents/gradlew
+
     - name: Build with Gradle
-      run: ./SyzygyEvents/gradlew build
+      working-directory: ./SyzygyEvents
+      run: ./gradlew build
+      
     - name: Run Unit Tests
       run: ./gradlew test
