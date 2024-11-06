@@ -10,6 +10,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./SyzygyEvents
 
     steps:
     - uses: actions/checkout@v4
@@ -19,13 +22,31 @@ jobs:
         java-version: 17
         distribution: "temurin"
 
+    - name: Access MAPS_API_KEY
+      env:
+        MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+      run: echo MAPS_API_KEY=\"$MAPS_API_KEY\" > ./secrets.properties
+
+    - name: Access FIREBASE_TEST_API_KEY
+      env:
+        FIREBASE_TEST_API_KEY: ${{ secrets.FIREBASE_TEST_API_KEY }}
+      run: echo FIREBASE_TEST_API_KEY=\"$FIREBASE_TEST_API_KEY\" > ./secrets.properties
+      
+    - name: Access FIREBASE_TEST_APPLICATION_ID
+      env:
+        FIREBASE_TEST_APPLICATION_ID: ${{ secrets.FIREBASE_TEST_APPLICATION_ID }}
+      run: echo FIREBASE_TEST_APPLICATION_ID=\"$FIREBASE_TEST_APPLICATION_ID\" > ./secrets.properties
+
+    - name: Access FIREBASE_PROJECT_ID
+      env:
+        FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      run: echo FIREBASE_PROJECT_ID=\"$FIREBASE_PROJECT_ID\" > ./secrets.properties
+
     - name: Grant execute permission for gradlew
-      run: chmod +x SyzygyEvents/gradlew
+      run: chmod +x gradlew
 
     - name: Build with Gradle
-      working-directory: ./SyzygyEvents
       run: ./gradlew build
       
     - name: Run Unit Tests
-      working-directory: ./SyzygyEvents
       run: ./gradlew test
