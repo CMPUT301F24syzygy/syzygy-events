@@ -155,7 +155,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         String openDay = binding.eventCreateOpenDate.getText().toString();
         String closeDay = binding.eventCreateCloseDate.getText().toString();
         try {
-            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 00:03")));
             Timestamp testDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 23:59")));
             if(Timestamp.now().compareTo(testDate) >= 0){
                 openDate = null;
@@ -165,7 +165,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
 
         try {
-            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 00:02")));
             if(openDate != null && openDate.compareTo(closeDate) >= 0){
                 closeDate = null;
             }
@@ -174,7 +174,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
 
         try {
-            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 12:01")));
+            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 00:01")));
             if(closeDate != null){
                 if(closeDate.compareTo(startDate) >= 0){
                     startDate = null;
