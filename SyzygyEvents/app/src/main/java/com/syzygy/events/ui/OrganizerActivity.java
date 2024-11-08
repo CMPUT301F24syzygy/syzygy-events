@@ -1,40 +1,32 @@
 package com.syzygy.events.ui;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.database.Event;
-import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
 
-public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
+/**
+ * The activity that handles all fragments that are visible in the organizer view.
+ */
+public class OrganizerActivity extends SyzygyActivity {
 
     private ActivityOrganizerBinding organizerBinding;
-    private NavController navController;
-    private Database database;
+    /**
+     * The currently selected event
+     */
     private String eventID;
 
     @Override
@@ -62,13 +54,6 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
             }
         });
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.top_nav_menu, menu);
-        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
-        return true;
     }
 
     @Override
@@ -104,21 +89,27 @@ public class OrganizerActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
+    /**
+     * @return The id of the currently selected event
+     */
     public String getEventID() {
         return eventID;
     }
 
+    /**
+     * Navigates to the profile of the event
+     * @param id The id of the event to navigate to
+     */
     public void openEvent(String id) {
         eventID = id;
         navController.navigate(R.id.nav_organizer_events);
         navController.navigate(R.id.nav_organizer_event_secondary);
     }
 
+    /**
+     * Opens the edit profile fragment
+     */
     public void openEdit() {
         navController.navigate(R.id.nav_organizer_edit_secondary);
-    }
-
-    public void navigateUp() {
-        navController.navigateUp();
     }
 }

@@ -20,13 +20,10 @@ import java.util.List;
 
 /**
  * Stores a query that is executed on a collection within the database. Loads instances returned from this query in pages
- * @author Gareth Kmet
- * @version 1.0
- * @since 20oct24
  * @param <T> The type of instance being returned
  */
-@Database.Dissovable
-public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseQuery<T>>{
+@Database.Dissolves
+public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseQuery<T>>, Database.Dissolvable {
     /**
      * The database
      */

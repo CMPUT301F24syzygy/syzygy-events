@@ -26,10 +26,27 @@ import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragOrgFacilityProfileBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
+/**
+ * The fragment that displays the facility profile. The facility profile tab
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Facility Profile
+ * </pre>
+ */
 public class OrganizerFacilityFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private FragOrgFacilityProfileBinding binding;
+    /**
+     * The facility to display
+     */
     private Facility facility;
+    /**
+     * The map of the facilities locations
+     */
     private GoogleMap map;
+    /**
+     * The marker of the facilities location
+     */
     private Marker marker;
 
     @Override
@@ -51,6 +68,9 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
         mapFrag.getMapAsync(this);
     }
 
+    /**
+     * Called whenever the facility is updates. Updates the fields
+     */
     private void updateValues(){
         binding.facilityNameText.setText(facility.getName());
         binding.facilityAddressText.setText(facility.getAddress());
@@ -59,6 +79,9 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
         updateMapPoints();
     }
 
+    /**
+     * Updates the location of the facility on the map
+     */
     private void updateMapPoints(){
         if(map == null) return;
         LatLng pos = facility.getLatLngLocation();

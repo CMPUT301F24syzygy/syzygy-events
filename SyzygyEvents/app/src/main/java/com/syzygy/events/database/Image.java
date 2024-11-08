@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.picasso.Target;
@@ -39,11 +38,8 @@ import java.util.function.Consumer;
 /**
  * An instance of an image database item
  * - An image cannot be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class Image extends DatabaseInstance<Image> {
 
     /**
@@ -147,7 +143,7 @@ public class Image extends DatabaseInstance<Image> {
 
     @Override
     protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener) {
-        db.deleteImage(getImageID(), success -> {
+        db.deleteFile(getImageID(), success -> {
             if(!success){
                 listener.accept(false);
                 return;
@@ -212,7 +208,7 @@ public class Image extends DatabaseInstance<Image> {
             db.<Image>createNewInstance(Database.Collections.IMAGES, docID, map, (instance, success) -> {
                 Log.println(Log.DEBUG, "Newimage", "created image");
                 if(!success){
-                    db.deleteImage(imageID, success2 -> {
+                    db.deleteFile(imageID, success2 -> {
                         if(!success2){
                             db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
                         }

@@ -1,8 +1,6 @@
 package com.syzygy.events.database;
 
-import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -13,9 +11,7 @@ import com.syzygy.events.R;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +21,8 @@ import java.util.function.Consumer;
 /**
  * An instance of a user database item
  * - A user can be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class User extends DatabaseInstance<User> {
 
     /**

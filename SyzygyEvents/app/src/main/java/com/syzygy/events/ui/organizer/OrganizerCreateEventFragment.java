@@ -30,9 +30,24 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The fragment that the user sees when they create an event. The add event tab
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Add Event
+ * </pre>
+ */
 public class OrganizerCreateEventFragment extends Fragment {
     private FragOrgCreateEventBinding binding;
+    /**
+     * The current selected poster image
+     */
     private Uri image;
+    /**
+     * The created event.
+     * We store this and dissolve after navigating so that we don't have to load it up again
+     */
     private Event event;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,6 +65,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Called when the user switches between single and sequence
+     */
     private void onChangeOfRepeat() {
         int v = binding.createEventSequenceChip.isChecked() ? View.VISIBLE : View.GONE;
         binding.eventCreateEndDateLayout.setVisibility(v);
@@ -58,6 +76,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.eventCreateDateLayout.setVisibility(v == View.GONE ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Querries the user for an image
+     */
     private void choosePhoto() {
         ((SyzygyApplication) getActivity().getApplication()).getImage(uri -> {
             if (uri == null) {
@@ -68,6 +89,10 @@ public class OrganizerCreateEventFragment extends Fragment {
         });
     }
 
+    /**
+     * Displays the image as the poster. If null, removes the current image
+     * @param uri The image
+     */
     private void setImage(Uri uri) {
         image = uri;
         if (image == null) {
@@ -81,6 +106,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Validates the data. If valid, creates the event and navigates to the event profile
+     */
     private void submitData() {
 
         String title = binding.eventCreateName.getText().toString();

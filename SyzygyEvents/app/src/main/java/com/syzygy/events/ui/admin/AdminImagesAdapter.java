@@ -18,6 +18,14 @@ import com.syzygy.events.database.User;
 
 import java.util.List;
 
+/**
+ * The array adapter used for showing different images
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Images
+ * </pre>
+ */
 public class AdminImagesAdapter extends ArrayAdapter<Image> {
 
     public AdminImagesAdapter(Context context, List<Image> dataList) {

@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.view.View;
 
 
-import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.databinding.FragmentLoginBinding;
-import com.syzygy.events.databinding.FragmentSignupBinding;
 
-public class InitActivity extends SyzygyApplication.SyzygyActivity {
+/**
+ * The activity that the app starts up to.
+ * Displays a loading screen while the app fetches the device's account
+ */
+public class InitActivity extends SyzygyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

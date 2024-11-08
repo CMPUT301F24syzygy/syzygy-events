@@ -18,11 +18,8 @@ import java.util.function.Consumer;
 
 /**
  * An instance of an association of a user to an event
- * @author Gareth Kmet
- * @version 1.0
- * @since 20oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class EventAssociation extends DatabaseInstance<EventAssociation>{
     /**
      * Checks to make sure the generic type is the type of this instance
@@ -148,8 +145,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
     /**
      * A query result of EventAssociations. This provides a methods to mass modify and notify user
      */
-    @Database.Dissovable
-    public static class QueryModifier<T extends Database.Querrier<T>> extends Database.Querrier.QueryInstanceResult<EventAssociation> {
+    @Database.Dissolves
+    public static class Methods<T extends Database.Querrier<T>> extends Database.Querrier.QueryInstanceResult<EventAssociation> implements Database.Dissolvable {
 
         private boolean dissolved = false;
         private final Database db;
@@ -162,7 +159,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param list The list of results
          */
         @Database.MustStir
-        public QueryModifier(Database db, @Database.Observes T querrier, @Database.Dilutes List<EventAssociation> list) {
+        public Methods(Database db, @Database.Observes T querrier, @Database.Dilutes List<EventAssociation> list) {
             super(list);
             this.querrier = querrier;
             result.forEach(DatabaseInstance::fetch);
@@ -336,13 +333,13 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
 
 
         @Database.MustStir
-        public static <T extends Database.Querrier<T>> QueryModifier<T> EMPTY(Database db, @Database.Observes T q){
-            return new QueryModifier<>(db, q, new ArrayList<>());
+        public static <T extends Database.Querrier<T>> Methods<T> EMPTY(Database db, @Database.Observes T q){
+            return new Methods<>(db, q, new ArrayList<>());
         }
 
         @Database.MustStir
-        public static <T extends Database.Querrier<T>> QueryModifier<T> SINGLETON(Database db, @Database.Observes T q, @Database.Dilutes EventAssociation assoc){
-            return new QueryModifier<>(db, q, Collections.singletonList(assoc));
+        public static <T extends Database.Querrier<T>> Methods<T> SINGLETON(Database db, @Database.Observes T q, @Database.Dilutes EventAssociation assoc){
+            return new Methods<>(db, q, Collections.singletonList(assoc));
         }
     }
 
@@ -353,8 +350,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      */
     @Database.MustStir
     @Database.Titrates(what="This")
-    public QueryModifier<Event> methods(){
-        return QueryModifier.SINGLETON(db, getEvent(), this);
+    public Methods<Event> methods(){
+        return Methods.SINGLETON(db, getEvent(), this);
     }
 
     /**
@@ -363,8 +360,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      *     Stores all sent notifications as the {@code result}.
      * </p>
      */
-    @Database.Dissovable
-    public static class NotificationResult extends Database.Querrier.QueryInstanceResult<Notification> {
+    @Database.Dissolves
+    public static class NotificationResult extends Database.Querrier.QueryInstanceResult<Notification> implements Database.Dissolvable {
 
         /**
          * All notifications that failed to send

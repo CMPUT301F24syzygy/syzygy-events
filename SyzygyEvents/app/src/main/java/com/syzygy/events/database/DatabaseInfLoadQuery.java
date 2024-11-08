@@ -19,8 +19,8 @@ import java.util.List;
  * @param <T> The type of instance being returned
  * @see DatabaseQuery
  */
-@Database.Dissovable
-public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseInfLoadQuery<T>> {
+@Database.Dissolves
+public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Querrier<DatabaseInfLoadQuery<T>>, Database.Dissolvable {
 
     /**
      * The database query object

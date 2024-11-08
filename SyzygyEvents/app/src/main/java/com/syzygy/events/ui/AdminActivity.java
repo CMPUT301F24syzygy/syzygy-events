@@ -6,7 +6,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -15,23 +14,22 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityAdminBinding;
 
-public class AdminActivity extends SyzygyApplication.SyzygyActivity {
-
-    private ActivityAdminBinding adminBinding;
-    private NavController navController;
-    private Database database;
+/**
+ * The activity that handles all fragments that are visible in the admin view.
+ */
+public class AdminActivity extends SyzygyActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
-        adminBinding = ActivityAdminBinding.inflate(getLayoutInflater());
+        com.syzygy.events.databinding.ActivityAdminBinding adminBinding = ActivityAdminBinding.inflate(getLayoutInflater());
         setContentView(adminBinding.getRoot());
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -50,13 +48,6 @@ public class AdminActivity extends SyzygyApplication.SyzygyActivity {
             }
         });
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.top_nav_menu, menu);
-        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
-        return true;
     }
 
     @Override

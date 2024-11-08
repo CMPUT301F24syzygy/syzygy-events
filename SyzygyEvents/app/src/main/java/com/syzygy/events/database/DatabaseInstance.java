@@ -24,17 +24,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * An instance of a database item which should be updated whenever the database is updated.
- * @author Gareth Kmet
- * @version 1.0
- * @param <T> The class of the instance.
- * @since 19oct24
- *
+ * An instance of a database item which should be updated whenever the database is updated.@param <T> The class of the instance.
  * TODO - Add error handling on instance exchanges
  * TODO - change on instance load, if null, update subdelete
  */
-@Database.Dissovable
-public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener {
+@Database.Dissolves
+public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements Database.UpdateListener, Database.Dissolvable {
     /**
      * The number of references to this Instance
      */
@@ -433,13 +428,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         return this.documentID;
     }
 
-    /**
-     * Returns the unique identifier of this instance
-     * @return the unique identifier of the instance within the collection
-     */
-    public final String getIdentifier(){
-        return this.documentID;
-    }
 
     /**
      * Returns a unique identifier for the instance within the full database

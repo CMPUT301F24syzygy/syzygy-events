@@ -41,9 +41,6 @@ import java.util.function.Consumer;
  * <p>
  *     Provides methods to retrieve data and update data within the database
  * </p>
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
 public class Database implements EventListener<DocumentSnapshot> {
 
@@ -599,10 +596,9 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param fileName The filename including extension (e.g. `folder/image.jpg`)
      * @param listener Called on completion. true if the deletion was successful
      */
-    public void deleteImage(String fileName, Consumer<Boolean> listener){
+    public void deleteFile(String fileName, Consumer<Boolean> listener){
         StorageReference ref = storage.child(fileName);
         ref.delete().addOnCompleteListener(runnable -> {
-            Log.println(Log.DEBUG, "DeleteImage", ""+runnable.isSuccessful());
             listener.accept(runnable.isSuccessful());
         });
     }
@@ -897,7 +893,15 @@ public class Database implements EventListener<DocumentSnapshot> {
      */
     @Documented
     @Target(ElementType.TYPE)
-    public @interface Dissovable { }
+    public @interface Dissolves { }
+
+    /**
+     * Represents a class which must call {@code .dissolve} when no longer used
+     */
+    @Dissolves
+    public interface Dissolvable {
+        void dissolve();
+    }
 
     /**
      * Represents a instance return that gives up ownership of the instance. The receiver must dissolve the instance once complete

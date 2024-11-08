@@ -23,18 +23,35 @@ import com.syzygy.events.ui.EntrantActivity;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * The fragment that the user sees when they edit their own user profile
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> My Profile -> Edit Profile
+ * </pre>
+ */
 public class EntrantEditProfileFragment extends Fragment {
 
     private FragEntrantEditProfileBinding binding;
+    /**
+     * The user that is being edited
+     */
     private User user;
+    /**
+     * The current profile image selected by the user
+     */
     private Uri image;
+    /**
+     * If the users has selected a profile image
+     */
     private boolean imageSelected = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragEntrantEditProfileBinding.inflate(inflater, container, false);
 
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch();
-
+        //Set up fields
         binding.entrantEditBio.setText(user.getDescription());
         binding.entrantEditEmail.setText(user.getEmail());
         binding.entrantEditName.setText(user.getName());
@@ -42,7 +59,7 @@ public class EntrantEditProfileFragment extends Fragment {
         binding.orgNotificationsCheckbox.setChecked(user.getOrganizerNotifications());
         binding.adminNotificationsCheckbox.setChecked(user.getAdminNotifications());
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
-
+        //Set up buttons
         binding.entrantEditButtonSubmit.setOnClickListener(view -> submitData());
         binding.entrantEditButtonCancel.setOnClickListener(view -> ((EntrantActivity)getActivity()).navigateUp());
         binding.entrantEditEditImage.setOnClickListener(view -> choosePhoto());
@@ -54,6 +71,9 @@ public class EntrantEditProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Validates and submits the edit. If valid, navigates back to the user profile
+     */
     private void submitData(){
         String name = binding.entrantEditName.getText().toString();
         String phone = binding.entrantEditPhone.getText().toString();
@@ -111,6 +131,9 @@ public class EntrantEditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Queries the user for an image
+     */
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
@@ -121,6 +144,10 @@ public class EntrantEditProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets the currently displayed image
+     * @param uri The image to display
+     */
     private void setImage(Uri uri){
         imageSelected = true;
         image = uri;

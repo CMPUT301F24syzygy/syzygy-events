@@ -23,9 +23,19 @@ import com.syzygy.events.database.Notification;
 import com.syzygy.events.databinding.FragEntrantNotificationsListBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
+/**
+ * The fragment that the user opens to see their notifications. The notification tab
+ * <p>
+ * Map
+ * <pre>
+ * 2. Entrant Activity -> Notifications -> [Notification]
+ * </pre>
+ */
 public class EntrantNotificationsFragment extends Fragment {
     private FragEntrantNotificationsListBinding binding;
-
+    /**
+     * The query to get all notifications
+     */
     private DatabaseInfLoadQuery<Notification> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

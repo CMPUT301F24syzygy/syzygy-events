@@ -13,17 +13,11 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.ImageView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -47,23 +41,62 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * The main application class
+ * This class handles the navigation between the different activities
+ * This class manages the database and keeps track of which user is logged in
+ * Also contains helper functions for activities
+ */
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
 
+    /**
+     * The id of the User account associated with the Syzygy system
+     */
     public static final String SYSTEM_ACCOUNT_ID = "0";
 
-    private static final int LOCATION_REQUEST_CODE = 359;
+    /**
+     * The request code to use when requesting permissions for location
+     */
+    public static final int LOCATION_REQUEST_CODE = 359;
 
+    /**
+     * The database instance for this appp
+     */
     private Database db;
+    /**
+     * The user logged into the device
+     */
     private User user;
+    /**
+     * The id of the device
+     */
     private String deviceID;
+    /**
+     * The current activity displayed to the user
+     */
     private SyzygyActivity currentActivity;
+    /**
+     * The client to get the location
+     */
     private FusedLocationProviderClient location;
 
+    /**
+     * Set of listeners that are waiting on receiving the device's location
+     */
     private final List<Consumer<Location>> locationListeners = new ArrayList<>();
+    /**
+     * Set of listeners that are waiting on receiving a user selected image
+     */
     private final List<Consumer<Uri>> imageListeners = new ArrayList<>();
 
-    private Drawable menuAdminIcon;
-    private Drawable menuAddFacilityIcon;
+    /**
+     * The icon to use for admin menu option
+     */
+    Drawable menuAdminIcon;
+    /**
+     * The icon to use for the create facility menu option
+     */
+    Drawable menuAddFacilityIcon;
 
     @Override
     public void onCreate() {
@@ -199,8 +232,12 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         }
     }
 
+    /**
+     * Called when the user selects an image.
+     * Sends the image to all current listeners
+     * @param image The image
+     */
     void sendImage(Uri image){
-        Log.println(Log.DEBUG, "image", "got");
         for(Consumer<Uri> l : imageListeners){
             l.accept(image);
         }
@@ -240,6 +277,10 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         currentActivity.getMediaContent.launch("image/*");
     }
 
+    /**
+     * Displays the associated image of the instance to the user as a popup
+     * @param instance The instance whose image should be displayed
+     */
     public void displayImage(DatabaseInstance<?> instance) {
         Dialog dialog = new AlertDialog.Builder(currentActivity)
                 .setView(R.layout.popup_image)
@@ -273,17 +314,12 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         currentActivity.finish();
     }
 
-    public void stringToLocation(String location) throws IOException {
-        Geocoder geo = new Geocoder(this, Locale.getDefault());
-        List<Address> addresses = geo.getFromLocationName(location, 3);
-    }
-
+    /**
+     * Formats a timestamp
+     * @param t the time
+     * @return The timestamp as "dd/MM/yyyy"
+     */
     public String formatTimestamp(Timestamp t) {
-        DateFormat format = new SimpleDateFormat(getString(R.string.date_format_basic));
-        return format.format(t.toDate());
-    }
-
-    public String formatTime(Timestamp t) {
         DateFormat format = new SimpleDateFormat(getString(R.string.date_format_basic));
         return format.format(t.toDate());
     }
@@ -293,37 +329,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      */
     @Override
     public void accept(RuntimeException e) {
-
+        //TODO
     }
 
-    public static abstract class SyzygyActivity extends AppCompatActivity {
-
-        ActivityResultLauncher<String> getMediaContent = registerForActivityResult(new ActivityResultContracts.GetContent(),
-                uri -> ((SyzygyApplication)getApplication()).sendImage(uri));
-
-        @Override
-        protected void onCreate(@Nullable Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            ((SyzygyApplication)getApplication()).registerActivity(this);
-        }
-
-        /**
-         * Called when the application asks for permission to access location. Passes the result back to the application
-         * @param requestCode The request code passed in {@link #requestPermissions(String[], int)}
-         * @param permissions The requested permissions. Never null.
-         * @param grantResults The grant results for the corresponding permissions
-         *     which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
-         *     or {@link android.content.pm.PackageManager#PERMISSION_DENIED}. Never null.
-         *
-         */
-        @Override
-        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            Log.println(Log.DEBUG, "permission", "received");
-            if(requestCode == LOCATION_REQUEST_CODE){
-                Log.println(Log.DEBUG, "permission", "location");
-                ((SyzygyApplication) getApplication()).pingLocation(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-            }
-        }
-    }
 }

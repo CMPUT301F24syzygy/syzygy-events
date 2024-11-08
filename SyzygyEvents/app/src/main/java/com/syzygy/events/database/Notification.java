@@ -15,11 +15,8 @@ import java.util.Set;
 /**
  * An instance of a notification database item
  * - A notification item cannot be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class Notification extends DatabaseInstance<Notification> {
 
 

@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
@@ -14,9 +15,19 @@ import com.syzygy.events.databinding.FragmentSignupBinding;
 
 import java.util.Set;
 
-public class SignupActivity extends SyzygyApplication.SyzygyActivity {
+/**
+ * The activity that is used on startup when the device does not have an account
+ * Gets the user to create an account
+ */
+public class SignupActivity extends SyzygyActivity {
 
+    /**
+     * The binding to the ui
+     */
     private FragmentSignupBinding binding;
+    /**
+     * The current selected profile image
+     */
     private Uri image;
 
     @Override
@@ -35,6 +46,9 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         setImage(null);
     }
 
+    /**
+     * Gets an image from the user
+     */
     private void choosePhoto(){
         ((SyzygyApplication)getApplication()).getImage(uri -> {
             if(uri == null){
@@ -45,6 +59,11 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         });
     }
 
+    /**
+     * Sets the image view to the given image
+     * If null, removes the image that is currently displayed
+     * @param uri The image that was selected
+     */
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
@@ -56,6 +75,9 @@ public class SignupActivity extends SyzygyApplication.SyzygyActivity {
         }
     }
 
+    /**
+     * Validates the information. If valid, creates the account and switches to the next activity
+     */
     private void submitData(){
         String name = binding.signupName.getText().toString();
         String phone = binding.signupPhone.getText().toString();
