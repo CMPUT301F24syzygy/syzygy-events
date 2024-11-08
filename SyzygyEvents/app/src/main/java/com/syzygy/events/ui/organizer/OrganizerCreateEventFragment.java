@@ -57,8 +57,8 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.eventCreateEditPosterButton.setOnClickListener(view -> choosePhoto());
         binding.eventCreateRemovePosterButton.setOnClickListener(view -> setImage(null));
 
-
         binding.eventCreateOptionChips.setOnCheckedStateChangeListener((group, checkedIds) -> onChangeOfRepeat());
+
 
         setImage(null);
 
@@ -81,11 +81,9 @@ public class OrganizerCreateEventFragment extends Fragment {
      */
     private void choosePhoto() {
         ((SyzygyApplication) getActivity().getApplication()).getImage(uri -> {
-            if (uri == null) {
-                Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
-                return;
+            if (uri != null) {
+                setImage(uri);
             }
-            setImage(uri);
         });
     }
 
