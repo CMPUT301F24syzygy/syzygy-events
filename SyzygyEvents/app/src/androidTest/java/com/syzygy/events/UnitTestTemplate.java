@@ -42,8 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 05nov2024
  */
 
-public class UserTest {
-
+public class UnitTestTemplate {
     private static FirebaseApp TEST_INSTANCE;
     private static boolean setUpComplete = false;
     FirebaseFirestore firestore;
@@ -75,7 +74,6 @@ public class UserTest {
             TEST_INSTANCE = FirebaseApp.getInstance("test");
             firestore = FirebaseFirestore.getInstance(TEST_INSTANCE);
             testDB = new Database(constants, firestore, null);
-            System.out.println("Created");
             // Decrement the latch count to signal task completion
             firebaselatch.countDown();
             // Wait for the background task to finish (with a timeout)
@@ -97,7 +95,6 @@ public class UserTest {
                 }
             });
 
-
             if (!latch.await(60, TimeUnit.SECONDS)) {
                 fail("User creation timed out");
             }
@@ -110,134 +107,4 @@ public class UserTest {
     public static void closeDb() {
         testuser.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {});
     }
-
-
-    /**
-     * Tests the Name attribute of the user model
-     */
-    @Test
-    public void testUserName() {
-        assertEquals(testuser.getName(), "testName");
-        if (testuser.setName("NewTestName")){
-            assertEquals(testuser.getName(), "NewTestName");
-        }else{
-            fail();
-        }
-    }
-
-
-    /**
-     * Tests the Description attribute of the User model
-     */
-    @Test
-    public void testUserDescription() {
-        assertEquals(testuser.getDescription(), "TEST");
-        testuser.setDescription("description description");
-        assertEquals(testuser.getDescription(), "description description");
-    }
-
-
-    /**
-     * Tests the Email attribute of the User model
-     */
-    @Test
-    public void testUserEmail() {
-        assertEquals(testuser.getEmail(), "abc@xyz.com");
-
-        if (testuser.setEmail("janedoe@gmail.com")){
-            assertEquals(testuser.getEmail(), "janedoe@gmail.com");
-        }
-        else{
-            fail();
-        }
-    }
-
-
-    /**
-     * Tests the Phone attribute of the User model
-     */
-    @Test
-    public void testUserPhone() {
-        assertEquals(testuser.getPhoneNumber(), "1234567890");
-
-        if (testuser.setPhoneNumber("0987654321")){
-            assertEquals(testuser.getPhoneNumber(), "0987654321");
-        }
-        else{
-            fail();
-        }
-    }
-
-    /**
-     * Tests the admin notification attribute of the User model
-     */
-    @Test
-    public void testUserAdminNotifs() {
-        assertEquals(testuser.getAdminNotifications(), false);
-
-        if (testuser.setAdminNotifications(true)){
-            assertEquals(testuser.getAdminNotifications(), true);
-        }
-        else{
-            fail();
-        }
-    }
-
-
-    /**
-     * Tests the organization notification attribute of the User model
-     */
-    @Test
-    public void testUserOrgNotifs() {
-        assertEquals(testuser.getOrganizerNotifications(), false);
-
-        if (testuser.setOrganizerNotifications(true)){
-            assertEquals(testuser.getOrganizerNotifications(), true);
-        }
-        else{
-            fail();
-        }
-    }
-
-    /**
-     * Tests the admin attribute of the User model
-     */
-    @Test
-    public void testUserAdminStatus() {
-        assertEquals(testuser.isAdmin(), false);
-
-        if (testuser.makeAdmin(true)){
-            assertEquals(testuser.isAdmin(), true);
-        }
-        else{
-            fail();
-        }
-    }
-
-
-    /**
-     * Tests the update method of the User model
-     */
-    /*
-    public void onComplete(boolean success){;}
-    @Test
-    public void testUserUpdate() {
-        Set<Integer> usersetinteger;
-        usersetinteger = testuser.update("John Doe", "-", "john@gmail.com", "1112223333", true, true, false, this::onComplete);
-
-        assertEquals(usersetinteger.size(), 0);
-
-        assertEquals(testuser.getName(), "John Doe");
-        assertEquals(testuser.getDescription(), "-");
-        assertEquals(testuser.getEmail(), "john@gmail.com");
-        assertEquals(testuser.getPhoneNumber(), "1112223333");
-        assertEquals(testuser.getOrganizerNotifications(), true);
-        assertEquals(testuser.getAdminNotifications(), true);
-        assertEquals(testuser.isAdmin(), false);
-    }
-    */
-
-
-
 }
-
