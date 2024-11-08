@@ -1077,7 +1077,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
     public void deleteInstance(int deletionType, Consumer<Boolean> listener){
-        if(!isLegalState()) return;
+        if(!isLegalState()) {
+            listener.accept(true);
+            return;
+        };
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
         requiredFirstDelete(deletionType, success -> {
             if(!success){
@@ -1114,7 +1117,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         //Have I ever mentioned that I hate async
         Consumer<Boolean> l2 = new Consumer<Boolean>() {
             private int i = -1;
-            private boolean s;
+            private boolean s = true;
             @Override
             public void accept(Boolean success) {
                 s = s || success;
@@ -1143,6 +1146,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                             dq.getCurrentInstances().get(j).deleteInstance(deletionType | DeletionType.CASCADE, this);
                         }
                     };
+                    l3.accept(true);
                 });
             }
         };
@@ -1163,6 +1167,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 InstancePropertyWrapper<?> iprop = p.iS();
                 if(iprop.instance!=null && iprop.meta.cascadeDelete){
                     iprop.instance.deleteInstance(deletionType | DeletionType.CASCADE, this);
+                }else{
+                    accept(true);
                 }
             }
         };

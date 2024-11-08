@@ -67,7 +67,7 @@
     <string name="reg_open_text">Registration Open Until %s</string>
     <string name="after_reg_text">Registration Closed</string>
 
-    <string name="failed_get_location">Failed to get location. This event ... </string>
+    <string name="failed_get_location">Failed to get location. You cannot join this waitlist without sharing your current location.</string>
 
     <string name="date_format_basic">"dd/MM/yyyy"</string>
     <string name="edit_facility_button">Edit Facility</string>
@@ -75,7 +75,8 @@
     <string name="edit_facility_description_hint">Description</string>
     <string name="edit_facility_description_placeholder">Add additional info about your facility!</string>
     <string name="create_facility_submit_button">Create Facility</string>
-
+    <string name="requires_geo_warning">To join the waitlist for this event you must agree to share your join location with the event organizer.</string>
+    <string name="failed_scan_qr">QR scan unsucessfull.</string>
 
 
 </resources>

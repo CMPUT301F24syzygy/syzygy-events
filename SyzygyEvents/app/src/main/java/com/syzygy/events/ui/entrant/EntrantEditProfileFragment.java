@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -109,7 +108,6 @@ public class EntrantEditProfileFragment extends Fragment {
         if(invalidIds.contains(R.string.database_user_description)){
             binding.entrantEditBio.setError(getString(R.string.val_create_user_description));
         }
-        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
         binding.progressBar.setVisibility(View.GONE);
 
     }
@@ -126,7 +124,6 @@ public class EntrantEditProfileFragment extends Fragment {
             //This forces the menu icons to refresh in case the profile image was changed
             ((SyzygyApplication)getActivity().getApplication()).switchToActivity(EntrantActivity.class);
         }else{
-            Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
         }
     }
@@ -137,7 +134,6 @@ public class EntrantEditProfileFragment extends Fragment {
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
-                Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
             setImage(uri);

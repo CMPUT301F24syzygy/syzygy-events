@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="?attr/actionBarSize">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="220dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginTop="32dp"
@@ -25,7 +29,7 @@
             android:gravity="top|start"
             android:inputType="text|textMultiLine"
             android:lines="2"
-            android:maxLength="30"
+            android:maxLength="26"
             android:scrollbars="vertical"
             android:textAlignment="gravity"
             android:textSize="18sp" />
@@ -66,6 +70,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:id="@+id/edit_facility_description_layout"
         android:layout_width="380dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -94,9 +99,9 @@
         android:id="@+id/edit_facility_button_submit"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="16dp"
         android:text="Save Changes"
-        app:layout_constraintBottom_toTopOf="@+id/edit_facility_button_cancel"
+        app:layout_constraintTop_toBottomOf="@+id/edit_facility_description_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -104,9 +109,9 @@
         android:id="@+id/edit_facility_button_cancel"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="2dp"
         android:text="Cancel"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edit_facility_button_submit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -151,4 +156,4 @@
 
 
 
-
+</ScrollView>

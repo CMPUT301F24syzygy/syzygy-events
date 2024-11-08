@@ -93,7 +93,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             event.addListener(this);
 
             binding.eventTitle.setText(event.getTitle());
-            binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
+            binding.eventPriceText.setText(String.format(Locale.getDefault(), "$%3.2f", event.getPrice()));
             String start = app.formatTimestamp(event.getStartDate());
             String start_end = String.format("%s - %s", start, app.formatTimestamp(event.getEndDate()));
             binding.eventStartEndText.setText(event.getEventDates() == Event.Dates.NO_REPEAT ? start : start_end);
@@ -223,7 +223,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         return binding.getRoot();
     }
 
-
     @Override
     public void onDestroyView() {
         event.dissolve(this);
@@ -271,7 +270,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         }
 
     }
-
 
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {

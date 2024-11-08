@@ -14,7 +14,6 @@ jobs:
       run:
         working-directory: ./SyzygyEvents
 
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up Java
@@ -63,5 +62,7 @@ jobs:
       with:
         api-level: 29
         script: |
-          ls -al ${GITHUB_WORKSPACE}/SyzygyEvents
-          ${GITHUB_WORKSPACE}/SyzygyEvents/gradlew connectedCheck
+          echo ${{ github.workspace }}
+          cd ${{ github.workspace }}/SyzygyEvents
+          pwd
+          ./SyzygyEvents/gradlew connectedCheck

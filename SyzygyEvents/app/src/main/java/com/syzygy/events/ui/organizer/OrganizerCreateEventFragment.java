@@ -57,8 +57,8 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.eventCreateEditPosterButton.setOnClickListener(view -> choosePhoto());
         binding.eventCreateRemovePosterButton.setOnClickListener(view -> setImage(null));
 
-
         binding.eventCreateOptionChips.setOnCheckedStateChangeListener((group, checkedIds) -> onChangeOfRepeat());
+
 
         setImage(null);
 
@@ -81,11 +81,9 @@ public class OrganizerCreateEventFragment extends Fragment {
      */
     private void choosePhoto() {
         ((SyzygyApplication) getActivity().getApplication()).getImage(uri -> {
-            if (uri == null) {
-                Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
-                return;
+            if (uri != null) {
+                setImage(uri);
             }
-            setImage(uri);
         });
     }
 
@@ -155,26 +153,26 @@ public class OrganizerCreateEventFragment extends Fragment {
         String openDay = binding.eventCreateOpenDate.getText().toString();
         String closeDay = binding.eventCreateCloseDate.getText().toString();
         try {
-            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 00:03")));
             Timestamp testDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 23:59")));
             if(Timestamp.now().compareTo(testDate) >= 0){
                 openDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             openDate = null;
         }
 
         try {
-            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 00:02")));
             if(openDate != null && openDate.compareTo(closeDate) >= 0){
                 closeDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex ) {
             closeDate = null;
         }
 
         try {
-            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 12:01")));
+            startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 00:01")));
             if(closeDate != null){
                 if(closeDate.compareTo(startDate) >= 0){
                     startDate = null;
@@ -182,7 +180,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             }else if(openDate != null && openDate.compareTo(startDate) >= 0){
                 startDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             startDate = null;
         }
 
@@ -200,7 +198,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             }else if(openDate != null && openDate.compareTo(endDate) >= 0){
                 endDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             endDate = null;
         }
 
