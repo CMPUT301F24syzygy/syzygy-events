@@ -44,6 +44,10 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+/**
+ * Tests the user stories
+ * @author Gareth
+ */
 public class UserStoriesModelTest {
 
     private static FirebaseFirestore firestore;
