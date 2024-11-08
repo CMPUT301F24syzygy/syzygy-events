@@ -14,7 +14,6 @@ import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,11 +24,8 @@ import java.util.function.Consumer;
 /**
  * An instance of a facility database item
  * - A facility can be edited except for the organizer
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class Facility extends DatabaseInstance<Facility> {
 
     /**

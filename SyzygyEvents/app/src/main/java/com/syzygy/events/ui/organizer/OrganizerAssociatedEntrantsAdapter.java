@@ -17,9 +17,18 @@ import com.syzygy.events.database.Image;
 
 import java.util.List;
 
-public class AssociatedEntrantsAdapter extends ArrayAdapter<EventAssociation> {
+/**
+ * The array adapter used for showing users associated to the event
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Events -> [Event]
+ * 2. Organizer Activity -> Add Event -> [Submit]
+ * </pre>
+ */
+public class OrganizerAssociatedEntrantsAdapter extends ArrayAdapter<EventAssociation> {
 
-    public AssociatedEntrantsAdapter(Context context, List<EventAssociation> dataList) {
+    public OrganizerAssociatedEntrantsAdapter(Context context, List<EventAssociation> dataList) {
         super(context, 0, dataList);
     }
 

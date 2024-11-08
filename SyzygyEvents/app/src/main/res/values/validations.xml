@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="val_create_event_title">The title must not be empty</string>
+    <string name="val_create_event_price">The price must be greater than or equal to 0</string>
+    <string name="val_create_event_capacity">The capacity must be greater than 0</string>
+    <string name="val_create_event_waitlist_cap">The waitlist capacity must be empty or greater than 0</string>
+    <string name="val_create_event_open">The open date cannot be in the past</string>
+    <string name="val_create_event_closed">The closed date must be after the open date</string>
+    <string name="val_create_event_start">The start date must be after the closed date</string>
+    <string name="val_create_event_end">The end date must be after the start date</string>
+    <string name="val_create_event_date">The date must be after the closed date</string>
+    <string name="val_create_event_description">How is the description invalid?</string>
+    <string name="val_create_user_name">The name must not be empty</string>
+    <string name="val_create_user_phoneNumber">The phone number must not be empty or at least 7 digits</string>
+    <string name="val_create_user_email">The email must be a valid email address</string>
+    <string name="val_create_user_description">How is the description invalid?</string>
+    <string name="val_create_facility_name">The name must not be empty</string>
+    <string name="val_create_facility_description">How is the description invalid?</string>
+</resources>

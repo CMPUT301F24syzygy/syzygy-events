@@ -14,8 +14,19 @@ import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.FragAdminEventsListBinding;
 
+/**
+ * The events tab for admin
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Events
+ * </pre>
+ */
 public class AdminEventsFragment extends Fragment {
     private FragAdminEventsListBinding binding;
+    /**
+     * The query to get all events
+     */
     private DatabaseInfLoadQuery<Event> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

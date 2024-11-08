@@ -47,12 +47,33 @@ import com.syzygy.events.ui.OrganizerActivity;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * The fragment that the user sees when they open an event's profile in the organizer view.
+ * Also allows user to edit the poster and action the lottery.
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Events -> [Event]
+ * 2. Organizer Activity -> Add Event -> [Notification] -> [Event]
+ * </pre>
+ */
 public class OrganizerEventFragment extends Fragment implements Database.UpdateListener, OnMapReadyCallback {
     private FragOrgEventPageBinding binding;
+    /**
+     * The query to get all users associated with the event
+     */
     private DatabaseInfLoadQuery<EventAssociation> query;
-
+    /**
+     * The event to display
+     */
     private Event event;
+    /**
+     * The map for the location of associated users
+     */
     private GoogleMap map;
+    /**
+     * The marker of the location of the current selected user
+     */
     private Marker marker;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,10 +85,10 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
 
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
-                activity.navigateUp();
+                activity.navigateUp("The event was not found");
                 return;
             }
-
+            //Set up fields
             event = instance;
             event.addListener(this);
 
@@ -81,7 +102,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             binding.eventDescriptionText.setText(event.getDescription());
 
             query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
-            AssociatedEntrantsAdapter adapter = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
+            OrganizerAssociatedEntrantsAdapter adapter = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
             query.refreshData((query1, s) -> {
                 adapter.notifyDataSetChanged();
             });
@@ -121,7 +142,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                     status = chip.getText().toString();
                 }
                 query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, status, false));
-                AssociatedEntrantsAdapter a = new AssociatedEntrantsAdapter(getContext(), query.getInstances());
+                OrganizerAssociatedEntrantsAdapter a = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
                 query.refreshData((query1, s) -> {
                     a.notifyDataSetChanged();
                 });
@@ -163,7 +184,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             });
             binding.cancelEntrantButton.setOnClickListener(view -> {
                 entrantUnselected();
-                AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                OrganizerAssociatedEntrantsAdapter a = (OrganizerAssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
                 EventAssociation association = a.getItem(binding.eventAssociatedEntrantsList.getCheckedItemPosition());
                 association.setStatus(R.string.event_assoc_status_cancelled);
                 binding.eventAssociatedEntrantsList.clearChoices();
@@ -182,7 +203,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
 
             binding.eventAssociatedEntrantsList.setOnItemClickListener((parent, view, position, id) -> {
                 entrantUnselected();
-                AssociatedEntrantsAdapter a = (AssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
+                OrganizerAssociatedEntrantsAdapter a = (OrganizerAssociatedEntrantsAdapter) binding.eventAssociatedEntrantsList.getAdapter();
                 if (Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_waitlist)) ||
                         Objects.equals(a.getItem(position).getStatus(), getString(R.string.event_assoc_status_invited))) {
                     binding.cancelEntrantButton.setVisibility(View.VISIBLE);
@@ -206,11 +227,14 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
     @Override
     public void onDestroyView() {
         event.dissolve(this);
+        query.dissolve();
         super.onDestroyView();
         binding = null;
     }
 
-
+    /**
+     * Sets up fields that could changed. Triggered whenever the event is updated
+     */
     private void updateView() {
 
         Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
@@ -269,10 +293,16 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         marker.setVisible(false);
     }
 
+    /**
+     * Called when the poster is updated
+     */
     private void posterUpdatedSuccess(Boolean success) {
         updateView();
     }
 
+    /**
+     * Called when an associated user is unselected
+     */
     private void entrantUnselected() {
         if (marker != null) {
             marker.setVisible(false);
@@ -280,40 +310,32 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         binding.cancelEntrantButton.setVisibility(View.GONE);
     }
 
+    /**
+     * Called when the lottery button is clicked. Displays a popup showing the current amount of
+     * capacity/spots filled
+     * @param dialog
+     */
     private void setLotteryPopupView(Dialog dialog) {
 
-        TextView message_enrolled_full = dialog.findViewById(R.id.lottery_full_enrolled_message);
-        TextView message_invited_full = dialog.findViewById(R.id.lottery_full_invited_message);
+        TextView message_full = dialog.findViewById(R.id.lottery_full_message);
         TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
         Button button = dialog.findViewById(R.id.lottery_run_button);
 
-        message_enrolled_full.setVisibility(View.GONE);
+        message_full.setVisibility(View.GONE);
         message_waitlist_empty.setVisibility(View.GONE);
         button.setVisibility(View.GONE);
-
-        TextView enrolled = dialog.findViewById(R.id.lottery_enrolled_text);
-        enrolled.setText(getString(R.string.lottery_enrolled_count, event.getCurrentEnrolled()));
-
-        TextView invited = dialog.findViewById(R.id.lottery_invited_text);
-        //invited.setText(getString(R.string.lottery_invited_count, event.getCurrentInvited()));
 
         TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
         waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
 
-        TextView capacity = dialog.findViewById(R.id.lottery_capacity_text);
-        capacity.setText(getString(R.string.lottery_capacity, event.getCapacity()));
-
         TextView open = dialog.findViewById(R.id.lottery_open_text);
-        //int n = event.getCapacity() - event.getCurrentEnrolled() - event.getCurrentInvited();
-        //open.setText((getString(R.string.lottery_waitlist_count, n)));
+        open.setText((getString(R.string.lottery_waitlist_count, event.getCapacity() - event.getCurrentEnrolled())));
 
         if (event.getCurrentEnrolled() == event.getCapacity()) {
-            message_enrolled_full.setVisibility(View.VISIBLE);
+            message_full.setVisibility(View.VISIBLE);
         } else if (event.getCurrentWaitlist() == 0) {
             message_waitlist_empty.setVisibility(View.VISIBLE);
-        } //else if (event.getCurrentEnrolled() + event.getCurrentInvited() == event.getCapacity()) {
-            //message_waitlist_empty.setVisibility(View.VISIBLE);
-        //}
+        }
         else {
             button.setVisibility(View.VISIBLE);
         }

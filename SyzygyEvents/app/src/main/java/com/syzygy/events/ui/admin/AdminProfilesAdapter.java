@@ -18,6 +18,15 @@ import com.syzygy.events.database.Image;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * The array adapter used for showing different profiles
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Brows Users
+ * 2. Admin Activity
+ * </pre>
+ */
 public class AdminProfilesAdapter extends ArrayAdapter<User> {
 
     public AdminProfilesAdapter(Context context, List<User> dataList) {

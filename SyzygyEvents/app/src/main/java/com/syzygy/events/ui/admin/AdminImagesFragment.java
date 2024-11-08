@@ -21,8 +21,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The images tab for admin
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Images
+ * </pre>
+ */
 public class AdminImagesFragment extends Fragment {
     private com.syzygy.events.databinding.FragAdminImagesListBinding binding;
+    /**
+     * The query to get all images
+     */
     private DatabaseInfLoadQuery<Image> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,6 +54,7 @@ public class AdminImagesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        query.dissolve();
         binding = null;
     }
 

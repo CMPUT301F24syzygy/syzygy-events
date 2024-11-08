@@ -15,8 +15,20 @@ import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.databinding.FragEntrantEventsListBinding;
 import com.syzygy.events.ui.EntrantActivity;
 
+/**
+ * The fragment that displays the users events in entrant view - the my events tab
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> My Events
+ * </pre>
+ */
 public class EntrantEventsFragment extends Fragment {
+
     private FragEntrantEventsListBinding binding;
+    /**
+     * The loader to get the instances
+     */
     private DatabaseInfLoadQuery<EventAssociation> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

@@ -1,5 +1,7 @@
 package com.syzygy.events.ui;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -17,14 +19,22 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 
-import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
-public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
+/**
+ * The activity that handles all fragments that are visible in the entrant view.
+ */
+public class EntrantActivity extends SyzygyActivity {
+
     private ActivityEntrantBinding entrantBinding;
-    private NavController navController;
+
+    /**
+     * The current selected event if the user is traversing to an event profile.
+     * Whenever the user selects an event. The eventID is stored here before traversal
+     */
     private String selectedEventID;
 
     @Override
@@ -54,14 +64,7 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.top_nav_menu, menu);
-        ((SyzygyApplication)getApplication()).loadMenuIcon(menu);
-        return true;
-    }
-
-
+    //Sets up the menu items
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -101,33 +104,46 @@ public class EntrantActivity extends SyzygyApplication.SyzygyActivity {
         return true;
     }
 
+    /**
+     * @return The id of the current selected event by the user
+     */
     public String getEventID() {
         return selectedEventID;
     }
 
+    //Called when scanning qrs
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (intentResult != null && intentResult.getContents() != null) {
             openEvent(intentResult.getContents());
         }
+
     }
+
+    /**
+     * Opens the edit profile fragment
+     */
     public void openEditProfile() {
         navController.navigate(R.id.nav_entrant_edit_secondary);
     }
 
+    /**
+     * Opens the event profile fragment
+     * @param id The id of the event
+     */
     public void openEvent(String id) {
         selectedEventID = id;
         navController.navigate(R.id.nav_entrant_event_secondary);
     }
 
+    /**
+     * Opens the facility profile of the selected event
+     */
     public void openFacility() {
         navController.navigate(R.id.nav_entrant_facility_secondary);
-    }
-
-    public void navigateUp() {
-        navController.navigateUp();
     }
 
 

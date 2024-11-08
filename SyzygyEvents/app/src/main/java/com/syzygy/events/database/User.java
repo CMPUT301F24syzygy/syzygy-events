@@ -1,8 +1,6 @@
 package com.syzygy.events.database;
 
-import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -11,9 +9,9 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
-import java.util.ArrayList;
+import org.apache.commons.validator.routines.EmailValidator;
+
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +21,8 @@ import java.util.function.Consumer;
 /**
  * An instance of a user database item
  * - A user can be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class User extends DatabaseInstance<User> {
 
     /**
@@ -248,13 +243,12 @@ public class User extends DatabaseInstance<User> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_description, o -> o instanceof String, true),
             new PropertyField<String, Image>(R.string.database_user_profileID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
             new PropertyField<String, Facility>(R.string.database_user_facilityID, o -> o instanceof String, true, true, Database.Collections.FACILITIES, true, true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank(), true),
-            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String, true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_email, o -> o instanceof String && !((String) o).isBlank() && EmailValidator.getInstance().isValid((String)o), true),
+            new PropertyField<String, PropertyField.NullInstance>(R.string.database_user_phoneNumber, o -> o instanceof String && (((String)o).length() >= 7 || ((String)o).isBlank()), true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_adminNotifications, o -> o instanceof Boolean, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_orgNotifications, o -> o instanceof Boolean, true),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_user_isAdmin, o -> o instanceof Boolean, true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_user_createdTime, o -> o instanceof Timestamp, false),
-
     };
 
 

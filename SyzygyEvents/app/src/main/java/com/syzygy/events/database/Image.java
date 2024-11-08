@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.picasso.Target;
@@ -39,11 +38,8 @@ import java.util.function.Consumer;
 /**
  * An instance of an image database item
  * - An image cannot be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class Image extends DatabaseInstance<Image> {
 
     /**
@@ -147,7 +143,7 @@ public class Image extends DatabaseInstance<Image> {
 
     @Override
     protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener) {
-        db.deleteImage(getImageID(), success -> {
+        db.deleteFile(getImageID(), success -> {
             if(!success){
                 listener.accept(false);
                 return;
@@ -212,7 +208,7 @@ public class Image extends DatabaseInstance<Image> {
             db.<Image>createNewInstance(Database.Collections.IMAGES, docID, map, (instance, success) -> {
                 Log.println(Log.DEBUG, "Newimage", "created image");
                 if(!success){
-                    db.deleteImage(imageID, success2 -> {
+                    db.deleteFile(imageID, success2 -> {
                         if(!success2){
                             db.throwE(new IllegalStateException("Hanging Image: " + imageID + " :Image was created, uri retrieved, failed validation, failed to delete"));
                         }
@@ -232,6 +228,7 @@ public class Image extends DatabaseInstance<Image> {
      * If the instance is null, uses a default image.
      * If the associated image is null, uses a default image for the instances collection.
      * @param instance The instance whos image should be loaded
+     * @param collection The collection to base the default off of if the instance is null
      * @param option The formatting options
      * @param resources The resources to use for creating the drawable
      * @param useDrawable Called on preparation with a placeHolder drawable, then again on completion
@@ -241,11 +238,49 @@ public class Image extends DatabaseInstance<Image> {
      *                    <li>If error, {@code success = false}</li>
      *                    <li>If good, {@code success = true}</li>
      *                    </ul>
-     * @see #getFormatedAssociatedImage(DatabaseInstance, Options)
+     * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
      * @see #loadAsDrawable(RequestCreator, Resources, BiConsumer)
      */
-    public static void getFormatedAssociatedImageAsDrawable(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option, Resources resources, BiConsumer<Boolean, Drawable> useDrawable){
+    public static void getFormatedAssociatedImageAsDrawable(@Nullable @Database.Observes DatabaseInstance<?> instance, Database.Collections collection, Options option, Resources resources, BiConsumer<Boolean, Drawable> useDrawable){
+        loadAsDrawable(getFormatedAssociatedImage(instance, collection, option), resources, useDrawable);
+    }
+
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @param option The formatting options
+     * @param resources The resources to use for creating the drawable
+     * @param useDrawable Called on preparation with a placeHolder drawable, then again on completion
+     *                    of load with the drawable or an error drawable if failed.
+     *                    <ul>
+     *                    <li>If placeholder, {@code success = null}</li>
+     *                    <li>If error, {@code success = false}</li>
+     *                    <li>If good, {@code success = true}</li>
+     *                    </ul>
+     * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
+     * @see #loadAsDrawable(RequestCreator, Resources, BiConsumer)
+     */
+    public static void getFormatedAssociatedImageAsDrawable(@NonNull @Database.Observes DatabaseInstance<?> instance, Options option, Resources resources, BiConsumer<Boolean, Drawable> useDrawable){
         loadAsDrawable(getFormatedAssociatedImage(instance, option), resources, useDrawable);
+    }
+
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @param collection The collection to base the default off of if the instance is null
+     * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
+     * @see #formatDefaultImage(DatabaseInstance, Options)
+     * @see #getDefaultImage(DatabaseInstance)
+     */
+    public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, Database.Collections collection, Options option){
+        if(instance == null){
+            return formatDefaultImage(collection, option);
+        }
+        return getFormatedAssociatedImage(instance, option);
     }
 
     /**
@@ -257,10 +292,7 @@ public class Image extends DatabaseInstance<Image> {
      * @see #formatDefaultImage(DatabaseInstance, Options)
      * @see #getDefaultImage(DatabaseInstance)
      */
-    public static RequestCreator getFormatedAssociatedImage(@Nullable @Database.Observes DatabaseInstance<?> instance, Options option){
-        if(instance == null){
-            return formatDefaultImage(null, option);
-        }
+    public static RequestCreator getFormatedAssociatedImage(@NonNull @Database.Observes DatabaseInstance<?> instance, Options option){
         Image img = instance.getAssociatedImage();
         if(img == null){
             return formatDefaultImage(instance, option);
@@ -269,15 +301,13 @@ public class Image extends DatabaseInstance<Image> {
     }
 
     /**
-     * Gets and loads a default image for the collection
+     * Gets and loads a default image for the instance
      * @param instance The instance that the image is for
      * @return The loaded request creator for the image
+     * @see #getDefaultImage(Database.Collections)
      */
-    public static RequestCreator getDefaultImage(@Nullable DatabaseInstance<?> instance){
+    public static RequestCreator getDefaultImage(@NonNull DatabaseInstance<?> instance){
         //Must be jpg or png
-        if(instance == null){
-            return Picasso.get().load(R.drawable.penguin_blue);
-        }
         if(instance instanceof User){
             Random rand = new Random(instance.getDocumentID().hashCode());
             int c = 0xFF * 1000000 + (int)((rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF) * 0x10000 + rand.nextInt(0xFF)) / 3f * 2);
@@ -291,22 +321,72 @@ public class Image extends DatabaseInstance<Image> {
                     .build();
             return Picasso.get().load(R.drawable.transparent).transform(t);
         }else{
-            return Picasso.get().load(R.drawable.penguin_blue);
+            return getDefaultImage(instance.getCollection());
+        }
+    }
+
+    /**
+     * Gets and loads a default image for the collection
+     * @param collection The collection that the image is for
+     * @return The loaded request creator for the image
+     */
+    public static RequestCreator getDefaultImage(@NonNull Database.Collections collection){
+        switch(collection){
+            case FACILITIES:
+                return Picasso.get().load(R.drawable.default_facility);
+            case EVENTS:
+                return Picasso.get().load(R.drawable.default_event);
+            case USERS:
+                return Picasso.get().load(R.drawable.default_user);
+            default:
+                return Picasso.get().load(R.drawable.penguin_blue);
         }
     }
 
     /**
      * Formats a default image based on the collection
-     * @param instance The instance that the image is for
+     * @param collection The collection to base the default on
      * @param option How to format the image
      * @return The loaded picasso after formatting
      * @see #formatImage(RequestCreator, Options) 
      * @see #getDefaultImage(DatabaseInstance)
      */
-    public static RequestCreator formatDefaultImage(@Nullable DatabaseInstance<?> instance, @NonNull Options option){
+    public static RequestCreator formatDefaultImage(@NonNull Database.Collections collection, @NonNull Options option){
+        RequestCreator pic = getDefaultImage(collection);
+        return formatImage(pic, option);
+    }
+
+    /**
+     * Formats a default image based on the instance
+     * @param instance The instance to base the default on
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #formatImage(RequestCreator, Options)
+     * @see #getDefaultImage(DatabaseInstance)
+     */
+    public static RequestCreator formatDefaultImage(@NonNull DatabaseInstance<?> instance, @NonNull Options option){
         RequestCreator pic = getDefaultImage(instance);
         return formatImage(pic, option);
     }
+
+
+    /**
+     * Formats a default image based on the instance
+     * @param instance The instance to base the default on
+     * @param collection The collection to base the default on if the instance is null
+     * @param option How to format the image
+     * @return The loaded picasso after formatting
+     * @see #formatImage(RequestCreator, Options)
+     * @see #getDefaultImage(DatabaseInstance)
+     */
+    public static RequestCreator formatDefaultImage(@Nullable DatabaseInstance<?> instance, @NonNull Database.Collections collection, @NonNull Options option){
+        if(instance == null){
+            return formatDefaultImage(collection, option);
+        }else{
+            return formatDefaultImage(instance, option);
+        }
+    }
+
 
     /**
      * Formats the drawable
@@ -328,7 +408,7 @@ public class Image extends DatabaseInstance<Image> {
      */
     public static RequestCreator formatImage(@NonNull RequestCreator loadedPicasso, @NonNull Options option){
         Log.println(Log.DEBUG, "format", "formating");
-        loadedPicasso.placeholder(R.drawable.transparent).error(R.drawable.transparent);
+        loadedPicasso.placeholder(R.drawable.transparent).error(R.drawable.error);
         option.modifyImage(loadedPicasso);
         return loadedPicasso;
     }
@@ -381,6 +461,7 @@ public class Image extends DatabaseInstance<Image> {
          */
         public void modifyImage(RequestCreator img){
             if(width >= 0 && height >= 0){
+                img.centerCrop();
                 img.resize(width, height);
             }
             if(isCircle){

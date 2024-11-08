@@ -2,6 +2,7 @@ package com.syzygy.events.ui.organizer;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragOrgCreateEventBinding;
@@ -22,12 +24,30 @@ import com.syzygy.events.ui.OrganizerActivity;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The fragment that the user sees when they create an event. The add event tab
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Add Event
+ * </pre>
+ */
 public class OrganizerCreateEventFragment extends Fragment {
     private FragOrgCreateEventBinding binding;
+    /**
+     * The current selected poster image
+     */
     private Uri image;
+    /**
+     * The created event.
+     * We store this and dissolve after navigating so that we don't have to load it up again
+     */
     private Event event;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,6 +65,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Called when the user switches between single and sequence
+     */
     private void onChangeOfRepeat() {
         int v = binding.createEventSequenceChip.isChecked() ? View.VISIBLE : View.GONE;
         binding.eventCreateEndDateLayout.setVisibility(v);
@@ -53,6 +76,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.eventCreateDateLayout.setVisibility(v == View.GONE ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Querries the user for an image
+     */
     private void choosePhoto() {
         ((SyzygyApplication) getActivity().getApplication()).getImage(uri -> {
             if (uri == null) {
@@ -63,11 +89,15 @@ public class OrganizerCreateEventFragment extends Fragment {
         });
     }
 
+    /**
+     * Displays the image as the poster. If null, removes the current image
+     * @param uri The image
+     */
     private void setImage(Uri uri) {
         image = uri;
         if (image == null) {
             binding.eventCreateEditPosterButton.setText(R.string.add_poster_button);
-            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
+            Image.formatDefaultImage(Database.Collections.EVENTS, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
             binding.eventCreateRemovePosterButton.setVisibility(View.INVISIBLE);
         } else {
             binding.eventCreateEditPosterButton.setText(R.string.change_poster_button);
@@ -76,6 +106,9 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Validates the data. If valid, creates the event and navigates to the event profile
+     */
     private void submitData() {
 
         String title = binding.eventCreateName.getText().toString();
@@ -119,8 +152,36 @@ public class OrganizerCreateEventFragment extends Fragment {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         String startDay = repeat ? binding.eventCreateStartDate.getText().toString() : binding.eventCreateDate.getText().toString();
 
+        String openDay = binding.eventCreateOpenDate.getText().toString();
+        String closeDay = binding.eventCreateCloseDate.getText().toString();
+        try {
+            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
+            Timestamp testDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 23:59")));
+            if(Timestamp.now().compareTo(testDate) >= 0){
+                openDate = null;
+            }
+        } catch (ParseException | NullPointerException ex) {
+            openDate = null;
+        }
+
+        try {
+            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
+            if(openDate != null && openDate.compareTo(closeDate) >= 0){
+                closeDate = null;
+            }
+        } catch (ParseException | NullPointerException ex) {
+            closeDate = null;
+        }
+
         try {
             startDate = new Timestamp(Objects.requireNonNull(formatter.parse(startDay + " 12:01")));
+            if(closeDate != null){
+                if(closeDate.compareTo(startDate) >= 0){
+                    startDate = null;
+                }
+            }else if(openDate != null && openDate.compareTo(startDate) >= 0){
+                startDate = null;
+            }
         } catch (ParseException | NullPointerException ex) {
             startDate = null;
         }
@@ -128,22 +189,19 @@ public class OrganizerCreateEventFragment extends Fragment {
         String endDay = repeat ? binding.eventCreateEndDate.getText().toString() : startDay;
         try {
             endDate = new Timestamp(Objects.requireNonNull(formatter.parse(endDay + " 23:59")));
+            if(startDate != null) {
+                if(startDate.compareTo(endDate) >= 0){
+                    endDate = null;
+                }
+            }else if(closeDate != null){
+                if(closeDate.compareTo(endDate) >= 0){
+                    endDate = null;
+                }
+            }else if(openDate != null && openDate.compareTo(endDate) >= 0){
+                endDate = null;
+            }
         } catch (ParseException | NullPointerException ex) {
             endDate = null;
-        }
-
-        String openDay = binding.eventCreateOpenDate.getText().toString();
-        String closeDay = binding.eventCreateCloseDate.getText().toString();
-        try {
-            openDate = new Timestamp(Objects.requireNonNull(formatter.parse(openDay + " 12:01")));
-        } catch (ParseException | NullPointerException ex) {
-            openDate = null;
-        }
-
-        try {
-            closeDate = new Timestamp(Objects.requireNonNull(formatter.parse(closeDay + " 12:01")));
-        } catch (ParseException | NullPointerException ex) {
-            closeDate = null;
         }
 
         Long dates;
@@ -176,35 +234,35 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding.progressBar.setVisibility(View.GONE);
 
         if (invalidIds.contains(R.string.database_event_title)) {
-            binding.eventCreateName.setError("Bad");
+            binding.eventCreateName.setError(getString(R.string.val_create_event_title));
         }
         if (invalidIds.contains(R.string.database_event_description)) {
-            binding.eventCreateBio.setError("Bad");
+            binding.eventCreateBio.setError(getString(R.string.val_create_event_description));
         }
         if (invalidIds.contains(R.string.database_event_capacity)) {
-            binding.eventCreateCapacity.setError("Bad");
+            binding.eventCreateCapacity.setError(getString(R.string.val_create_event_capacity));
         }
         if (invalidIds.contains(R.string.database_event_waitlist)) {
-            binding.eventCreateWaitlistCap.setError("Bad");
+            binding.eventCreateWaitlistCap.setError(getString(R.string.val_create_event_waitlist_cap));
         }
         if (invalidIds.contains(R.string.database_event_price)) {
-            binding.eventCreatePrice.setError("Bad");
+            binding.eventCreatePrice.setError(getString(R.string.val_create_event_price));
         }
         if (invalidIds.contains(R.string.database_event_openDate)) {
-            binding.eventCreateOpenDate.setError("Badopen");
+            binding.eventCreateOpenDate.setError(getString(R.string.val_create_event_open));
         }
         if (invalidIds.contains(R.string.database_event_closedDate)) {
-            binding.eventCreateCloseDate.setError("Badclose");
+            binding.eventCreateCloseDate.setError(getString(R.string.val_create_event_closed));
         }
         if (invalidIds.contains(R.string.database_event_start)) {
             if (repeat) {
-                binding.eventCreateStartDate.setError("Bad");
+                binding.eventCreateStartDate.setError(getString(R.string.val_create_event_start));
             } else {
-                binding.eventCreateDate.setError("Bad");
+                binding.eventCreateDate.setError(getString(R.string.val_create_event_date));
             }
         }
         if (invalidIds.contains(R.string.database_event_end)) {
-            binding.eventCreateEndDate.setError("Bad");
+            binding.eventCreateEndDate.setError(getString(R.string.val_create_event_end));
         }
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }

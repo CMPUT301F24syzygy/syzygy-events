@@ -69,7 +69,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.13")
     implementation("com.google.android.material:material:1.3.0-alpha03")
-
+    implementation("commons-validator:commons-validator:1.5.1")
 
 }
 

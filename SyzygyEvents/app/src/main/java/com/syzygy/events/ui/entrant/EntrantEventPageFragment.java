@@ -26,10 +26,26 @@ import com.syzygy.events.ui.EntrantActivity;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * The fragment that the user sees when they open an event's profile in the entrant view
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> My Events -> [Event]
+ * 2. Entrant Activity -> Notifications -> [Notification] -> [Event]
+ * 3. Entrant Activity -> QR Scan -> [Scan QR]
+ * </pre>
+ */
 public class EntrantEventPageFragment extends Fragment implements Database.UpdateListener {
 
     private FragEntrantEventPageBinding binding;
+    /**
+     * The event that is being displayed
+     */
     private Event event;
+    /**
+     * The association of the user to the event
+     */
     private EventAssociation association;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,15 +55,23 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         EntrantActivity activity = (EntrantActivity)getActivity();
         SyzygyApplication app = (SyzygyApplication)getActivity().getApplication();
 
+        //Get the event from the selected id stored in the activity
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
-                activity.navigateUp();
+                //If event is not found
+                if(instance != null){
+                    activity.navigateUp("The selected event was not found");
+                }
+                //If an error occured
+                else{
+                    activity.navigateUp("An unexpected error occurred");
+                }
                 return;
             }
 
             event = instance;
             event.addListener(this);
-
+            //Set up fields
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
             String start = app.formatTimestamp(event.getStartDate());
@@ -56,6 +80,11 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
+            binding.capacityInfoText.setText("Capacity: "+ event.getCapacity());
+            if(event.getWaitlistCapacity() > 0){
+                binding.waitlistCapacityInfoText.setText("Waitlist Limit: " + event.getWaitlistCapacity());
+                binding.waitlistCapacityInfoText.setVisibility(View.VISIBLE);
+            }
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name_text);
             facility_name.setText(event.getFacility().getName());
@@ -74,31 +103,39 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             });
 
             binding.eventExitWaitlistButton.setOnClickListener(view -> {
-                association.setStatus(R.string.event_assoc_status_cancelled);
+                deleteAssociation();
             });
 
             binding.buttonReject.setOnClickListener(view -> {
-                association.setStatus(R.string.event_assoc_status_cancelled);
+                deleteAssociation();
             });
 
             binding.buttonAccept.setOnClickListener(view -> {
                 event.acceptInvite(app.getUser(), (e, a, s) -> {});
             });
-
+            //Set the join waitlist button to join the waitlist
+            //TODO make own method
             binding.eventJoinWaitlistButton.setOnClickListener(view -> {
                 if (event.getRequiresLocation()) {
-                    app.getLocation((l) -> {
-                        if (l != null) {
-                            GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
-                            event.addUserToWaitlist(app.getUser(), geo, (e, a, s) -> {
-                                updateView();
-                            });
-                        } else {
-                            Dialog dialog = new AlertDialog.Builder(getContext())
-                                    .setMessage(R.string.failed_get_location).create();
-                            dialog.show();
-                        }
-                    });
+                    Dialog requiresGeoWarning = new AlertDialog.Builder(getContext())
+                            .setTitle("TODO")
+                            .setNegativeButton("cancel", null)
+                            .setPositiveButton("agree", (dialogInterface, i) -> {
+                                app.getLocation((l) -> {
+                                    if (l != null) {
+                                        GeoPoint geo = new GeoPoint(l.getLatitude(), l.getLongitude());
+                                        event.addUserToWaitlist(app.getUser(), geo, (e, a, s) -> {
+                                            updateView();
+                                        });
+                                    } else {
+                                        Dialog geoFailedDialog = new AlertDialog.Builder(getContext())
+                                                .setMessage(R.string.failed_get_location).create();
+                                        geoFailedDialog.show();
+                                    }
+                                });
+                            })
+                            .create();
+                    requiresGeoWarning.show();
                 } else {
                     event.addUserToWaitlist(app.getUser(), null, (e, a, s) -> {
                         updateView();
@@ -110,20 +147,26 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         });
 
         return binding.getRoot();
-    }
 
+
+    }
 
     @Override
     public void onDestroyView() {
         if (association != null) {
             association.dissolve(this);
         }
-        event.dissolve(this);
+        if (event != null) {
+            event.dissolve(this);
+        }
         super.onDestroyView();
         binding = null;
     }
 
-
+    /**
+     * Updates the view with new information.
+     * Called whenever the user changes their status or the event gets updated
+     */
     private void updateView() {
 
         Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
@@ -174,12 +217,26 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         }
     }
 
+    /**
+     * Removes the user from the waitlist by deleting the association
+     */
+    private void deleteAssociation(){
+        association.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
+            if(!success){
+                ((EntrantActivity)getActivity()).navigateUp();
+            }
+        });
+    }
+    //Called when event or association is updated
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
             EntrantActivity activity = (EntrantActivity)getActivity();
             activity.navigateUp();
             return;
+        }
+        if(!association.isLegalState()){
+            association = null;
         }
         updateView();
     }

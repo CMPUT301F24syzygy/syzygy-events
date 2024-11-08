@@ -12,7 +12,7 @@
         android:layout_height="160dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
-        android:src="@drawable/ic_dashboard_black_24dp"
+        android:src="@drawable/default_user"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -57,11 +57,11 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
             android:gravity="top|start"
-            android:hint="Name"
+            android:hint="Name*"
             android:inputType="textPersonName|textMultiLine"
             android:lines="2"
-            android:scrollbars="vertical"
             android:maxLength="20"
+            android:scrollbars="vertical"
             android:textAlignment="gravity"
             android:textSize="18sp" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -87,7 +87,7 @@
             android:hint="Phone Number"
             android:inputType="number"
             android:lines="1"
-            android:maxLength="10"
+            android:maxLength="15"
             android:textAlignment="gravity"
             android:textSize="18sp" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -124,7 +124,7 @@
         android:layout_width="360dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
-        android:hint="Email"
+        android:hint="Email*"
         app:expandedHintEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
