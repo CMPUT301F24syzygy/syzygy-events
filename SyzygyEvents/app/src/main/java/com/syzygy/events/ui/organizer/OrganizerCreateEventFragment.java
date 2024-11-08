@@ -160,7 +160,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             if(Timestamp.now().compareTo(testDate) >= 0){
                 openDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             openDate = null;
         }
 
@@ -169,7 +169,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             if(openDate != null && openDate.compareTo(closeDate) >= 0){
                 closeDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex ) {
             closeDate = null;
         }
 
@@ -182,7 +182,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             }else if(openDate != null && openDate.compareTo(startDate) >= 0){
                 startDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             startDate = null;
         }
 
@@ -200,7 +200,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             }else if(openDate != null && openDate.compareTo(endDate) >= 0){
                 endDate = null;
             }
-        } catch (ParseException | NullPointerException ex) {
+        } catch (ParseException | NullPointerException | IllegalArgumentException ex) {
             endDate = null;
         }
 

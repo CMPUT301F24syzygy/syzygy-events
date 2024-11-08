@@ -58,14 +58,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         //Get the event from the selected id stored in the activity
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, activity.getEventID(), (instance, success) -> {
             if (!success) {
-                //If event is not found
-                if(instance != null){
-                    activity.navigateUp("The selected event was not found");
-                }
-                //If an error occured
-                else{
-                    activity.navigateUp("An unexpected error occurred");
-                }
+                activity.navigateUp("The selected event was not found");
                 return;
             }
 
@@ -235,7 +228,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             activity.navigateUp();
             return;
         }
-        if(!association.isLegalState()){
+        if(association!=null && !association.isLegalState()) {
             association = null;
         }
         updateView();

@@ -8,17 +8,17 @@
 
     <item
         android:id="@+id/nav_entrant_qr"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_entrant_qr"
         android:title="@string/title_entrant_qr" />
 
     <item
         android:id="@+id/nav_entrant_events"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_timeline_events"
         android:title="@string/title_entrant_events" />
 
     <item
         android:id="@+id/nav_entrant_profile"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_profile"
         android:title="@string/title_entrant_profile" />
 
 </menu>
