@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -137,16 +138,22 @@ public class UserStoriesModelTest {
         switch(dates){
             case EVENT_BEFORE_REG:
                 open = after; close = after; start = after; end = after;
+                break;
             case EVENT_REG:
                 open = before; close = after; start = after; end = after;
+                break;
             case EVENT_AFTER_REG:
                 open = before; close = before; start = after; end = after;
+                break;
             case EVENT_START:
                 open = before; close = before; start = before; end = after;
+                break;
             case EVENT_END:
                 open = before; close = before; start = before; end = before;
+                break;
             default:
                 open = after; close = after; start = after; end = after;
+                break;
         }
 
         Set<Integer> invalidIDs = Event.NewInstance(testDB, "Name"+instances, null, f.getDocumentID(),
@@ -260,10 +267,11 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010101(){
+    public void US010101() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+
         getTestUser((u, r1) -> {
             getTestEventFresh(EVENT_REG, (e, r2) -> {
-                CountDownLatch latch = new CountDownLatch(1);
                 e.addUserToWaitlist(u, new GeoPoint(0,0), (q,a,s) -> {
                     latch.countDown();
                     assertTrue(s);
@@ -284,25 +292,18 @@ public class UserStoriesModelTest {
                         }
                     }
                 });
-                try {
-                    if (!latch.await(10, TimeUnit.SECONDS)) {
-                        fail("Join waitlist timed out");
-                    }
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                } finally {
-                    r2.run();
-                    r1.run();
-                }
             });
         });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("Join waitlist timed out");
+        }
     }
 
     @Test
-    public void US010102(){
+    public void US010102() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
         getTestUser((u,r1)->{
             getTestEventAssociationFreshUser(u, EVENT_REG, constants.getString(R.string.event_assoc_status_waitlist), (ea, r2) -> {
-                CountDownLatch latch = new CountDownLatch(1);
                 ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s->{
                     latch.countDown();
                     try{
@@ -313,18 +314,11 @@ public class UserStoriesModelTest {
                         r1.run();
                     }
                 });
-                try {
-                    if (!latch.await(10, TimeUnit.SECONDS)) {
-                        fail("Leave waitlist timed out");
-                    }
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                } finally {
-                    r2.run();
-                    r1.run();
-                }
             });
         });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("Leave waitlist timed out");
+        }
     }
 
     @Test
@@ -367,11 +361,10 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010202() {
+    public void US010202() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
 
         getTestUser((instance, onComplete) -> {
-
-            CountDownLatch latch = new CountDownLatch(1);
             Set<Integer> invalidIDs = instance.update("1", "2", "email4@email.com", "",
                     false, false, true, (success) -> {
                         assertTrue(success);
@@ -400,14 +393,10 @@ public class UserStoriesModelTest {
             }
             assertTrue(invalidIDs.isEmpty());
 
-            try {
-                if (!latch.await(10, TimeUnit.SECONDS)) {
-                    fail("User creation timed out");
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
         });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
     }
 
     @Test
@@ -447,7 +436,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010501(){
+    public void US010501() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getEventWithUsersInWaitlistAndEnrolled(3,0,(eas,r1) -> {
             Event e = eas.get(0).getEvent();
@@ -485,42 +474,34 @@ public class UserStoriesModelTest {
             });
         });
 
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                fail("User creation timed out");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
         }
     }
 
     @Test
-    public void US010502(){
+    public void US010502() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestUser((u,r1)->{
             getTestEventAssociationFreshUser(u, EVENT_AFTER_REG, constants.getString(R.string.event_assoc_status_invited), (ea,r2)->{
                 ea.getEvent().acceptInvite(u, (q,d,s)->{
-                    latch.countDown();
                     try{
                         assertTrue(s);
                         assertEquals(constants.getString(R.string.event_assoc_status_enrolled), ea.getStatus());
                     }finally {
                         finish(r2, r1);
+                        latch.countDown();
                     }
                 });
             });
         });
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                fail("User creation timed out");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
         }
     }
 
     @Test
-    public void US010503(){
+    public void US010503() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestUser((u,r1)->{
             getTestEventAssociationFreshUser(u, EVENT_AFTER_REG, constants.getString(R.string.event_assoc_status_invited), (ea,r2)->{
@@ -535,17 +516,13 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                fail("User creation timed out");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
         }
     }
 
     @Test
-    public void US010601(){
+    public void US010601() throws InterruptedException {
         //Mainly visual
         CountDownLatch latch = new CountDownLatch(1);
         getTestEventFresh(EVENT_REG, (e, r) -> {
@@ -559,17 +536,13 @@ public class UserStoriesModelTest {
                 }
             });
         });
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                fail("User creation timed out");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
         }
     }
 
     @Test
-    public void US010602(){
+    public void US010602() throws InterruptedException {
         //Mainly visual
         CountDownLatch latch = new CountDownLatch(1);
         getTestEventFresh(EVENT_REG, (e, r) -> {
@@ -603,12 +576,8 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                fail("User creation timed out");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
         }
     }
 
