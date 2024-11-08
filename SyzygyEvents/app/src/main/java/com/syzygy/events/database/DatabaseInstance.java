@@ -893,7 +893,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         if(count >= iproperties.size()) {
             Log.println(Log.DEBUG, "subInitEnd", "endCount");
             listener.onInitialization(this.cast(), true);
-            listener.onInitialization(this.cast(), true);
             return;
         }
         PropertyWrapper<?,?> prop = properties.get(iproperties.get(count));
@@ -1082,7 +1081,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
     public void deleteInstance(int deletionType, Consumer<Boolean> listener){
-        if(!isLegalState()) ;
+        if(!isLegalState()) {
+            listener.accept(true);
+            return;
+        };
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
 
         if((deletionType & DeletionType.SILENT) != 0){
@@ -1178,6 +1180,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 InstancePropertyWrapper<?> iprop = p.iS();
                 if(iprop.instance!=null && iprop.meta.cascadeDelete){
                     iprop.instance.deleteInstance(deletionType | DeletionType.CASCADE, this);
+                }else{
+                    accept(true);
                 }
             }
         };

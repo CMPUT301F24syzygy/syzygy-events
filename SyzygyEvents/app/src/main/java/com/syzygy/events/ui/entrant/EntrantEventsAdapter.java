@@ -51,7 +51,7 @@ public class EntrantEventsAdapter extends ArrayAdapter<EventAssociation> {
         title.setText(event.getTitle());
 
         TextView price = view.findViewById(R.id.entrant_events_item_price_text);
-        price.setText(String.format(Locale.getDefault(), "$ %3.2f", event.getPrice()));
+        price.setText(String.format(Locale.getDefault(), "$%3.2f", event.getPrice()));
 
         TextView dates = view.findViewById(R.id.entrant_events_item_start_end_text);
         String start = app.formatTimestamp(event.getStartDate());
