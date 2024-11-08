@@ -223,7 +223,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         return binding.getRoot();
     }
 
-
     @Override
     public void onDestroyView() {
         event.dissolve(this);
@@ -271,7 +270,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         }
 
     }
-
 
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {

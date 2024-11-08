@@ -107,7 +107,6 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
                 event.acceptInvite(app.getUser(), (e, a, s) -> {});
             });
             //Set the join waitlist button to join the waitlist
-            //TODO make own method
             binding.eventJoinWaitlistButton.setOnClickListener(view -> {
                 if (event.getRequiresLocation()) {
                     Dialog requiresGeoWarning = new AlertDialog.Builder(getContext())
@@ -213,11 +212,14 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
     /**
      * Removes the user from the waitlist by deleting the association
      */
-    private void deleteAssociation(){
+    private void deleteAssociation() {
         association.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
             if(!success){
-                ((EntrantActivity)getActivity()).navigateUp();
+                ((EntrantActivity)getActivity()).navigateUp("There was an unexpected error");
+                return;
             }
+            association = null;
+            updateView();
         });
     }
     //Called when event or association is updated
@@ -228,7 +230,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             activity.navigateUp();
             return;
         }
-        if(association!=null && !association.isLegalState()) {
+        if (association!=null && !association.isLegalState()) {
             association = null;
         }
         updateView();
