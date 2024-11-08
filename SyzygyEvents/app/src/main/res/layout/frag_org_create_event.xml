@@ -247,9 +247,9 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/create_event_single_chip"
-                android:layout_width="160dp"
+                android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:checkable="true"
                 android:checked="true"
                 android:text="Single Event"
@@ -257,9 +257,9 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/create_event_sequence_chip"
-                android:layout_width="160dp"
+                android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:checkable="true"
                 android:text="Event Sequence"
                 android:textAlignment="center" />
@@ -304,7 +304,7 @@
             android:layout_marginTop="16dp"
             app:expandedHintEnabled="false"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips"
+            app:layout_constraintTop_toBottomOf="@+id/event_create_start_date_layout"
             app:placeholderText="dd/mm/yyyy">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -355,11 +355,11 @@
             android:id="@+id/create_event_weekday_chips"
             android:layout_width="400dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="90dp"
+            android:layout_marginTop="20dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips">
+            app:layout_constraintTop_toBottomOf="@+id/event_create_date_layout">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/mon_chip"
@@ -417,12 +417,12 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="380dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="140dp"
+            android:layout_marginTop="20dp"
             android:hint="Event Description"
             app:expandedHintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_create_option_chips">
+            app:layout_constraintTop_toBottomOf="@+id/create_event_weekday_chips">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_create_bio"

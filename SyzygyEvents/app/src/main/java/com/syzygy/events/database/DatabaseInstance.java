@@ -1077,7 +1077,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir
     @Database.StirsDeep(what="Sub Instances")
     public void deleteInstance(int deletionType, Consumer<Boolean> listener){
-        if(!isLegalState()) return;
+        if(!isLegalState()) {
+            listener.accept(true);
+            return;
+        };
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
         requiredFirstDelete(deletionType, success -> {
             if(!success){
@@ -1164,6 +1167,8 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 InstancePropertyWrapper<?> iprop = p.iS();
                 if(iprop.instance!=null && iprop.meta.cascadeDelete){
                     iprop.instance.deleteInstance(deletionType | DeletionType.CASCADE, this);
+                }else{
+                    accept(true);
                 }
             }
         };
