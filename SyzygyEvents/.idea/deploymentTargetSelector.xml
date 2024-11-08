@@ -22,10 +22,10 @@
       <SelectionState runConfigName="US010502()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="US010503()">
+      <SelectionState runConfigName="UserTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="UserTest">
+      <SelectionState runConfigName="US010801()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

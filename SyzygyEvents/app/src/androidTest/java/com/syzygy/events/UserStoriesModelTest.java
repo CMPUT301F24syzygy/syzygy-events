@@ -10,8 +10,6 @@ import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.util.Log;
-import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -22,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.RequestCreator;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
@@ -41,10 +40,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class UserStoriesModelTest {
 
@@ -129,7 +127,7 @@ public class UserStoriesModelTest {
     }
 
     private static final int EVENT_BEFORE_REG = 0, EVENT_REG = 1, EVENT_AFTER_REG = 2, EVENT_BEFORE_START = 2, EVENT_START = 3, EVENT_END = 4;
-    private void getTestEvent(Facility f, int dates, BiConsumer<Event, Runnable> listener){
+    private void getTestEvent(Facility f, int dates, BiConsumer<Event, Runnable> listener, boolean geo){
         instances++;
         Timestamp open, close, start, end;
         Timestamp
@@ -157,7 +155,7 @@ public class UserStoriesModelTest {
         }
 
         Set<Integer> invalidIDs = Event.NewInstance(testDB, "Name"+instances, null, f.getDocumentID(),
-                false, "Des"+instances, 2L, 3L, 0.00,
+                geo, "Des"+instances, 2L, 3L, 0.00,
                 open, close, start, end, Event.Dates.EVERY_DAY, (instance, success) -> {
                     if(!success){
                         fail("failed to create event");
@@ -170,20 +168,20 @@ public class UserStoriesModelTest {
         assertTrue(invalidIDs.isEmpty());
     }
 
-    private void getTestEventFresh(int dates, BiConsumer<Event, Runnable> listener){
+    private void getTestEventFresh(int dates, BiConsumer<Event, Runnable> listener, boolean geo){
         getTestFacilityFresh((f, r1) -> {
             getTestEvent(f, dates, (e, r2) -> {
                 listener.accept(e, () -> {
                     r2.run();
                     r1.run();
                 });
-            });
+            }, geo);
         });
     }
 
-    private void getTestEventAssociation(User u, Event e, String status, BiConsumer<EventAssociation, Runnable> listener){
+    private void getTestEventAssociation(User u, Event e, String status, BiConsumer<EventAssociation, Runnable> listener, GeoPoint geo){
         instances++;
-        Set<Integer> invalidIDs = EventAssociation.NewInstance(testDB, e.getDocumentID(), new GeoPoint(0,0),
+        Set<Integer> invalidIDs = EventAssociation.NewInstance(testDB, e.getDocumentID(), geo,
                 status, u.getDocumentID(), (instance, success) -> {
                     if(!success){
                         fail("failed to create event association");
@@ -196,14 +194,19 @@ public class UserStoriesModelTest {
         assertTrue(invalidIDs.isEmpty());
     }
 
-    private void getTestEventAssociationFreshUser(User u, int dates, String status, BiConsumer<EventAssociation, Runnable> listener){
+    private void getTestEventAssociationFreshUser(User u, int dates, String status, BiConsumer<EventAssociation, Runnable> listener, boolean geo, GeoPoint loc){
         getTestEventFresh(dates, (e, r1) -> {
             getTestEventAssociation(u, e, status, (ea, r2) -> {
-                listener.accept(ea, () -> {
-                    r2.run();
-                    r1.run();
-                });
-            });
+                listener.accept(ea, then(r2,r1));
+            }, loc);
+        }, geo);
+    }
+
+    private void getTestEventAssociationFresh(int dates, String status, BiConsumer<EventAssociation, Runnable> listener, boolean geo, GeoPoint loc){
+        getTestUser((u,r)->{
+            getTestEventAssociationFreshUser(u, dates, status, (e,r2)->{
+                listener.accept(e,then(r2,r));
+            }, geo, loc);
         });
     }
 
@@ -248,12 +251,12 @@ public class UserStoriesModelTest {
         getTestEventFresh(EVENT_REG, (e, r1)->{
             this.<User>getTestInstances(waitListCount+enrolledCount, (i,b)->getTestUser(b), (us, r2) -> {
                 this.<EventAssociation>getTestInstances(waitListCount+enrolledCount, (i,b)->{
-                    getTestEventAssociation(us.get(i), e, constants.getString(i<waitListCount?R.string.event_assoc_status_waitlist: R.string.event_assoc_status_enrolled), b);
+                    getTestEventAssociation(us.get(i), e, constants.getString(i<waitListCount?R.string.event_assoc_status_waitlist: R.string.event_assoc_status_enrolled), b, null);
                 }, (eas, r3) -> {
                     listener.accept(eas, then(r3, r2, r1));
                 });
             });
-        });
+        }, false);
     }
 
     private void finish(Runnable ...rs){
@@ -292,7 +295,7 @@ public class UserStoriesModelTest {
                         }
                     }
                 });
-            });
+            }, false);
         });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("Join waitlist timed out");
@@ -314,7 +317,7 @@ public class UserStoriesModelTest {
                         r1.run();
                     }
                 });
-            });
+            }, false, null);
         });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("Leave waitlist timed out");
@@ -493,7 +496,7 @@ public class UserStoriesModelTest {
                         latch.countDown();
                     }
                 });
-            });
+            }, false, null);
         });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
@@ -514,7 +517,7 @@ public class UserStoriesModelTest {
                         finish(r1);
                     }
                 });
-            });
+            }, false, null);
         });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
@@ -535,7 +538,7 @@ public class UserStoriesModelTest {
                     r.run();
                 }
             });
-        });
+        }, false);
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
         }
@@ -575,7 +578,7 @@ public class UserStoriesModelTest {
                     });
                 });
             });
-        });
+        }, false);
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
         }
@@ -587,8 +590,115 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010801(){
-        //TODO visual
+    public void US010801() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getTestUser((u,r1)->{
+            getTestEventFresh(EVENT_REG, (e,r2)->{
+                e.addUserToWaitlist(u, null, (q,ea,s)->{
+                    try{
+                        assertFalse(s);
+                        latch.countDown();
+                    }finally {
+                        finish(r2,r1);
+                    }
+                });
+            }, true);
+        });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020101() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getTestFacilityFresh((f,r)->{
+            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+                    "Des", 2L, 3L, 0.0, Timestamp.now(), Timestamp.now(), Timestamp.now(), Timestamp.now(), 0L,
+                    (i,s)->{
+                try{
+                    assertTrue(s);
+                    assertNotNull(i);
+                    assertTrue(i.isLegalState());
+                    assertEquals(i.getDocumentID(), i.getQrHash());
+                    assertFalse(i.getQrHash().isBlank());
+                    latch.countDown();
+                }finally {
+                    try{
+                        i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s2->{});
+                    }finally {
+                        r.run();
+                    }
+                }
+                    });
+        });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020102() throws InterruptedException {
+        //Visual
+    }
+
+
+    @Test
+    public void US020103() throws InterruptedException {
+
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.countDown();
+        //TODO
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+
+    @Test
+    public void US020201() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getEventWithUsersInWaitlistAndEnrolled(3, 0, (eas,r)->{
+            Event e = eas.get(0).getEvent();
+            e.getWaitlistUsers((query, data, success) -> {
+                try{
+                    assertTrue(success);
+                    assertEquals(3, data.size());
+                    for(EventAssociation ea : eas){
+                        assertTrue(data.result.contains(ea));
+                        assertEquals(constants.getString(R.string.event_assoc_status_waitlist), ea.getStatus());
+                    }
+                    latch.countDown();
+                }finally {
+                    r.run();
+                }
+            });
+        });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+
+    @Test
+    public void US020202() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.countDown();
+        //TODO
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+
+    @Test
+    public void US020203() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.countDown();
+        //TODO
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
     }
 
 
