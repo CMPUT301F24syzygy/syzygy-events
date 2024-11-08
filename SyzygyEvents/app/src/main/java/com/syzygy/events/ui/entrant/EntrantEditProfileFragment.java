@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragEntrantEditProfileBinding;
@@ -22,18 +23,35 @@ import com.syzygy.events.ui.EntrantActivity;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * The fragment that the user sees when they edit their own user profile
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> My Profile -> Edit Profile
+ * </pre>
+ */
 public class EntrantEditProfileFragment extends Fragment {
 
     private FragEntrantEditProfileBinding binding;
+    /**
+     * The user that is being edited
+     */
     private User user;
+    /**
+     * The current profile image selected by the user
+     */
     private Uri image;
+    /**
+     * If the users has selected a profile image
+     */
     private boolean imageSelected = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragEntrantEditProfileBinding.inflate(inflater, container, false);
 
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch();
-
+        //Set up fields
         binding.entrantEditBio.setText(user.getDescription());
         binding.entrantEditEmail.setText(user.getEmail());
         binding.entrantEditName.setText(user.getName());
@@ -41,17 +59,21 @@ public class EntrantEditProfileFragment extends Fragment {
         binding.orgNotificationsCheckbox.setChecked(user.getOrganizerNotifications());
         binding.adminNotificationsCheckbox.setChecked(user.getAdminNotifications());
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
-
+        //Set up buttons
         binding.entrantEditButtonSubmit.setOnClickListener(view -> submitData());
         binding.entrantEditButtonCancel.setOnClickListener(view -> ((EntrantActivity)getActivity()).navigateUp());
         binding.entrantEditEditImage.setOnClickListener(view -> choosePhoto());
         binding.entrantEditRemoveImage.setOnClickListener(view -> setImage(null));
 
         binding.entrantEditRemoveImage.setVisibility(user.getProfileImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.entrantEditEditImage.setText(user.getProfileImage() != null ? R.string.change_image_button : R.string.add_image_button);
 
         return binding.getRoot();
     }
 
+    /**
+     * Validates and submits the edit. If valid, navigates back to the user profile
+     */
     private void submitData(){
         String name = binding.entrantEditName.getText().toString();
         String phone = binding.entrantEditPhone.getText().toString();
@@ -109,6 +131,9 @@ public class EntrantEditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Queries the user for an image
+     */
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
@@ -119,6 +144,10 @@ public class EntrantEditProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets the currently displayed image
+     * @param uri The image to display
+     */
     private void setImage(Uri uri){
         imageSelected = true;
         image = uri;

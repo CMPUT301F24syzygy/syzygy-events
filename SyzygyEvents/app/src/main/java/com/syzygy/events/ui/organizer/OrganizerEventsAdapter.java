@@ -19,6 +19,14 @@ import com.syzygy.events.database.Image;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * The array adapter used for showing events
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Events
+ * </pre>
+ */
 public class OrganizerEventsAdapter extends ArrayAdapter<Event> {
 
     public OrganizerEventsAdapter(Context context, List<Event> dataList) {

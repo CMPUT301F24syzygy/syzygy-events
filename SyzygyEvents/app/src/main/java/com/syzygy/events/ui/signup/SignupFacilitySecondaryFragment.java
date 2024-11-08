@@ -23,6 +23,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.databinding.FragSignupOrganizerBinding;
@@ -30,12 +31,23 @@ import com.syzygy.events.ui.OrganizerActivity;
 
 import java.util.Set;
 
+/**
+ * The fragment to create a new facility
+ */
 public class SignupFacilitySecondaryFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private FragSignupOrganizerBinding binding;
+    /**
+     * The current selected image
+     */
     private Uri image;
-    private SupportMapFragment mapFrag;
+    /**
+     * The marker of the location
+     */
     private Marker marker = null;
+    /**
+     * The map
+     */
     private GoogleMap map = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,11 +64,14 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.create_facility_map);
+        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.create_facility_map);
         mapFrag.getMapAsync(this);
 
     }
 
+    /**
+     * Validates the information. If valid, creates the facility and navigates to the profile
+     */
     private void submitData(){
         if(marker == null){
             Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
@@ -95,6 +110,9 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Queries the user for an image
+     */
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
@@ -105,10 +123,14 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         });
     }
 
+    /**
+     * Sets the current image to display. If null, removes the image
+     * @param uri The image
+     */
     private void setImage(Uri uri){
         image = uri;
         if(image == null){
-            Image.formatDefaultImage(null, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
+            Image.formatDefaultImage(Database.Collections.FACILITIES, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
             binding.createFacilityEditImage.setText(R.string.add_image_button);
             binding.createFacilityRemoveImage.setVisibility(View.INVISIBLE);
         }else{

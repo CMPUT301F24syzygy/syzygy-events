@@ -11,6 +11,14 @@ import androidx.fragment.app.Fragment;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.syzygy.events.databinding.FragEntrantQrBinding;
 
+/**
+ * The fragment that the user opens when they want to scan a qr code
+ * <p>
+ * Map
+ * <pre>
+ * 3. Entrant Activity -> QR Scan
+ * </pre>
+ */
 public class EntrantQrFragment extends Fragment {
     private FragEntrantQrBinding binding;
 

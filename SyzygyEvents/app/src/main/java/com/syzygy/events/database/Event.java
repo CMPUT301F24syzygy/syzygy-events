@@ -1,7 +1,6 @@
 package com.syzygy.events.database;
 
 import android.net.Uri;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -13,27 +12,21 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.syzygy.events.R;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * An instance of a event database item
  * - An event can be edited
- * @author Gareth Kmet
- * @version 1.0
- * @since 19oct24
  */
-@Database.Dissovable
+@Database.Dissolves
 public class Event extends DatabaseInstance<Event> implements Database.Querrier<Event>{
 
     /**
@@ -127,7 +120,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     @Database.MustStir
     private void shuffleWaitlist(int count, DataListener<Event, LotteryResult> listener){
         if(count < 0){
-            listener.onCompletion(this, new LotteryResult(EventAssociation.QueryModifier.EMPTY(db, this), EventAssociation.QueryModifier.EMPTY(db, this), count), true);
+            listener.onCompletion(this, new LotteryResult(EventAssociation.Methods.EMPTY(db, this), EventAssociation.Methods.EMPTY(db, this), count), true);
             return;
         }
         getWaitlistUsers((query, data, success) -> {
@@ -148,8 +141,8 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 chosen = users.subList(0,count);
                 unChosen = users.subList(count, users.size());
             }
-            EventAssociation.QueryModifier<Event> c = new EventAssociation.QueryModifier<>(db, Event.this, chosen);
-            EventAssociation.QueryModifier<Event> u = new EventAssociation.QueryModifier<>(db, Event.this, unChosen);
+            EventAssociation.Methods<Event> c = new EventAssociation.Methods<>(db, Event.this, chosen);
+            EventAssociation.Methods<Event> u = new EventAssociation.Methods<>(db, Event.this, unChosen);
             listener.onCompletion(query, new LotteryResult(c,u,count), true);
         });
     }
@@ -158,13 +151,13 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * The random selected list user and unselected users returned by a lottery call along with a method to execute the lottery.
      * This acts as a confirmation stage for the lottery.
      */
-    @Database.Dissovable
-    public class LotteryResult extends QueryResult<EventAssociation.QueryModifier<Event>> {
+    @Database.Dissolves
+    public class LotteryResult extends QueryResult<EventAssociation.Methods<Event>> implements Database.Dissolvable {
         /**
          * The count of users that should have been selected
          */
         public final int count;
-        public final EventAssociation.QueryModifier<Event> notChosen;
+        public final EventAssociation.Methods<Event> notChosen;
         private boolean dissolved = false;
         private boolean executed = false;
 
@@ -174,7 +167,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
          * @param notChosen The list of notChosen users
          * @param count The count of users that should have been selected
          */
-        public LotteryResult(@Database.Stirs EventAssociation.QueryModifier<Event> chosen, @Database.Stirs EventAssociation.QueryModifier<Event> notChosen, int count) {
+        public LotteryResult(@Database.Stirs EventAssociation.Methods<Event> chosen, @Database.Stirs EventAssociation.Methods<Event> notChosen, int count) {
             super(chosen);
             this.count = count;
             this.notChosen = notChosen;
@@ -249,7 +242,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.MustStir
-    public void getInvitedUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getInvitedUsers(DataListener<Event, EventAssociation.Methods<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_invited, listener);
     }
 
@@ -258,7 +251,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.MustStir
-    public void getEnrolledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getEnrolledUsers(DataListener<Event, EventAssociation.Methods<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_enrolled, listener);
     }
 
@@ -267,7 +260,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.MustStir
-    public void getCancelledUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getCancelledUsers(DataListener<Event, EventAssociation.Methods<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_cancelled, listener);
     }
 
@@ -276,7 +269,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called with the list
      */
     @Database.MustStir
-    public void getWaitlistUsers(DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getWaitlistUsers(DataListener<Event, EventAssociation.Methods<Event>> listener){
         getUsersByStatus(R.string.event_assoc_status_waitlist, listener);
     }
 
@@ -291,7 +284,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener The listener which is called on completion
      */
     @Database.MustStir
-    public void getUsersByStatus(int statusID, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getUsersByStatus(int statusID, DataListener<Event, EventAssociation.Methods<Event>> listener){
         Query query = assocUsersQuery.whereEqualTo(
                 db.constants.getString(R.string.database_assoc_status),
                 db.constants.getString(statusID)
@@ -300,31 +293,31 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     /**
-     * Gets the {@link EventAssociation.QueryModifier} from a {@link Query}.
+     * Gets the {@link EventAssociation.Methods} from a {@link Query}.
      * @param query The query to evaluate
      * @param listener The listener that gets called on completion
      * @see DatabaseQuery#refreshData(Listener)
      */
     @Database.MustStir
-    public void getAssociatedUsersFromQuery(Query query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getAssociatedUsersFromQuery(Query query, DataListener<Event, EventAssociation.Methods<Event>> listener){
         getAssociatedUsersFromQuery(new DatabaseQuery<>(db, query, Database.Collections.EVENT_ASSOCIATIONS, null), listener);
     }
 
     /**
-     * Gets the {@link EventAssociation.QueryModifier} from a {@link DatabaseQuery}.
+     * Gets the {@link EventAssociation.Methods} from a {@link DatabaseQuery}.
      * Dissolves the {@code DatabaseQuery} on completion
      * @param query The query to evaluate
      * @param listener The listener that gets called on completion
      * @see DatabaseQuery#refreshData(Listener)
      */
     @Database.MustStir
-    public void getAssociatedUsersFromQuery(@Database.Stirs DatabaseQuery<EventAssociation> query, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getAssociatedUsersFromQuery(@Database.Stirs DatabaseQuery<EventAssociation> query, DataListener<Event, EventAssociation.Methods<Event>> listener){
         query.refreshData((query2, success) -> {
             if(!success){
                 listener.onCompletion(Event.this, null, false);
             }else{
                 List<EventAssociation> users = new ArrayList<>(query.getCurrentInstances());
-                EventAssociation.QueryModifier<Event> q = new EventAssociation.QueryModifier<>(db, Event.this, users);
+                EventAssociation.Methods<Event> q = new EventAssociation.Methods<>(db, Event.this, users);
                 listener.onCompletion(Event.this, q, true);
             }
             query.dissolve();
@@ -603,7 +596,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      * @param listener Ownership is passed of the event assoc
      */
     @Database.MustStir
-    public void getUserAssociation(@Database.Observes User user, DataListener<Event, EventAssociation.QueryModifier<Event>> listener){
+    public void getUserAssociation(@Database.Observes User user, DataListener<Event, EventAssociation.Methods<Event>> listener){
         getAssociatedUsersFromQuery(assocUsersQuery.whereEqualTo(db.constants.getString(R.string.database_assoc_user), user.getDocumentID()), listener);
     }
 

@@ -32,13 +32,32 @@ import com.syzygy.events.ui.OrganizerActivity;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * The fragment that the user sees when they want to edit their facility profile
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> My Facility -> [Edit]
+ * </pre>
+ */
 public class OrganizerEditFacilityFragment extends Fragment  implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private FragOrgEditFacilityBinding binding;
+    /**
+     * The facility
+     */
     private Facility facility;
+    /**
+     * The image that the user has selected
+     */
     private Uri image;
+    /**
+     * If the user has selected a new image
+     */
     private boolean selectedImage = false;
-    private SupportMapFragment mapFrag;
+    /**
+     * The marker of the location on the map
+     */
     private Marker marker = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -54,6 +73,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
         Image.getFormatedAssociatedImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
         binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.editFacilityEditImage.setText(facility.getImage() != null ? R.string.change_image_button : R.string.add_image_button);
         binding.editFacilityDescription.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
         return binding.getRoot();
@@ -62,10 +82,16 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.edit_facility_map);
+        /**
+         * The map
+         */
+        SupportMapFragment mapFrag = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.edit_facility_map);
         mapFrag.getMapAsync(this);
     }
 
+    /**
+     * Validates the data. If valid, edits the facility and navigates to the profile
+     */
     private void submitData(){
         if(marker == null){
             Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
@@ -120,6 +146,9 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         }
     }
 
+    /**
+     * Querries the user for an image
+     */
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
@@ -130,6 +159,10 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         });
     }
 
+    /**
+     * Displays the selected image
+     * @param uri The image
+     */
     private void setImage(Uri uri){
         selectedImage = true;
         image = uri;
@@ -144,6 +177,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         }
     }
 
+    //Set the map marker to the location of the facility
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         Log.println(Log.DEBUG, "fac map", "Ready");
@@ -152,7 +186,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         marker = map.addMarker(new MarkerOptions().draggable(false).position(pos));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15));
     }
-
+    //Updates the location
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
         marker.setPosition(latLng);

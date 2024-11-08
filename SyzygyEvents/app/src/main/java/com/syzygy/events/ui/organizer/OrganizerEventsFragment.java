@@ -15,8 +15,19 @@ import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.FragOrgEventsListBinding;
 import com.syzygy.events.ui.OrganizerActivity;
 
+/**
+ * The fragment displays all events associated with the facility. The Events tab
+ * <p>
+ * Map
+ * <pre>
+ * 1. Organizer Activity -> Events
+ * </pre>
+ */
 public class OrganizerEventsFragment extends Fragment {
     private FragOrgEventsListBinding binding;
+    /**
+     * The query to get all events
+     */
     private DatabaseInfLoadQuery<Event> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

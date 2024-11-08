@@ -21,8 +21,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The profiles tab for admin
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Users
+ * 2. Admin Activity
+ * </pre>
+ */
 public class AdminProfilesFragment extends Fragment {
     private FragAdminProfilesListBinding binding;
+    /**
+     * The query to get all profiles
+     */
     private DatabaseInfLoadQuery<User> query;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,6 +59,7 @@ public class AdminProfilesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        query.dissolve();
         binding = null;
     }
 

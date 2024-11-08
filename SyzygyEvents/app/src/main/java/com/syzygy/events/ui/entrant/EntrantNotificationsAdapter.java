@@ -22,6 +22,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/**
+ * The array adapter used for showing notifications
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> Notifications
+ * </pre>
+ */
 public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
 
     public EntrantNotificationsAdapter(Context context, List<Notification> dataList) {

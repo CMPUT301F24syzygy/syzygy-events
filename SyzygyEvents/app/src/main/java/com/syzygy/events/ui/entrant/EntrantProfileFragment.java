@@ -15,9 +15,20 @@ import com.syzygy.events.database.Image;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragEntrantProfileBinding;
 import com.syzygy.events.ui.EntrantActivity;
-
+/**
+ * The fragment that the user opens to see their profile
+ * <p>
+ * Map
+ * <pre>
+ * 1. Entrant Activity -> My Profile
+ * 2. Entrant Activity
+ * </pre>
+ */
 public class EntrantProfileFragment extends Fragment implements Database.UpdateListener {
     private FragEntrantProfileBinding binding;
+    /**
+     * The user
+     */
     private User user;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,6 +46,9 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         return binding.getRoot();
     }
 
+    /**
+     * Updates the values in the fields
+     */
     private void updateValues(){
         binding.entrantProfileBioText.setText(user.getDescription());
         binding.entrantProfileEmailText.setText(user.getEmail());
