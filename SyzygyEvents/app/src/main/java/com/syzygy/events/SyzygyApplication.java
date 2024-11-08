@@ -49,6 +49,8 @@ import java.util.function.Consumer;
  */
 public class SyzygyApplication extends Application implements Consumer<RuntimeException> {
 
+    public static boolean NO_DATABASE = false;
+
     /**
      * The id of the User account associated with the Syzygy system
      */
@@ -101,13 +103,15 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     @Override
     public void onCreate() {
         super.onCreate();
-        db = new Database(getResources());
-        db.addErrorListener(this);
-        deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        db.<User>getInstance(Database.Collections.USERS, deviceID, (instance, success) -> {
-            if(success) this.user = instance;
-            switchToActivity(success ? EntrantActivity.class : SignupActivity.class);
-        });
+        if(!NO_DATABASE){
+            db = new Database(getResources());
+            db.addErrorListener(this);
+            deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            db.<User>getInstance(Database.Collections.USERS, deviceID, (instance, success) -> {
+                if(success) this.user = instance;
+                switchToActivity(success ? EntrantActivity.class : SignupActivity.class);
+            });
+        }
 
         Image.loadAsDrawable(Image.formatImage(R.drawable.default_user, Image.Options.Circle(Image.Options.Sizes.ICON)), getResources(), (s,d) -> {
             menuAdminIcon = d;
@@ -308,6 +312,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      * @param to The new activity
      */
     public void switchToActivity(Class<? extends Activity> to){
+        if(NO_DATABASE)return;
         Intent i = new Intent(currentActivity, to);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(i);

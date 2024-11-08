@@ -105,7 +105,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @see DatabaseInstance#getData()
      */
     <T extends DatabaseInstance<T>> void updateDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
-        // TODO might be double notifiying
         instance.getDocumentReference().set(instance.getData());
     }
 
@@ -117,7 +116,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @see DatabaseInstance#getDocumentReference()
      */
     <T extends DatabaseInstance<T>> void deleteFromDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
-        // TODO might be double notifiying
         instance.getDocumentReference().delete();
     }
 
@@ -130,7 +128,6 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @see DatabaseInstance#getData()
      */
     <T extends DatabaseInstance<T>> void addToDatabase(@Observes DatabaseInstance<T> instance) throws IllegalStateException{
-        // TODO might be double notifiying
         instance.getDocumentReference().set(instance.getData());
     }
 
