@@ -92,7 +92,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/create_facility_submit_button"
-            app:layout_constraintTop_toBottomOf="create_facility_description"
+            app:layout_constraintTop_toBottomOf="@+id/edit_description_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
