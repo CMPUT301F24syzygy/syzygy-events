@@ -447,7 +447,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f2 = Filter.notEqualTo(db.constants.getString(R.string.database_assoc_status), db.constants.getString(R.string.event_assoc_status_cancelled));
         Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
         Query q = c.getCollection(db).where(Filter.and(f1,f2)).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 10);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     @Database.MustStir
@@ -455,7 +455,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_event_facilityID), facility.getDocumentID());
         Database.Collections c = Database.Collections.EVENTS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_event_createdTime), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 10);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     @Database.MustStir
@@ -463,7 +463,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID());
         Database.Collections c = Database.Collections.NOTIFICATIONS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_not_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 25);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     /**
@@ -477,7 +477,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         }
         Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, returnAll ? null : 25);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     @Database.MustStir
@@ -485,7 +485,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.USERS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_user_createdTime), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 25);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     @Database.MustStir
@@ -493,7 +493,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.EVENTS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_event_createdTime), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 10);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     @Database.MustStir
@@ -501,7 +501,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Filter f = Filter.and(); //TODO - does this work
         Database.Collections c = Database.Collections.IMAGES;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_img_uploadTime), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, 25);
+        return new DatabaseQuery<>(db, q, c, null);
     }
 
     public enum Page{
