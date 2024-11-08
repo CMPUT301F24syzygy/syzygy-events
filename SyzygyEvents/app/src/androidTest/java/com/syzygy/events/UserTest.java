@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -67,7 +68,7 @@ public class UserTest {
             CountDownLatch latch = new CountDownLatch(1);
 
             //create user
-            User.NewInstance(testDB, "testDeviceId1", "testName", "TEST", "", "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+            User.NewInstance(testDB, "testDeviceId1", "testName", "TEST", Uri.parse(""), "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
                     testuser = instance;
                     // Indicate that the operation is complete
@@ -88,7 +89,7 @@ public class UserTest {
 
     @AfterClass
     public static void closeDb() throws IOException {
-        testuser.deleteInstance(success -> {});
+        testuser.deleteInstance(1, success -> {});
     }
 
 
