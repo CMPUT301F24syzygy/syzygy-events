@@ -29,7 +29,7 @@
             android:gravity="top|start"
             android:inputType="text|textMultiLine"
             android:lines="2"
-            android:maxLength="30"
+            android:maxLength="26"
             android:scrollbars="vertical"
             android:textAlignment="gravity"
             android:textSize="18sp" />

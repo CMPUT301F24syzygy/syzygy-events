@@ -29,7 +29,7 @@
                 android:gravity="top|start"
                 android:inputType="text|textMultiLine"
                 android:lines="2"
-                android:maxLength="30"
+                android:maxLength="26"
                 android:scrollbars="vertical"
                 android:textAlignment="gravity"
                 android:textSize="18sp" />
@@ -115,21 +115,21 @@
             android:id="@+id/create_facility_edit_image"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="4dp"
             android:text="@string/add_image_button"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/facility_image"
+            app:layout_constraintEnd_toEndOf="@+id/facility_image"
             app:layout_constraintTop_toBottomOf="@+id/facility_image" />
 
         <Button
             android:id="@+id/create_facility_remove_image"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:layout_marginTop="0dp"
             android:text="@string/remove_image_button"
             android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/facility_image"
+            app:layout_constraintEnd_toEndOf="@+id/facility_image"
             app:layout_constraintTop_toBottomOf="@+id/create_facility_edit_image" />
 
 
