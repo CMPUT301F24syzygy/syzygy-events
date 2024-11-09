@@ -36,6 +36,7 @@ import org.junit.Test;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -46,8 +47,10 @@ import java.util.function.BiConsumer;
 
 /**
  * Tests the user stories
+ *
  * @author Gareth
  */
+
 public class UserStoriesModelTest {
 
     private static FirebaseFirestore firestore;
@@ -130,17 +133,22 @@ public class UserStoriesModelTest {
         });
     }
 
+    private Timestamp after(){
+        return new Timestamp(Instant.now().plus(1, ChronoUnit.DAYS));
+    }
+
+    private Timestamp before(){
+        return new Timestamp(Instant.now().minus(1, ChronoUnit.DAYS));
+    }
+
     private static final int EVENT_BEFORE_REG = 0, EVENT_REG = 1, EVENT_AFTER_REG = 2, EVENT_BEFORE_START = 2, EVENT_START = 3, EVENT_END = 4;
     private void getTestEvent(Facility f, int dates, BiConsumer<Event, Runnable> listener, boolean geo){
         instances++;
         Timestamp open, close, start, end;
         Timestamp
-                before = new Timestamp(Instant.now().minus(1, ChronoUnit.DAYS)),
-                after = new Timestamp(Instant.now().plus(1, ChronoUnit.DAYS));
+                before = before(),
+                after = after();
         switch(dates){
-            case EVENT_BEFORE_REG:
-                open = after; close = after; start = after; end = after;
-                break;
             case EVENT_REG:
                 open = before; close = after; start = after; end = after;
                 break;
@@ -651,8 +659,39 @@ public class UserStoriesModelTest {
     public void US020103() throws InterruptedException {
 
         CountDownLatch latch = new CountDownLatch(1);
-        latch.countDown();
-        //TODO
+        getTestUser((u,r)->{
+            Facility.NewInstance(testDB, "Name"+random, new GeoPoint(0,0),
+                    "Address", "Description", null, u.getDocumentID(), (i,s)->{
+                try{
+                    assertTrue(s);
+                    assertNotNull(i);
+                    assertEquals("Name"+random, i.getName());
+                    assertEquals("Description", i.getDescription());
+                    assertEquals(u, i.getOrganizer());
+                    assertEquals("Address", i.getAddress());
+                    assertNull(i.getImage());
+                    i.update("Name2", i.getLocation(), "Address2", "des2", s2->{
+                       try{
+                           assertTrue(s2);
+                           assertEquals("Name2", i.getName());
+                           assertEquals("Address2", i.getAddress());
+                           assertEquals(u, i.getOrganizer());
+                           assertEquals("des2", i.getDescription());
+                           latch.countDown();
+                       }finally {
+                           i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{});
+                           r.run();
+                       }
+                    });
+                }catch (Exception ex) {
+                    try{
+                        i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s2->{});
+                    }finally {
+                        r.run();
+                    }
+                }
+            });
+        });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
         }
@@ -698,12 +737,262 @@ public class UserStoriesModelTest {
     @Test
     public void US020203() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        latch.countDown();
-        //TODO
+        getTestFacilityFresh((f,r)->{
+            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), true,
+                    "Des", 2L, 3L, 0.0, before(), after(), after(), after(), 0L,
+                    (i,s)->{
+                        try{
+                            assertTrue(s);
+                            assertTrue(i.getRequiresLocation());
+                            i.addUserToWaitlist(f.getOrganizer(), null, (q,d, s2)->{
+                                try{
+                                    assertFalse(s2);
+                                    latch.countDown();
+                                }finally {
+                                    i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{});
+                                    r.run();
+                                }
+                            });
+                        }catch (Exception ex) {
+                            try{
+                                i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s2->{});
+                            }finally {
+                                r.run();
+                            }
+                        }
+                    });
+        });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
         }
     }
+
+    @Test
+    public void US020301_Limit() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getTestFacilityFresh((f,r)->{
+            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+                    "Des", 2L, 1L, 0.0, before(), after(), after(), after(), 0L,
+                    (i,s)->{
+                        try{
+                            assertTrue(s);
+                            i.addUserToWaitlist(f.getOrganizer(), null, (q,d, s2)->{
+                                try{
+                                    assertTrue(s2);
+                                    getTestUser((u,r2)->{
+                                        i.addUserToWaitlist(u, null, (q2,d2,s3)->{
+                                            try{
+                                                assertFalse(s3);
+                                            }finally {
+                                                i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s4->{});
+                                                finish(r2,r);
+                                            }
+                                            latch.countDown();
+                                        });
+                                    });
+                                }catch (Exception ex){
+                                    i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{});
+                                    r.run();
+                                }
+                            });
+                        }catch (Exception ex) {
+                            try{
+                                i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s2->{});
+                            }finally {
+                                r.run();
+                            }
+                        }
+                    });
+        });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020301_Optional() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getTestFacilityFresh((f,r)->{
+            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+                    "Des", 2L, -1L, 0.0, before(), after(), after(), after(), 0L,
+                    (i,s)->{
+                        try{
+                            assertTrue(s);
+                            i.addUserToWaitlist(f.getOrganizer(), null, (q,d, s2)->{
+                                try{
+                                    assertTrue(s2);
+                                    latch.countDown();
+                                }finally {
+                                    i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{});
+                                    r.run();
+                                }
+                            });
+                        }catch (Exception ex) {
+                            try{
+                                i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s2->{});
+                            }finally {
+                                r.run();
+                            }
+                        }
+                    });
+        });
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020401() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.countDown();
+        //TODO need image file
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020402() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.countDown();
+        //TODO need image file
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020501() throws InterruptedException {
+        //TODO not applicable
+    }
+
+    @Test
+    public void US020502() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getEventWithUsersInWaitlistAndEnrolled(3,0,(eas,r1) -> {
+            Event e = eas.get(0).getEvent();
+            e.getLottery(-1, (q,l,s) -> {
+                assertTrue(s);
+                try{
+                    assertEquals(2,l.result.size());
+                    assertTrue(l.filledAllSpots());
+                    assertEquals(1,l.notChosen.size());
+                    l.execute((q1,d,s2) -> {
+                        try{
+                            assertTrue(s2);
+                            int enrolled = 0;
+                            int waitlist = 0;
+                            for(EventAssociation ea : eas){
+                                if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_waitlist))){
+                                    waitlist++;
+                                }else if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_invited))){
+                                    enrolled++;
+                                }
+                            }
+                            assertEquals(2, enrolled);
+                            assertEquals(1, waitlist);
+
+                            latch.countDown();
+                        }finally {
+                            d.result.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                            d.failedNotifications.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                            r1.run();
+                        }
+
+                    }, false);
+                }catch (Exception ex){
+                    r1.run();
+                }
+            });
+        });
+
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
+    @Test
+    public void US020503() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getEventWithUsersInWaitlistAndEnrolled(3,0,(eas,r1) -> {
+            Event e = eas.get(0).getEvent();
+            e.getLottery(-1, (q,l,s) -> {
+                assertTrue(s);
+                try{
+                    assertEquals(2,l.result.size());
+                    assertTrue(l.filledAllSpots());
+                    assertEquals(1,l.notChosen.size());
+                    l.execute((q1,d,s2) -> {
+                        try{
+                            assertTrue(s2);
+                            int enrolled = 0;
+                            int waitlist = 0;
+                            EventAssociation eae = null;
+                            for(EventAssociation ea : eas){
+                                if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_waitlist))){
+                                    waitlist++;
+                                }else if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_invited))){
+                                    enrolled++;
+                                    eae = ea;
+                                }
+                            }
+                            assertEquals(2, enrolled);
+                            assertEquals(1, waitlist);
+
+                            eae.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s4->{});
+
+                            e.getLottery(-1, (q2,l2,s22)->{
+                                assertTrue(s22);
+                                try{
+                                    assertEquals(1,l2.result.size());
+                                    assertTrue(l2.filledAllSpots());
+                                    assertEquals(0,l2.notChosen.size());
+                                    l2.execute((q3,d3,s4) -> {
+                                        try{
+                                            assertTrue(s4);
+                                            int enrolled2 = 0;
+                                            int waitlist2 = 0;
+                                            for(EventAssociation ea : eas){
+                                                if(!ea.isLegalState()) continue;
+                                                if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_waitlist))){
+                                                    waitlist2++;
+                                                }else if(Objects.equals(ea.getStatus(), constants.getString(R.string.event_assoc_status_invited))){
+                                                    enrolled2++;
+                                                }
+                                            }
+                                            assertEquals(2, enrolled2);
+                                            assertEquals(0, waitlist2);
+
+                                            latch.countDown();
+                                        }finally {
+                                            d.result.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                                            d.failedNotifications.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                                            r1.run();
+                                        }
+
+                                    }, false);
+                                }catch (Exception ex){
+                                    r1.run();
+                                }
+                            });
+                        }catch (Exception e1){
+                            d.result.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                            d.failedNotifications.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
+                            r1.run();
+                        }
+
+                    }, false);
+                }catch (Exception ex){
+                    r1.run();
+                }
+            });
+        });
+
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("User creation timed out");
+        }
+    }
+
 
 
 
