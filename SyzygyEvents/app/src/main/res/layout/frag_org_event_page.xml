@@ -128,7 +128,7 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/button_run_lottery"
+            android:text="@string/button_open_lottery"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

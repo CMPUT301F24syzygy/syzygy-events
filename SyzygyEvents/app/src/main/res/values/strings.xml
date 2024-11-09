@@ -77,6 +77,8 @@
     <string name="create_facility_submit_button">Create Facility</string>
     <string name="requires_geo_warning">To join the waitlist for this event you must agree to share your join location with the event organizer.</string>
     <string name="failed_scan_qr">QR scan unsucessfull.</string>
+    <string name="button_open_lottery">Lottery</string>
+    <string name="lottery_info_text">Entrants from the waitlist will be randomly selected and invited to join your event.</string>
 
 
 </resources>

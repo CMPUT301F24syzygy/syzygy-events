@@ -317,11 +317,14 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
 
         TextView message_full = dialog.findViewById(R.id.lottery_full_message);
         TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
+        TextView button_info = dialog.findViewById(R.id.lottery_info_text);
         Button button = dialog.findViewById(R.id.lottery_run_button);
+
 
         message_full.setVisibility(View.GONE);
         message_waitlist_empty.setVisibility(View.GONE);
         button.setVisibility(View.GONE);
+        button_info.setVisibility(View.GONE);
 
         TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
         waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
@@ -336,6 +339,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         }
         else {
             button.setVisibility(View.VISIBLE);
+            button_info.setVisibility(View.VISIBLE);
         }
     }
 
