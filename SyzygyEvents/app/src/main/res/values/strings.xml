@@ -79,6 +79,7 @@
     <string name="failed_scan_qr">QR scan unsucessfull.</string>
     <string name="button_open_lottery">Lottery</string>
     <string name="lottery_info_text">Entrants from the waitlist will be randomly selected and invited to join your event.</string>
+    <string name="run_lottery_button">Fill Open Spots</string>
 
 
 </resources>

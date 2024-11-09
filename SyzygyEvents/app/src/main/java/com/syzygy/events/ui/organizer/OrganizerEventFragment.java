@@ -330,7 +330,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
 
         TextView open = dialog.findViewById(R.id.lottery_open_text);
-        open.setText((getString(R.string.lottery_waitlist_count, event.getCapacity() - event.getCurrentEnrolled())));
+        open.setText((getString(R.string.lottery_open_count, event.getCapacity() - event.getCurrentEnrolled())));
 
         if (event.getCurrentEnrolled() == event.getCapacity()) {
             message_full.setVisibility(View.VISIBLE);
