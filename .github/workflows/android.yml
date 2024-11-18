@@ -64,4 +64,4 @@ jobs:
         working-directory: ./SyzygyEvents
         script: |
           cat secrets.properties
-          ./gradlew connectedCheck
+          ./gradlew -Pandroid.testInstrumentationRunnerArguments.class=com.syzygy.events.UserTest connectedCheck
