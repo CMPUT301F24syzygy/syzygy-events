@@ -62,4 +62,6 @@ jobs:
       with:
         api-level: 29
         working-directory: ./SyzygyEvents
-        script: ./gradlew connectedCheck
+        script: |
+          ls 
+          ./gradlew connectedCheck
