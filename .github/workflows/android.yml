@@ -61,8 +61,5 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: |
-          echo ${{ github.workspace }}
-          cd ${{ github.workspace }}/SyzygyEvents
-          pwd
-          ./SyzygyEvents/gradlew connectedCheck
+        working-directory: ./SyzygyEvents
+        script: ./gradlew connectedCheck
