@@ -1,19 +1,30 @@
 package com.syzygy.events;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
+import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.Firebase;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -23,6 +34,7 @@ import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.User;
 import com.syzygy.events.ui.SignupActivity;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,22 +58,45 @@ public class UserTest {
 
     private static FirebaseApp TEST_INSTANCE;
     private static boolean setUpComplete = false;
-    FirebaseFirestore firestore;
+    static FirebaseFirestore firestore;
     Database testDB;
     Resources constants;
     static User testuser;
 
+    public static ViewAction waitFor(final long millis) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isRoot();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Wait for " + millis + " milliseconds.";
+            }
+
+            @Override
+            public void perform(UiController uiController, final View view) {
+                uiController.loopMainThreadForAtLeast(millis);
+            }
+        };
+    }
 
     @Before
     public void createDb() throws InterruptedException {
         if (!setUpComplete){
 
             final CountDownLatch firebaselatch = new CountDownLatch(1);
-
-
             Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-            assertNotNull("Application context is null", context.getPackageName());
+            final Intent intent = context.getPackageManager()
+                    .getLaunchIntentForPackage("com.syzygy.events");
+            // Clear out any previous instances
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
 
+
+
+            assertNotNull("Application context is null", context.getPackageName());
             constants = context.getResources();
 
             FirebaseOptions options = new FirebaseOptions.Builder()
@@ -85,7 +120,7 @@ public class UserTest {
             //create user
 
             final CountDownLatch latch = new CountDownLatch(1);
-            User.NewInstance(testDB, "testDeviceId5", "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+            User.NewInstance(testDB, "testDeviceId18", "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
                     testuser = instance;
                     // Indicate that the operation is complete
@@ -108,7 +143,22 @@ public class UserTest {
 
     @AfterClass
     public static void closeDb() {
-        testuser.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {});
+        System.out.println("Deleting User");
+        System.out.println(testuser.getDocumentID());
+        firestore.collection("users").document(testuser.getDocumentID())
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Delete", "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("Delete", "Error deleting document", e);
+                    }
+                });
     }
 
 
