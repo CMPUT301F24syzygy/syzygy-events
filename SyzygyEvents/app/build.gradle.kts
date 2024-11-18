@@ -43,10 +43,8 @@ if (dotenv.exists()) {
     dotenv.forEachLine { line ->
         val (key, value) = line.split("=").map { it.trim() }
         android {
-            buildTypes {
-                getByName("debug") {
-                    buildConfigField("String", key, "\"$value\"")
-                }
+            defaultConfig {
+                buildConfigField("String", key, "\"$value\"")
             }
         }
     }
