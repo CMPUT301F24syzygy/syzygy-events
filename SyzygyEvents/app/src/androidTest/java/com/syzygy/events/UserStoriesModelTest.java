@@ -53,34 +53,20 @@ import java.util.function.BiConsumer;
 
 public class UserStoriesModelTest {
 
-    private static FirebaseFirestore firestore;
-    private static Database testDB;
-    private static Resources constants;
+    private static final TestDatabase db = new TestDatabase();
     private static Context context;
-
+    private static Resources constants;
     private static String random;
 
     private static int instances = 0;
 
     @BeforeClass
-    public static void setUp(){
+    public static void setUp() throws InterruptedException {
 
         SyzygyApplication.NO_DATABASE = true;
         context = ApplicationProvider.getApplicationContext();
         constants = context.getResources();
-
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setApiKey(BuildConfig.FIREBASE_TEST_API_KEY)
-                .setApplicationId(BuildConfig.FIREBASE_TEST_APPLICATION_ID)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                .build();
-
-        //create database
-        FirebaseApp.initializeApp(context, options, "test");
-        FirebaseApp TEST_INSTANCE = FirebaseApp.getInstance("test");
-        firestore = FirebaseFirestore.getInstance(TEST_INSTANCE);
-        testDB = new Database(constants, firestore, null);
-        System.out.println("Created");
+        db.createDb(context);
     }
     @Before
     public void set(){
@@ -91,7 +77,7 @@ public class UserStoriesModelTest {
     private void getTestUser(BiConsumer<User, Runnable> listener){
         instances++;
         Set<Integer> invalidIDs = User.NewInstance(
-                testDB, random+"u"+instances, "Name"+instances, "Des"+instances,
+                db.testDB, random+"u"+instances, "Name"+instances, "Des"+instances,
                 null, "", "email"+instances+"@email.com", "12345678901",
                 true, true, false, (instance, success) -> {
                     if(!success){
@@ -107,7 +93,7 @@ public class UserStoriesModelTest {
 
     private void getTestFacility(User u, BiConsumer<Facility, Runnable> listener){
         instances++;
-        Set<Integer> invalidIDs = Facility.NewInstance(testDB, "Name"+instances, new GeoPoint(0,0),
+        Set<Integer> invalidIDs = Facility.NewInstance(db.testDB, "Name"+instances, new GeoPoint(0,0),
                 "Address"+instances, "Des"+instances, null, u.getDocumentID(), (instance, success) -> {
                     if(!success){
                         fail("failed to create facility");
@@ -166,7 +152,7 @@ public class UserStoriesModelTest {
                 break;
         }
 
-        Set<Integer> invalidIDs = Event.NewInstance(testDB, "Name"+instances, null, f.getDocumentID(),
+        Set<Integer> invalidIDs = Event.NewInstance(db.testDB, "Name"+instances, null, f.getDocumentID(),
                 geo, "Des"+instances, 2L, 3L, 0.00,
                 open, close, start, end, Event.Dates.EVERY_DAY, (instance, success) -> {
                     if(!success){
@@ -193,7 +179,7 @@ public class UserStoriesModelTest {
 
     private void getTestEventAssociation(User u, Event e, String status, BiConsumer<EventAssociation, Runnable> listener, GeoPoint geo){
         instances++;
-        Set<Integer> invalidIDs = EventAssociation.NewInstance(testDB, e.getDocumentID(), geo,
+        Set<Integer> invalidIDs = EventAssociation.NewInstance(db.testDB, e.getDocumentID(), geo,
                 status, u.getDocumentID(), (instance, success) -> {
                     if(!success){
                         fail("failed to create event association");
@@ -224,7 +210,7 @@ public class UserStoriesModelTest {
 
     private void getTestNotification(User send, User rec, Event e, BiConsumer<Notification, Runnable> listener){
         instances++;
-        Set<Integer> invalidIDs = Notification.NewInstance(testDB, "Subject"+instances, "Body"+instances,
+        Set<Integer> invalidIDs = Notification.NewInstance(db.testDB, "Subject"+instances, "Body"+instances,
                 e.getDocumentID(), rec.getDocumentID(), send.getDocumentID(), (instance, success) -> {
                     if(!success){
                         fail("failed to create notification");
@@ -342,7 +328,7 @@ public class UserStoriesModelTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         Set<Integer> invalidIDs = User.NewInstance(
-                testDB, random+"uDevice1", "Name", "Des",
+                db.testDB, random+"uDevice1", "Name", "Des",
                 null, "", "email@email.com", "1234567890",
                 true, true, false, (instance, success) -> {
                     assertTrue(success);
@@ -541,7 +527,7 @@ public class UserStoriesModelTest {
         //Mainly visual
         CountDownLatch latch = new CountDownLatch(1);
         getTestEventFresh(EVENT_REG, (e, r) -> {
-            testDB.getInstance(Database.Collections.EVENTS, e.getQrHash(), (i, s) -> {
+            db.testDB.getInstance(Database.Collections.EVENTS, e.getQrHash(), (i, s) -> {
                 latch.countDown();
                 try{
                     assertTrue(s);
@@ -561,7 +547,7 @@ public class UserStoriesModelTest {
         //Mainly visual
         CountDownLatch latch = new CountDownLatch(1);
         getTestEventFresh(EVENT_REG, (e, r) -> {
-            testDB.<Event>getInstance(Database.Collections.EVENTS, e.getQrHash(), (i, s) -> {
+            db.testDB.<Event>getInstance(Database.Collections.EVENTS, e.getQrHash(), (i, s) -> {
                 try{
                     assertTrue(s);
                     assertEquals(e,i);
@@ -625,7 +611,7 @@ public class UserStoriesModelTest {
     public void US020101() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestFacilityFresh((f,r)->{
-            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+            Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
                     "Des", 2L, 3L, 0.0, Timestamp.now(), Timestamp.now(), Timestamp.now(), Timestamp.now(), 0L,
                     (i,s)->{
                 try{
@@ -660,7 +646,7 @@ public class UserStoriesModelTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         getTestUser((u,r)->{
-            Facility.NewInstance(testDB, "Name"+random, new GeoPoint(0,0),
+            Facility.NewInstance(db.testDB, "Name"+random, new GeoPoint(0,0),
                     "Address", "Description", null, u.getDocumentID(), (i,s)->{
                 try{
                     assertTrue(s);
@@ -738,7 +724,7 @@ public class UserStoriesModelTest {
     public void US020203() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestFacilityFresh((f,r)->{
-            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), true,
+            Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), true,
                     "Des", 2L, 3L, 0.0, before(), after(), after(), after(), 0L,
                     (i,s)->{
                         try{
@@ -771,7 +757,7 @@ public class UserStoriesModelTest {
     public void US020301_Limit() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestFacilityFresh((f,r)->{
-            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+            Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
                     "Des", 2L, 1L, 0.0, before(), after(), after(), after(), 0L,
                     (i,s)->{
                         try{
@@ -806,6 +792,7 @@ public class UserStoriesModelTest {
         });
         if (!latch.await(10, TimeUnit.SECONDS)) {
             fail("User creation timed out");
+            fail("User creation timed out");
         }
     }
 
@@ -813,7 +800,7 @@ public class UserStoriesModelTest {
     public void US020301_Optional() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         getTestFacilityFresh((f,r)->{
-            Event.NewInstance(testDB, random+"Title", null, f.getDocumentID(), false,
+            Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
                     "Des", 2L, -1L, 0.0, before(), after(), after(), after(), 0L,
                     (i,s)->{
                         try{
