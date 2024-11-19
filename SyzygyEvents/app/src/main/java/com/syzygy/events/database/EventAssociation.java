@@ -183,8 +183,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         @Database.Stirred
         public void inviteUsersToEventFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
             setStatus(R.string.event_assoc_status_invited,
-                    db.constants.getString(R.string.notification_lottery_notChosen_subject),
-                    db.constants.getString(R.string.notification_lottery_notChosen_body),
+                    db.constants.getString(R.string.notification_lottery_chosen_subject),
+                    db.constants.getString(R.string.notification_lottery_chosen_body),
                     true, true, listener
             );
         }

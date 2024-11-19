@@ -582,7 +582,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     return;
                 }
 
-                e.setStatus(R.string.event_assoc_status_cancelled);
+                e.setStatus(R.string.event_assoc_status_enrolled);
                 listener.onCompletion(this, new QueryResult<>(e), true);
                 data.dissolve();
             });

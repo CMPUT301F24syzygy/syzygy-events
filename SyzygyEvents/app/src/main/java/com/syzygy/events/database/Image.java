@@ -333,9 +333,9 @@ public class Image extends DatabaseInstance<Image> {
     public static RequestCreator getDefaultImage(@NonNull Database.Collections collection){
         switch(collection){
             case FACILITIES:
-                return Picasso.get().load(R.drawable.default_facility);
+                return Picasso.get().load(R.drawable.img_default);
             case EVENTS:
-                return Picasso.get().load(R.drawable.default_event);
+                return Picasso.get().load(R.drawable.img_default);
             case USERS:
                 return Picasso.get().load(R.drawable.default_user);
             default:

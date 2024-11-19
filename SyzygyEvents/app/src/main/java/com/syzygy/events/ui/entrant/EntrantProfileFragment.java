@@ -51,6 +51,7 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         binding.entrantProfileEmailText.setText(user.getEmail());
         binding.entrantProfileNameText.setText(user.getName());
         binding.entrantProfilePhoneText.setText(user.getPhoneNumber());
+        binding.entrantProfilePhoneLabel.setVisibility(user.getPhoneNumber().isEmpty() ? View.GONE : View.VISIBLE);
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantProfileImageImg);
     }
 

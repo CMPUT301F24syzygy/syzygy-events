@@ -120,10 +120,11 @@ public class EntrantActivity extends SyzygyActivity {
         if (intentResult != null && intentResult.getContents() != null) {
             openEvent(intentResult.getContents());
         } else {
+            /*
             Dialog qrScanFailed = new AlertDialog.Builder(this)
                     .setTitle("Error")
                     .setMessage(R.string.failed_scan_qr).create();
-            qrScanFailed.show();
+            qrScanFailed.show();*/
         }
 
     }

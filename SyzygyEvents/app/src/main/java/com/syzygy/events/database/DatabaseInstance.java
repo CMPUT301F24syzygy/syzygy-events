@@ -1049,23 +1049,27 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         /**
          * If the instance is being deleted because it is being replaced by another version of the instance.
          */
-        public final static int REPLACEMENT = 0b00001;
+        public final static int REPLACEMENT = 0b000001;
         /**
          * If the instance is being deleted explicitly
          */
-        public final static int HARD_DELETE = 0b00010;
+        public final static int HARD_DELETE = 0b000010;
         /**
          * If the instance is being deleted because another instance was deleted
          */
-        public final static int CASCADE = 0b00100;
+        public final static int CASCADE = 0b000100;
         /**
          * If the instance is being deleted because a non nullable sub instance was deleted
          */
-        public final static int UP_FALL = 0b01000;
+        public final static int UP_FALL = 0b001000;
         /**
          * If the instance is being deleted because
          */
-        public final static int ERROR = 0b10000;
+        public final static int ERROR = 0b010000;
+        /**
+         * If sub instance should not be deleted. Does not notify updates
+         */
+        public final static int SILENT = 0b100000;
     }
 
     /**
@@ -1082,6 +1086,15 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             return;
         };
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
+
+        if((deletionType & DeletionType.SILENT) != 0){
+            isDeleted = true;
+            db.deleteFromDatabase(this);
+            fullDissolve();
+            listener.accept(true);
+            return;
+        }
+
         requiredFirstDelete(deletionType, success -> {
             if(!success){
                 listener.accept(false);
@@ -1092,7 +1105,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             deleteSubInstances(deletionType, success2 -> {
                 notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
                 fullDissolve();
-                listener.accept(true);
+                listener.accept(true);//TODO true or success
             });
         });
     }
