@@ -34,15 +34,26 @@ public class TestDatabase {
         assertNotNull("Application context is null", context.getPackageName());
         constants = context.getResources();
 
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setApiKey(BuildConfig.FIREBASE_TEST_API_KEY)
-                .setApplicationId(BuildConfig.FIREBASE_TEST_APPLICATION_ID)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                .build();
+        FirebaseApp firebaseApp = null;
 
-        FirebaseApp.initializeApp(context, options, "test");
-        FirebaseApp TEST_INSTANCE = FirebaseApp.getInstance("test");
-        firestore = FirebaseFirestore.getInstance(TEST_INSTANCE);
+        for (FirebaseApp app : FirebaseApp.getApps(context)) {
+            if (app.getName().equals("test")) {
+                firebaseApp = app;
+                break;
+            }
+        }
+
+        if (firebaseApp == null) {
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setApiKey(BuildConfig.FIREBASE_TEST_API_KEY)
+                    .setApplicationId(BuildConfig.FIREBASE_TEST_APPLICATION_ID)
+                    .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
+                    .build();
+
+            FirebaseApp.initializeApp(context, options, "test");
+            firebaseApp = FirebaseApp.getInstance("test");
+        }
+        firestore = FirebaseFirestore.getInstance(firebaseApp);
         testDB = new Database(constants, firestore, null);
         System.out.println("Created");
 
