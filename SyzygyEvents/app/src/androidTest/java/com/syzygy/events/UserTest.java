@@ -43,6 +43,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,25 +64,6 @@ public class UserTest {
     Resources constants;
     static User testuser;
 
-    public static ViewAction waitFor(final long millis) {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return isRoot();
-            }
-
-            @Override
-            public String getDescription() {
-                return "Wait for " + millis + " milliseconds.";
-            }
-
-            @Override
-            public void perform(UiController uiController, final View view) {
-                uiController.loopMainThreadForAtLeast(millis);
-            }
-        };
-    }
-
     @Before
     public void createDb() throws InterruptedException {
         if (!setUpComplete){
@@ -93,8 +75,6 @@ public class UserTest {
             // Clear out any previous instances
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             context.startActivity(intent);
-
-
 
             assertNotNull("Application context is null", context.getPackageName());
             constants = context.getResources();
@@ -120,7 +100,7 @@ public class UserTest {
             //create user
 
             final CountDownLatch latch = new CountDownLatch(1);
-            User.NewInstance(testDB, "testDeviceId123", "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+            User.NewInstance(testDB, UUID.randomUUID().toString(), "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
                     testuser = instance;
                     // Indicate that the operation is complete
