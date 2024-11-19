@@ -38,6 +38,18 @@ android {
     }
 }
 
+val dotenv = File(rootProject.rootDir, "secret.properties")
+if (dotenv.exists()) {
+    dotenv.forEachLine { line ->
+        val (key, value) = line.split("=").map { it.trim() }
+        android {
+            defaultConfig {
+                buildConfigField("String", key, "\"$value\"")
+            }
+        }
+    }
+}
+
 dependencies {
 
     implementation(libs.appcompat)
