@@ -1,52 +1,23 @@
 package com.syzygy.events;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.util.Log;
-import android.view.View;
 
-import androidx.annotation.NonNull;
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.espresso.UiController;
-import androidx.test.espresso.ViewAction;
+import android.util.Log;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Firebase;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.syzygy.events.database.Database;
-import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.User;
-import com.syzygy.events.ui.SignupActivity;
 
-import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Unit Test class for the user model
@@ -57,52 +28,22 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class UserTest {
 
-    private static FirebaseApp TEST_INSTANCE;
     private static boolean setUpComplete = false;
-    static FirebaseFirestore firestore;
-    Database testDB;
-    Resources constants;
-    static User testuser;
+    static User testUser;
+    private static final TestDatabase db = new TestDatabase();
 
     @Before
     public void createDb() throws InterruptedException {
         if (!setUpComplete){
 
-            final CountDownLatch firebaselatch = new CountDownLatch(1);
             Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-            final Intent intent = context.getPackageManager()
-                    .getLaunchIntentForPackage("com.syzygy.events");
-            // Clear out any previous instances
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            context.startActivity(intent);
+            db.createDb(context);
 
-            assertNotNull("Application context is null", context.getPackageName());
-            constants = context.getResources();
-
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setApiKey(BuildConfig.FIREBASE_TEST_API_KEY)
-                    .setApplicationId(BuildConfig.FIREBASE_TEST_APPLICATION_ID)
-                    .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                    .build();
-
-            //create database
-            FirebaseApp.initializeApp(context, options, "test");
-            TEST_INSTANCE = FirebaseApp.getInstance("test");
-            firestore = FirebaseFirestore.getInstance(TEST_INSTANCE);
-            testDB = new Database(constants, firestore, null);
-            System.out.println("Created");
-            // Decrement the latch count to signal task completion
-            firebaselatch.countDown();
-            // Wait for the background task to finish (with a timeout)
-            if (!firebaselatch.await(60, TimeUnit.SECONDS)) {
-                fail("Firebase creation timed out");
-            }
             //create user
-
             final CountDownLatch latch = new CountDownLatch(1);
-            User.NewInstance(testDB, UUID.randomUUID().toString(), "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+            User.NewInstance(db.testDB, UUID.randomUUID().toString(), "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
-                    testuser = instance;
+                    testUser = instance;
                     // Indicate that the operation is complete
                     System.out.println("User was created");
                     latch.countDown();
@@ -124,21 +65,11 @@ public class UserTest {
     @AfterClass
     public static void closeDb() {
         System.out.println("Deleting User");
-        System.out.println(testuser.getDocumentID());
-        firestore.collection("users").document(testuser.getDocumentID())
+        System.out.println(testUser.getDocumentID());
+        TestDatabase.firestore.collection("users").document(testUser.getDocumentID())
                 .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("Delete", "DocumentSnapshot successfully deleted!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("Delete", "Error deleting document", e);
-                    }
-                });
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
     }
 
 
@@ -147,9 +78,9 @@ public class UserTest {
      */
     @Test
     public void testUserName() {
-        assertEquals(testuser.getName(), "testName");
-        if (testuser.setName("NewTestName")){
-            assertEquals(testuser.getName(), "NewTestName");
+        assertEquals(testUser.getName(), "testName");
+        if (testUser.setName("NewTestName")){
+            assertEquals(testUser.getName(), "NewTestName");
         }else{
             fail();
         }
@@ -161,9 +92,9 @@ public class UserTest {
      */
     @Test
     public void testUserDescription() {
-        assertEquals(testuser.getDescription(), "TEST");
-        testuser.setDescription("description description");
-        assertEquals(testuser.getDescription(), "description description");
+        assertEquals(testUser.getDescription(), "TEST");
+        testUser.setDescription("description description");
+        assertEquals(testUser.getDescription(), "description description");
     }
 
 
@@ -172,10 +103,10 @@ public class UserTest {
      */
     @Test
     public void testUserEmail() {
-        assertEquals(testuser.getEmail(), "abc@xyz.com");
+        assertEquals(testUser.getEmail(), "abc@xyz.com");
 
-        if (testuser.setEmail("janedoe@gmail.com")){
-            assertEquals(testuser.getEmail(), "janedoe@gmail.com");
+        if (testUser.setEmail("janedoe@gmail.com")){
+            assertEquals(testUser.getEmail(), "janedoe@gmail.com");
         }
         else{
             fail();
@@ -188,10 +119,10 @@ public class UserTest {
      */
     @Test
     public void testUserPhone() {
-        assertEquals(testuser.getPhoneNumber(), "1234567890");
+        assertEquals(testUser.getPhoneNumber(), "1234567890");
 
-        if (testuser.setPhoneNumber("0987654321")){
-            assertEquals(testuser.getPhoneNumber(), "0987654321");
+        if (testUser.setPhoneNumber("0987654321")){
+            assertEquals(testUser.getPhoneNumber(), "0987654321");
         }
         else{
             fail();
@@ -203,10 +134,10 @@ public class UserTest {
      */
     @Test
     public void testUserAdminNotifs() {
-        assertEquals(testuser.getAdminNotifications(), false);
+        assertEquals(testUser.getAdminNotifications(), false);
 
-        if (testuser.setAdminNotifications(true)){
-            assertEquals(testuser.getAdminNotifications(), true);
+        if (testUser.setAdminNotifications(true)){
+            assertEquals(testUser.getAdminNotifications(), true);
         }
         else{
             fail();
@@ -219,10 +150,10 @@ public class UserTest {
      */
     @Test
     public void testUserOrgNotifs() {
-        assertEquals(testuser.getOrganizerNotifications(), false);
+        assertEquals(testUser.getOrganizerNotifications(), false);
 
-        if (testuser.setOrganizerNotifications(true)){
-            assertEquals(testuser.getOrganizerNotifications(), true);
+        if (testUser.setOrganizerNotifications(true)){
+            assertEquals(testUser.getOrganizerNotifications(), true);
         }
         else{
             fail();
@@ -234,10 +165,10 @@ public class UserTest {
      */
     @Test
     public void testUserAdminStatus() {
-        assertEquals(testuser.isAdmin(), false);
+        assertEquals(testUser.isAdmin(), false);
 
-        if (testuser.makeAdmin(true)){
-            assertEquals(testuser.isAdmin(), true);
+        if (testUser.makeAdmin(true)){
+            assertEquals(testUser.isAdmin(), true);
         }
         else{
             fail();
@@ -266,8 +197,6 @@ public class UserTest {
         assertEquals(testuser.isAdmin(), false);
     }
     */
-
-
 
 }
 

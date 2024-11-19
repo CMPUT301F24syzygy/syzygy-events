@@ -7,42 +7,28 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
 
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.google.firebase.Firebase;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.syzygy.events.database.Database;
-import com.syzygy.events.database.DatabaseInstance;
+import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.database.Event;
+import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.User;
-import com.syzygy.events.ui.SignupActivity;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Unit Test class for the user model
@@ -52,60 +38,67 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 
 public class EventTest {
-    private static FirebaseApp TEST_INSTANCE;
     private static boolean setUpComplete = false;
-    FirebaseFirestore firestore;
-    Database testDB;
-    Resources constants;
-    static Event testevent;
-
+    static Event testEvent;
+    static User testUser;
+    static Facility testFacility;
+    private static final TestDatabase db = new TestDatabase();
 
     @Before
     public void createDb() throws InterruptedException, ParseException {
         if (!setUpComplete){
-
-            final CountDownLatch firebaselatch = new CountDownLatch(1);
-
-
             Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-            assertNotNull("Application context is null", context.getPackageName());
+            db.createDb(context);
 
-            constants = context.getResources();
-
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setApiKey(BuildConfig.FIREBASE_TEST_API_KEY)
-                    .setApplicationId(BuildConfig.FIREBASE_TEST_APPLICATION_ID)
-                    .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                    .build();
-
-            //create database
-            FirebaseApp.initializeApp(context, options, "test");
-            TEST_INSTANCE = FirebaseApp.getInstance("test");
-            firestore = FirebaseFirestore.getInstance(TEST_INSTANCE);
-            testDB = new Database(constants, firestore, null);
-            // Decrement the latch count to signal task completion
-            firebaselatch.countDown();
-            // Wait for the background task to finish (with a timeout)
-            if (!firebaselatch.await(60, TimeUnit.SECONDS)) {
-                fail("Firebase creation timed out");
-            }
-
-            //create event
             final CountDownLatch latch = new CountDownLatch(1);
             DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-            Event.NewInstance(testDB, "Yoga Class", (Uri) null, "pVSCFZI5Zk0LRsls499G", false, "Come join yoga class!", 2L, 2L, 20.00, new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))), Event.Dates.NO_REPEAT, (instance, success) -> {
+            User.NewInstance(db.testDB, UUID.randomUUID().toString(), "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
-                    testevent = instance;
+                    testUser = instance;
                     // Indicate that the operation is complete
-                    System.out.println("event was created");
+                    System.out.println("User was created");
                     latch.countDown();
                 } else {
-                    fail("event was not created in db");
+                    fail("User was not created in db");
                     latch.countDown(); // Ensure latch is decremented
                 }
             });
 
             if (!latch.await(60, TimeUnit.SECONDS)) {
+                fail("user creation timed out");
+            }
+
+            final CountDownLatch flatch = new CountDownLatch(1);
+            Facility.NewInstance(db.testDB, "Test", new GeoPoint(51.5074, 0.1278), "test", "test", null, testUser.getDocumentID(), (instance, success) -> {
+                if (success) {
+                    testFacility = instance;
+                    // Indicate that the operation is complete
+                    System.out.println("facility was created");
+                    flatch.countDown();
+                } else {
+                    fail("facility was not created in db");
+                    flatch.countDown(); // Ensure latch is decremented
+                }
+            });
+
+            if (!flatch.await(60, TimeUnit.SECONDS)) {
+                fail("facility creation timed out");
+            }
+
+            final CountDownLatch elatch = new CountDownLatch(1);
+            Event.NewInstance(db.testDB, "Yoga Class", (Uri) null, testFacility.getDocumentID(), false, "Come join yoga class!", 2L, 2L, 20.00, new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))), Event.Dates.NO_REPEAT, (instance, success) -> {
+                if (success) {
+                    testEvent = instance;
+                    // Indicate that the operation is complete
+                    System.out.println("event was created");
+                    elatch.countDown();
+                } else {
+                    fail("event was not created in db");
+                    elatch.countDown(); // Ensure latch is decremented
+                }
+            });
+
+            if (!elatch.await(60, TimeUnit.SECONDS)) {
                 fail("event creation timed out");
             }
         }
@@ -115,34 +108,47 @@ public class EventTest {
 
     @AfterClass
     public static void closeDb() {
-        testevent.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {});
+        TestDatabase.firestore.collection("events").document(testEvent.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
+
+        TestDatabase.firestore.collection("facilities").document(testFacility.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
+
+        TestDatabase.firestore.collection("users").document(testUser.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
     }
 
     @Test
     public void testEventAttributes() throws ParseException {
-        assertEquals(testevent.getTitle(), "Yoga Class");
-        assertTrue(testevent.setTitle("Pilates Class"));
-        assertEquals(testevent.getTitle(), "Pilates Class");
+        assertEquals(testEvent.getTitle(), "Yoga Class");
+        assertTrue(testEvent.setTitle("Pilates Class"));
+        assertEquals(testEvent.getTitle(), "Pilates Class");
 
-        assertEquals(testevent.getFacilityID(), "pVSCFZI5Zk0LRsls499G");
+        assertEquals(testEvent.getFacilityID(), testFacility.getDocumentID());
 
-        assertFalse(testevent.getRequiresLocation());
+        assertFalse(testEvent.getRequiresLocation());
 
-        assertEquals(testevent.getDescription(), "Come join yoga class!");
-        assertTrue(testevent.setDescription("Come join pilates class!"));
-        assertEquals(testevent.getDescription(), "Come join pilates class!");
+        assertEquals(testEvent.getDescription(), "Come join yoga class!");
+        assertTrue(testEvent.setDescription("Come join pilates class!"));
+        assertEquals(testEvent.getDescription(), "Come join pilates class!");
 
-        assertEquals(2L, (long) testevent.getCapacity());
-        assertEquals(2L, (long) testevent.getWaitlistCapacity());
+        assertEquals(2L, (long) testEvent.getCapacity());
+        assertEquals(2L, (long) testEvent.getWaitlistCapacity());
 
-        assertEquals(20.00, (double) testevent.getPrice(), 0.001);
-        assertTrue(testevent.setPrice(30.0));
-        assertEquals(30.00, (double) testevent.getPrice(), 0.001);
+        assertEquals(20.00, (double) testEvent.getPrice(), 0.001);
+        assertTrue(testEvent.setPrice(30.0));
+        assertEquals(30.00, (double) testEvent.getPrice(), 0.001);
 
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        assertEquals(testevent.getOpenRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))));
-        assertEquals(testevent.getCloseRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))));
-        assertEquals(testevent.getStartDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))));
-        assertEquals(testevent.getEndDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))));
+        assertEquals(testEvent.getOpenRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))));
+        assertEquals(testEvent.getCloseRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))));
+        assertEquals(testEvent.getStartDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))));
+        assertEquals(testEvent.getEndDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))));
     }
 }
