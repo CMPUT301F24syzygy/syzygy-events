@@ -557,11 +557,6 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 return;
             }
 
-            if(getCurrentEnrolled() >= getCapacity()){
-                listener.onCompletion(this, null, false);
-                return;
-            }
-
             getUserAssociation(user, (query1, data, success1) -> {
                 if(!success1){
                     listener.onCompletion(this, null, false);
