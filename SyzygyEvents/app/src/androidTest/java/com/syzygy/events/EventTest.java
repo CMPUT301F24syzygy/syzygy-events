@@ -3,6 +3,7 @@ package com.syzygy.events;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
@@ -43,6 +44,10 @@ public class EventTest {
     static Facility testFacility;
     private static final TestDatabase db = new TestDatabase();
 
+    public void resetUser(){
+        testUser.update("testName", "TEST", "abc@xyz.com", "1234567890",false, false, false, (success) -> {});
+    }
+
     @Before
     public void createDb() throws InterruptedException, ParseException {
         if (!setUpComplete){
@@ -50,7 +55,7 @@ public class EventTest {
             db.createDb(context);
 
             final CountDownLatch latch = new CountDownLatch(1);
-            DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            DateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
             User.NewInstance(db.testDB, UUID.randomUUID().toString(), "testName", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
                 if (success) {
                     testUser = instance;
@@ -85,7 +90,7 @@ public class EventTest {
             }
 
             final CountDownLatch elatch = new CountDownLatch(1);
-            Event.NewInstance(db.testDB, "Yoga Class", (Uri) null, testFacility.getDocumentID(), false, "Come join yoga class!", 2L, 2L, 20.00, new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))), Event.Dates.NO_REPEAT, (instance, success) -> {
+            Event.NewInstance(db.testDB, "Yoga Class", (Uri) null, testFacility.getDocumentID(), false, "Come join yoga class!", 2L, 2L, 20.00, new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2025/11/02 16:30"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))), Event.Dates.NO_REPEAT, (instance, success) -> {
                 if (success) {
                     testEvent = instance;
                     // Indicate that the operation is complete
@@ -144,10 +149,31 @@ public class EventTest {
         assertTrue(testEvent.setPrice(30.0));
         assertEquals(30.00, (double) testEvent.getPrice(), 0.001);
 
-        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        DateFormat formatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         assertEquals(testEvent.getOpenRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/01 12:00"))));
-        assertEquals(testEvent.getCloseRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/02 16:30"))));
+        assertEquals(testEvent.getCloseRegistrationDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2025/11/02 16:30"))));
         assertEquals(testEvent.getStartDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/11 12:00"))));
         assertEquals(testEvent.getEndDate(), new Timestamp(Objects.requireNonNull(formatter.parse("2024/11/12 16:30"))));
+    }
+
+    @Test
+    public void testAddUserToWaitlist(){
+        resetUser();
+
+        testEvent.addUserToWaitlist(testUser, null, (q, a, s)->{
+            assertTrue(s);
+            assertNotNull(a);
+            assertNotNull(a.result);
+            assertEquals(a.result.getUser(), testUser);
+            assertEquals(a.result.getUserID(), testUser.getDocumentID());
+            assertEquals(a.result.getEvent(), testEvent);
+            assertEquals(a.result.getEventID(), testEvent.getDocumentID());
+
+            assertEquals(q.getCurrentWaitlist(), 1);
+        });
+
+        testEvent.getLottery(-1, (e, result, s)->{
+            assertTrue((s));
+        });
     }
 }
