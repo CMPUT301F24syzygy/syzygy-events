@@ -148,35 +148,52 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/waitlist_full_layout">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_w1"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:checkable="true"
-            android:checked="true"
-            android:clickable="false"
-            android:text="@string/text_waitlist_chip"
-            app:layout_constraintEnd_toStartOf="@+id/chip_w2"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_w2"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_invited_chip"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/chips_w"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_w3"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_enrolled_chip"
-            app:layout_constraintStart_toEndOf="@+id/chip_w2"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:singleSelection="true">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_w1"
+                app:cornerRadius="12dp"
+                android:textAllCaps="false"
+                app:strokeColor="@color/grey_100"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/grey_100"
+                android:clickable="false"
+                android:text="@string/text_waitlist_chip"
+                app:layout_constraintEnd_toStartOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_w2"
+                android:textAllCaps="false"
+                app:strokeColor="@color/grey_100"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_invited_chip"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_w3"
+                app:cornerRadius="12dp"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                app:strokeColor="@color/grey_100"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_enrolled_chip"
+                app:layout_constraintStart_toEndOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <Button
             android:id="@+id/event_exit_waitlist_button"
@@ -187,8 +204,10 @@
             android:text="@string/button_leave_waitlist"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/chip_w1" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintTop_toBottomOf="@+id/chips_w" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -201,35 +220,52 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/in_waitlist_layout">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_i1"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_waitlist_chip"
-            app:layout_constraintEnd_toStartOf="@+id/chip_i2"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_i2"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:checkable="true"
-            android:checked="true"
-            android:clickable="false"
-            android:text="@string/text_invited_chip"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/chips_i"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_i3"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_enrolled_chip"
-            app:layout_constraintStart_toEndOf="@+id/chip_i2"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:singleSelection="true">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_i1"
+                app:cornerRadius="12dp"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                app:strokeColor="@color/grey_100"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_waitlist_chip"
+                app:layout_constraintEnd_toStartOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_i2"
+                android:backgroundTint="@color/grey_100"
+                android:textAllCaps="false"
+                app:strokeColor="@color/grey_100"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_invited_chip"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_i3"
+                app:cornerRadius="12dp"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                app:strokeColor="@color/grey_100"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_enrolled_chip"
+                app:layout_constraintStart_toEndOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <Button
             android:id="@+id/button_reject"
@@ -240,7 +276,7 @@
             android:layout_marginBottom="8dp"
             android:text="@string/button_reject_invite"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/chip_i1" />
+            app:layout_constraintTop_toBottomOf="@+id/chips_i" />
 
         <Button
             android:id="@+id/button_accept"
@@ -266,38 +302,52 @@
         app:layout_constraintTop_toBottomOf="@+id/in_invited_layout">
 
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_e1"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_waitlist_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/chip_e2"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_e2"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:text="@string/text_invited_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/chips_e"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_e3"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:checkable="true"
-            android:checked="true"
-            android:clickable="false"
-            android:text="@string/text_enrolled_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/chip_e2"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:singleSelection="true">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_e1"
+                app:cornerRadius="12dp"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                app:strokeColor="@color/grey_100"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_waitlist_chip"
+                app:layout_constraintEnd_toStartOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_e2"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_invited_chip"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:strokeColor="@color/grey_100"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chip_e3"
+                app:cornerRadius="12dp"
+                android:backgroundTint="@color/grey_100"
+                android:textAllCaps="false"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="125dp"
+                app:strokeColor="@color/grey_100"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:text="@string/text_enrolled_chip"
+                app:layout_constraintStart_toEndOf="@+id/chip_w2"
+                app:layout_constraintTop_toTopOf="parent" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -379,6 +429,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/div3" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
