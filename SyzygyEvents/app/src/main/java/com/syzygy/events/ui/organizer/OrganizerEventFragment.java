@@ -213,7 +213,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                     LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
                     marker.setPosition(latLng);
                     marker.setVisible(true);
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4));
                 }
             });
 

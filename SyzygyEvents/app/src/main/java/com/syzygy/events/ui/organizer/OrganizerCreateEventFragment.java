@@ -112,7 +112,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         String title = binding.eventCreateName.getText().toString();
         String facilityID = ((SyzygyApplication) getActivity().getApplication()).getUser().getFacilityID();
         Boolean requiresGeo = binding.eventCreateRequireLocationCheckbox.isChecked();
-        String description = binding.eventCreateBio.getText().toString();
+        String description = binding.eventCreateBio.getText().toString().replaceAll("\\s+", " ");
 
         Long capacity;
         Long waitlistCapacity;

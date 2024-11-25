@@ -12,8 +12,8 @@
 
         <ImageView
             android:id="@+id/entrant_edit_profile"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginStart="24dp"
             android:layout_marginTop="32dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -22,7 +22,7 @@
 
         <Button
             android:id="@+id/entrant_edit_editImage"
-            android:layout_width="150dp"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="@+id/entrant_edit_profile"
@@ -31,7 +31,7 @@
 
         <Button
             android:id="@+id/entrant_edit_removeImage"
-            android:layout_width="150dp"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
             android:text="@string/remove_image_button"
@@ -44,12 +44,14 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/entrant_edit_name_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="160dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
+            android:layout_marginEnd="26dp"
             android:layout_marginTop="60dp"
             app:expandedHintEnabled="false"
             app:layout_constraintStart_toEndOf="@+id/entrant_edit_profile"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -71,7 +73,9 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/entrant_edit_phone_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="160dp"
+            android:layout_width="0dp"
+            android:layout_marginEnd="26dp"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
@@ -123,14 +127,16 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/entrant_edit_email_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="360dp"
+            android:layout_width="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="60dp"
+            android:layout_marginTop="24dp"
             android:hint="Email*"
             app:expandedHintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/entrant_edit_editImage">
+            app:layout_constraintTop_toBottomOf="@+id/entrant_edit_removeImage">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/entrant_edit_email"
@@ -149,7 +155,9 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/entrant_edit_bio_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="360dp"
+            android:layout_width="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Bio"

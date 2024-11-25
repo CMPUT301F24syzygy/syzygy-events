@@ -50,8 +50,11 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         subject.setText(notification.getSubject());
 
         TextView body = view.findViewById(R.id.notification_item_body_preview_text);
-        String preview = notification.getBody().substring(0, min(25, notification.getBody().length()));
-        preview = preview.substring(0, max(0, preview.lastIndexOf(" ")));
+        String preview = notification.getBody().split("[\\n\\t\\v]")[0];
+        if (preview.length() >= 25) {
+            preview = preview.substring(0, 25);
+            preview = preview.substring(0, max(0, preview.lastIndexOf(" ")));
+        }
         body.setText(preview + " ...");
 
         if(notification.getSender() != null){
@@ -66,8 +69,6 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
         Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
 
-        ///notification.getIsRead();
-        ///
 
 
         return view;

@@ -79,10 +79,10 @@ public class SignupActivity extends SyzygyActivity {
      * Validates the information. If valid, creates the account and switches to the next activity
      */
     private void submitData(){
-        String name = binding.signupName.getText().toString();
+        String name = binding.signupName.getText().toString().replaceAll("\\s+", " ");
         String phone = binding.signupPhone.getText().toString();
         String email = binding.signupEmail.getText().toString();
-        String bio = binding.signupBio.getText().toString();
+        String bio = binding.signupBio.getText().toString().replaceAll("\\s+", " ");
         Boolean admin = binding.signupAdminNotificationsCheckbox.isChecked();
         Boolean org = binding.signupOrgNotificationsCheckbox.isChecked();
 

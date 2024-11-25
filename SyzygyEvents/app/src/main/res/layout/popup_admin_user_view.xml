@@ -3,34 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="?attr/actionBarSize">
-
+    android:minHeight="450dp">
 
     <ImageView
-        android:id="@+id/entrant_profile_image_img"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:id="@+id/admin_view_entrant_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
-        android:id="@+id/entrant_profile_name_text"
+        android:id="@+id/admin_view_entrant_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="18dp"
         android:layout_marginTop="48dp"
         android:fontFamily="sans-serif-medium"
         android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_profile_image_img"
+        app:layout_constraintStart_toEndOf="@+id/admin_view_entrant_image"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/entrant_profile_phone_label"
+        android:id="@+id/admin_view_phone_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -38,19 +37,19 @@
         android:text="Phone: "
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image_img" />
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_entrant_image" />
 
     <TextView
-        android:id="@+id/entrant_profile_phone_text"
+        android:id="@+id/admin_view_phone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_profile_phone_label"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_image_img"/>
+        app:layout_constraintStart_toEndOf="@+id/admin_view_phone_label"
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_entrant_image"/>
 
 
     <TextView
-        android:id="@+id/entrant_profile_email_label"
+        android:id="@+id/txt0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -58,49 +57,52 @@
         android:text="Email: "
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_phone_label" />
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_phone_label" />
 
     <TextView
-        android:id="@+id/entrant_profile_email_text"
+        android:id="@+id/admin_view_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        app:layout_constraintStart_toEndOf="@+id/entrant_profile_email_label"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_phone_label" />
+        app:layout_constraintStart_toEndOf="@+id/txt0"
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_phone_label" />
 
-
-    <View
-        android:id="@+id/div0"
-        android:layout_width="0dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="24dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/entrant_profile_email_text" />
 
     <TextView
-        android:id="@+id/entrant_profile_bio_text"
+        android:id="@+id/admin_view_entrant_bio"
         android:layout_width="0dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/div0" />
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_email" />
 
+    <include
+        android:id="@+id/entrant_facility_card"
+        layout="@layout/card_facility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_view_entrant_bio"
+        app:layout_constraintVertical_bias="0.8" />
 
     <Button
-        android:id="@+id/entrant_profile_edit_button"
+        android:id="@+id/admin_view_delete_user_button"
         android:layout_width="0dp"
         android:layout_marginStart="80dp"
         android:layout_marginEnd="80dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:text="Edit Profile"
+        android:text="remove user"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
