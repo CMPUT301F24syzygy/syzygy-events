@@ -28,7 +28,7 @@
             android:gravity="top|start"
             android:inputType="text"
             android:lines="1"
-            android:maxLength="12"
+            android:maxLength="15"
             android:textAlignment="gravity"
             android:textSize="18sp" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -55,9 +55,8 @@
             android:fontFamily="sans-serif-medium"
             android:gravity="top|start"
             android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-            android:lines="8"
+            android:lines="9"
             android:maxLength="200"
-            android:maxLines="16"
             android:scrollbars="vertical"
             android:textAlignment="gravity"
             android:textSize="18sp" />
@@ -68,7 +67,7 @@
         android:id="@+id/new_notification_send_button"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:text="Send"
         app:layout_constraintTop_toBottomOf="@+id/new_notification_body_layout"
         app:layout_constraintEnd_toEndOf="parent"
