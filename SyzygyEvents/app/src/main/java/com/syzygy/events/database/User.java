@@ -364,7 +364,7 @@ public class User extends DatabaseInstance<User> {
         @Override
         public void onInitialization(Notification instance, boolean success) {
             onNotification.accept(instance);
-            if(instance != null) instance.dissolve();
+            //if(instance != null) instance.dissolve();
         }
     }
 }
