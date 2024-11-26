@@ -1,16 +1,24 @@
 package com.syzygy.events.database;
 
 import android.net.Uri;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.syzygy.events.R;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -304,5 +312,89 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_isAdmin, isAdmin);
 
         return db.createNewInstance(Database.Collections.USERS, deviceID, map, profileImage, name, listener);
+    }
+
+    /**
+     * Listeners for the creation of new notifications where the receiver is this user
+     */
+    @Database.Dissolves
+    public class NotificationListener implements Database.Dissolvable, EventListener<QuerySnapshot> {
+
+        /**
+         * The registration of the query listener
+         */
+        private final ListenerRegistration reg;
+        /**
+         * The consumer for new notifications
+         */
+        private final Consumer<Notification> onNotification;
+
+        /**
+         * Adds a listener to the database which listens for any new notifications for this users
+         * <p>
+         *     Calls the `onNewNotification` consumer whenever a new notification is added to the
+         *     database with the receiver being this user
+         * </p>
+         * @param onNewNotification The consumer for new notifications
+         */
+        @Database.MustStir
+        public NotificationListener(@Database.Observes Consumer<Notification> onNewNotification){
+            Query q = DatabaseQuery.getMyNotificationsQuery(db, User.this);
+            reg = q.addSnapshotListener(this);
+            this.onNotification = onNewNotification;
+        }
+
+        /**
+         * Removes the listener
+         */
+        @Override
+        public void dissolve(){
+            reg.remove();
+        }
+
+
+        private boolean init = false;
+
+        @Override
+        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+            if(value == null || error != null){
+                db.throwE(new RuntimeException(error));
+                return;
+            }
+            if(!init){
+                init = true;
+                return;
+            }
+
+            if(value.getDocumentChanges().isEmpty()){
+                return;
+            }
+
+            Database.InitializationListener<Notification> il = new Database.InitializationListener<Notification>() {
+                private int i = -1;
+                private final List<Notification> nots = new ArrayList<>();
+
+                @Override
+                public void onInitialization(Notification instance, boolean success) {
+                    if(success){
+                        nots.add(instance);
+                        onNotification.accept(instance);
+                    }
+                    i++;
+                    if(i >= value.getDocumentChanges().size()){
+                        nots.forEach(DatabaseInstance::dissolve);
+                        return;
+                    }
+                    DocumentChange d = value.getDocumentChanges().get(i);
+                    if(d.getType() != DocumentChange.Type.ADDED){
+                        this.onInitialization(null, false);
+                    }else{
+                        db.getInstance(Database.Collections.NOTIFICATIONS, d.getDocument().getId(), this, d.getDocument());
+                    }
+                }
+            };
+
+            il.onInitialization(null, false);
+        }
     }
 }

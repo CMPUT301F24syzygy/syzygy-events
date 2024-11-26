@@ -394,7 +394,7 @@ public class Database implements EventListener<DocumentSnapshot> {
             return;
         }
         Log.println(Log.DEBUG, "UpdateVariable", "Before Create");
-        this.createImageAndThen(newImage, oldImage.getLocName(), oldImage.getCollection(), oldImage.getDatabaseID(), updateVariable, (passData, success) -> {
+        this.createImageAndThen(newImage, oldImage.getLocName(), oldImage.getLocType(), oldImage.getDatabaseID(), updateVariable, (passData, success) -> {
             Log.println(Log.DEBUG, "UpdateVariable", success+" Create");
             if(success){
                 oldImage.deleteInstance(DatabaseInstance.DeletionType.REPLACEMENT, s -> {

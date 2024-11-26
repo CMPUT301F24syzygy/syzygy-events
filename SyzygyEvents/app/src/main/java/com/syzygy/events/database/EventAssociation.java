@@ -196,7 +196,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
         public void rejectUsersFromLottery(Database.Querrier.DataListener<T, NotificationResult> listener){
             notify(db.constants.getString(R.string.notification_lottery_notChosen_subject),
                     db.constants.getString(R.string.notification_lottery_notChosen_body),
-                    true, false, listener
+                    true, false, true, listener
             );
         }
 
@@ -244,6 +244,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                     notificationBody,
                     notificationAttachEvent,
                     notificationFromOrganizer,
+                    true,
                     listener
             );
         }
@@ -254,14 +255,15 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param body The body of the notification
          * @param attachEvent If the event should be attached to the notification
          * @param fromOrganizer If the even should be sent from the organizer
+         * @param ignoresOptOut If the notification should ignore opt out settings
          * @param listener The listener that is called with the notification result upon completion.
          *                 Only the {@code onSuccess} is called
          * @see NotificationResult
          */
         @Database.Stirred
-        public void notify(String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+        public void notify(String subject, String body, boolean attachEvent, boolean fromOrganizer, boolean ignoresOptOut, Database.Querrier.DataListener<T, NotificationResult> listener){
             if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
-            notify(e -> {}, subject, body, attachEvent, fromOrganizer, listener);
+            notify(e -> {}, subject, body, attachEvent, fromOrganizer, ignoresOptOut, listener);
         }
 
         /**
@@ -270,12 +272,13 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param body The body of the notification
          * @param attachEvent If the event should be attached to the notification
          * @param fromOrganizer If the notification should be sent from the organizer
+         * @param ignoresOptOut If the notification should ignore opt out settings
          * @param listener The listener that is called with the notification result upon completion.
          *                 Only the {@code onSuccess} is called. Ownership is passed on to the caller
          * @see NotificationResult
          */
         @Database.Stirred
-        public void notify(@Database.Observes Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
+        public void notify(@Database.Observes Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, boolean ignoresOptOut, Database.Querrier.DataListener<T, NotificationResult> listener){
             if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
             List<Notification> failedNotifications = new ArrayList<>();
             List<Notification> successNotifications = new ArrayList<>();
@@ -308,6 +311,7 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
                             attachEvent ? e.getEventID() : "",
                             e.getUserID(),
                             fromOrganizer ? e.getEvent().getFacility().getOrganizerID() : SyzygyApplication.SYSTEM_ACCOUNT_ID,
+                            ignoresOptOut,
                             this
                     );
                 }
