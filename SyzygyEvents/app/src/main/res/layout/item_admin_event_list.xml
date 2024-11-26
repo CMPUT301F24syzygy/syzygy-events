@@ -51,7 +51,9 @@
 
         <TextView
             android:id="@+id/admin_events_item_location_text"
-            android:layout_width="360dp"
+            android:layout_width="match_parent"
+            android:lineSpacingMultiplier="2"
+            android:layout_marginEnd="12dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="115dp"
