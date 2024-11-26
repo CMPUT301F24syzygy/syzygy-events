@@ -247,7 +247,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                             adapter.notifyDataSetChanged();
                             Database db = ((SyzygyApplication)getActivity().getApplication()).getDatabase();
                             new EventAssociation.Methods<Event>(db, event, query.getInstances())
-                                    .notify(subject, body, true, true, (q, data, t) -> {});
+                                    .notify(subject, body, true, true, false, (q, data, t) -> {});
                             binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
                         });
                     }

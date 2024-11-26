@@ -6,8 +6,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -19,6 +23,8 @@ import android.view.Menu;
 import android.widget.ImageView;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -26,6 +32,7 @@ import com.google.firebase.Timestamp;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Image;
+import com.syzygy.events.database.Notification;
 import com.syzygy.events.database.User;
 import com.syzygy.events.ui.AdminActivity;
 import com.syzygy.events.ui.EntrantActivity;
@@ -70,6 +77,10 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      */
     private User user;
     /**
+     * The listener for notifications
+     */
+    private User.NotificationListener notificationListener;
+    /**
      * The id of the device
      */
     private String deviceID;
@@ -108,7 +119,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             db.addErrorListener(this);
             deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             db.<User>getInstance(Database.Collections.USERS, deviceID, (instance, success) -> {
-                if(success) this.user = instance;
+                if(success) setUser(instance);
                 switchToActivity(success ? EntrantActivity.class : SignupActivity.class);
             });
         }
@@ -122,6 +133,14 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
 
         location = LocationServices.getFusedLocationProviderClient(this);
 
+    }
+
+    /**
+     * Sets the user using this device and registers a notification listener
+     */
+    private void setUser(@Database.Stirs User u){
+        this.user = u;
+        this.notificationListener = u.new NotificationListener(this::sendNotification);
     }
 
     /**
@@ -161,6 +180,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     @Override
     public void onTerminate() {
         if(user != null)user.dissolve();
+        if(notificationListener != null) notificationListener.dissolve();
         if(db != null) db.cleanup();
         super.onTerminate();
     }
@@ -301,7 +321,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     public Set<Integer> signupUser(String name, String email, String phone, String bio, Boolean admin, Boolean org, Uri image, Consumer<Boolean> onComplete){
         return User.NewInstance(db, deviceID, name, bio, image, "", email, phone, org, admin, false, (instance, success) -> {
             if(success){
-                this.user = instance;
+                setUser(instance);
             }
             onComplete.accept(success);
         });
@@ -335,6 +355,48 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     @Override
     public void accept(RuntimeException e) {
         //TODO
+    }
+
+    private static final String CHANNEL_ID = "Syzygy";
+    private static final CharSequence CHANNEL_NAME = "Syzygy";
+
+    /**
+     * Sends a notification to the user
+     * @param n The notification
+     */
+    public void sendNotification(Notification n){
+        if(n == null) return;
+        if(!n.ignoresOptOutSettings() && !user.getOrganizerNotifications()){
+            return;
+        }
+        Bitmap img = null;
+        try {
+            img = Image.getFormatedAssociatedImage(n.getSender(), Database.Collections.USERS, Image.Options.LargestCircle()).get();
+        }catch (IOException e){}
+
+        Intent resultIntent = new Intent(this, EntrantActivity.class);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.penguin_blue)
+                .setLargeIcon(img)
+                .setContentTitle(n.getSubject())
+                .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(n.getBody()))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .setContentIntent(pIntent);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        NotificationManagerCompat.from(this).notify(n.getDocumentID().hashCode(), b.build());
     }
 
 }

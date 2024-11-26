@@ -86,6 +86,10 @@ public class Notification extends DatabaseInstance<Notification> {
         return setPropertyValue(R.string.database_not_read, b, s -> {});
     }
 
+    public Boolean ignoresOptOutSettings(){
+        return getPropertyValueI(R.string.database_not_ignoreOptOut);
+    }
+
     /**
      * The list of the fields defined for a User
      */
@@ -96,7 +100,8 @@ public class Notification extends DatabaseInstance<Notification> {
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, true),
             new PropertyField<String, Event>(R.string.database_not_eventID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, true, false),
             new PropertyField<String, User>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
-            new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, true, false)
+            new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, true, false),
+            new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_ignoreOptOut, o -> o instanceof Boolean, false)
     };
 
     @Override
@@ -115,6 +120,7 @@ public class Notification extends DatabaseInstance<Notification> {
      * @param eventID The ID of the event associated to the notification
      * @param receiverID The id of the receiver
      * @param senderID The id of the sender
+     * @param ignoresOptOut If the notification cannot be opted out of
      * @param listener Will be called once the notification is initialized. Is not called if the data is invalid
      * @return The property id of all invalid properties
      * @see Database#createNewInstance(Database.Collections, String, Map, Database.InitializationListener)
@@ -126,6 +132,7 @@ public class Notification extends DatabaseInstance<Notification> {
                                        @Database.Dilutes String eventID,
                                        @Database.Dilutes String receiverID,
                                        @Database.Dilutes String senderID,
+                                       Boolean ignoresOptOut,
                                        Database.InitializationListener<Notification> listener
     ){
         Timestamp sentTime = Timestamp.now();
@@ -140,6 +147,7 @@ public class Notification extends DatabaseInstance<Notification> {
         map.put(R.string.database_not_eventID, eventID);
         map.put(R.string.database_not_senderID, senderID);
         map.put(R.string.database_not_receiverID, receiverID);
+        map.put(R.string.database_not_ignoreOptOut, ignoresOptOut);
 
         return db.createNewInstance(Database.Collections.NOTIFICATIONS, id, map, listener);
     }

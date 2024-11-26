@@ -487,10 +487,14 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
 
     @Database.MustStir
     public static DatabaseQuery<Notification> getMyNotifications(Database db, @Database.Observes User u){
+        Query q = getMyNotificationsQuery(db, u);
+        return new DatabaseQuery<>(db, q, Database.Collections.NOTIFICATIONS, null);
+    }
+
+    public static Query getMyNotificationsQuery(Database db, @Database.Observes User u){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_not_receiverID), u.getDocumentID());
         Database.Collections c = Database.Collections.NOTIFICATIONS;
-        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_not_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, null);
+        return c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_not_time), Query.Direction.DESCENDING);
     }
 
     /**
