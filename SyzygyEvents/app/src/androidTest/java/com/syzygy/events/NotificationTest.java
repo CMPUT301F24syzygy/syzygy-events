@@ -123,7 +123,7 @@ public class NotificationTest {
             }
 
             final CountDownLatch nlatch = new CountDownLatch(1);
-            Notification.NewInstance(db.testDB, "New Event", "Join this new event!", testEvent.getDocumentID(), testUser2.getDocumentID(), testUser.getDocumentID(), (instance, success) -> {
+            Notification.NewInstance(db.testDB, "New Event", "Join this new event!", testEvent.getDocumentID(), testUser2.getDocumentID(), testUser.getDocumentID(), false, (instance, success) -> {
                 if (success) {
                     testNotification = instance;
                     // Indicate that the operation is complete

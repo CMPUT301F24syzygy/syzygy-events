@@ -13,14 +13,10 @@ import android.content.res.Resources;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.RequestCreator;
 import com.syzygy.events.database.Database;
-import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
@@ -36,12 +32,10 @@ import org.junit.Test;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
@@ -211,7 +205,7 @@ public class UserStoriesModelTest {
     private void getTestNotification(User send, User rec, Event e, BiConsumer<Notification, Runnable> listener){
         instances++;
         Set<Integer> invalidIDs = Notification.NewInstance(db.testDB, "Subject"+instances, "Body"+instances,
-                e.getDocumentID(), rec.getDocumentID(), send.getDocumentID(), (instance, success) -> {
+                e.getDocumentID(), rec.getDocumentID(), send.getDocumentID(), false, (instance, success) -> {
                     if(!success){
                         fail("failed to create notification");
                     }else{
