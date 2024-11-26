@@ -100,6 +100,11 @@ public class FacilityTest {
                 .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
                 .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
 
+        TestDatabase.firestore.collection("facilities").document(testFacility2.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
+
         TestDatabase.firestore.collection("users").document(testUser.getDocumentID())
                 .delete()
                 .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
