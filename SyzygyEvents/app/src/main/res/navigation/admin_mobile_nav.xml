@@ -29,4 +29,10 @@
         android:label="@string/title_signup_organizer"
         tools:layout="@layout/frag_signup_organizer" />
 
+    <fragment
+        android:id="@+id/nav_admin_event_secondary"
+        android:name="com.syzygy.events.ui.admin.AdminEventFragment"
+        android:label="@string/title_admin_sec_event"
+        tools:layout="@layout/frag_admin_event_page" />
+
 </navigation>

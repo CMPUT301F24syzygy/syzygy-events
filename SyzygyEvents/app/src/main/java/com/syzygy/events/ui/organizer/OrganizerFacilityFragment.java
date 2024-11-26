@@ -86,7 +86,7 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
         if(map == null) return;
         LatLng pos = facility.getLatLngLocation();
         marker.setPosition(pos);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 9));
     }
 
     @Override

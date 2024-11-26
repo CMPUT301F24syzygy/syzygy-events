@@ -97,13 +97,13 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
             Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
             return;
         }
-        String name = binding.editFacilityName.getText().toString();
+        String name = binding.editFacilityName.getText().toString().replaceAll("\\s+", " ");
         LatLng pos = marker.getPosition();
         GeoPoint loc = new GeoPoint(pos.latitude,pos.longitude);
         Address add = Facility.getFullAddressFromGeo(getActivity(), pos);
         String address = add == null ? "" : add.getAddressLine(0);
         Log.println(Log.INFO, "Map Selection", address);
-        String bio = binding.editFacilityDescription.getText().toString();
+        String bio = binding.editFacilityDescription.getText().toString().replaceAll("\\s+", " ");
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         String user = app.getUser().getDocumentID();
 

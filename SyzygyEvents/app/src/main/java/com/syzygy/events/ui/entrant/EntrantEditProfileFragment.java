@@ -64,7 +64,7 @@ public class EntrantEditProfileFragment extends Fragment {
         binding.entrantEditEditImage.setOnClickListener(view -> choosePhoto());
         binding.entrantEditRemoveImage.setOnClickListener(view -> setImage(null));
 
-        binding.entrantEditRemoveImage.setVisibility(user.getProfileImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.entrantEditRemoveImage.setVisibility(user.getProfileImage() == null ? View.GONE : View.VISIBLE);
         binding.entrantEditEditImage.setText(user.getProfileImage() != null ? R.string.change_image_button : R.string.add_image_button);
 
         return binding.getRoot();
@@ -74,10 +74,10 @@ public class EntrantEditProfileFragment extends Fragment {
      * Validates and submits the edit. If valid, navigates back to the user profile
      */
     private void submitData(){
-        String name = binding.entrantEditName.getText().toString();
+        String name = binding.entrantEditName.getText().toString().replaceAll("\\s+", " ");
         String phone = binding.entrantEditPhone.getText().toString();
         String email = binding.entrantEditEmail.getText().toString();
-        String bio = binding.entrantEditBio.getText().toString();
+        String bio = binding.entrantEditBio.getText().toString().replaceAll("\\s+", " ");
         Boolean admin = binding.adminNotificationsCheckbox.isChecked();
         Boolean org = binding.orgNotificationsCheckbox.isChecked();
 
@@ -140,6 +140,7 @@ public class EntrantEditProfileFragment extends Fragment {
         });
     }
 
+
     /**
      * Sets the currently displayed image
      * @param uri The image to display
@@ -149,10 +150,12 @@ public class EntrantEditProfileFragment extends Fragment {
         image = uri;
         if(image == null){
             Image.formatDefaultImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);
-            binding.entrantEditRemoveImage.setVisibility(View.INVISIBLE);
+            binding.entrantEditRemoveImage.setVisibility(View.GONE);
+            binding.entrantEditEditImage.setText(R.string.add_image_button);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.entrantEditProfile);;
             binding.entrantEditRemoveImage.setVisibility(View.VISIBLE);
+            binding.entrantEditEditImage.setText(R.string.change_image_button);
         }
     }
 

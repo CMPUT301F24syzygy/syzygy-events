@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -105,6 +106,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             OrganizerAssociatedEntrantsAdapter adapter = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
             query.refreshData((query1, s) -> {
                 adapter.notifyDataSetChanged();
+                binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
             });
             binding.eventAssociatedEntrantsList.setAdapter(adapter);
 
@@ -145,6 +147,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                 OrganizerAssociatedEntrantsAdapter a = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
                 query.refreshData((query1, s) -> {
                     a.notifyDataSetChanged();
+                    binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
                 });
                 binding.eventAssociatedEntrantsList.setAdapter(a);
             });
@@ -190,6 +193,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                 binding.eventAssociatedEntrantsList.clearChoices();
                 query.refreshData((query1, s) -> {
                     a.notifyDataSetChanged();
+                    binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
                 });
                 binding.eventAssociatedEntrantsList.setAdapter(a);
 
@@ -213,8 +217,41 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                     LatLng latLng = new LatLng(l.getLatitude(), l.getLongitude());
                     marker.setPosition(latLng);
                     marker.setVisible(true);
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 4));
                 }
+            });
+
+            binding.composeNotificationButton.setOnClickListener(view -> {
+                Chip chip = binding.getRoot().findViewById(binding.entrantFilterChips.getCheckedChipId());
+                String selected = chip.getText().toString();
+                Dialog dialog = new AlertDialog.Builder(getContext())
+                        .setView(R.layout.popup_create_notification)
+                        .setTitle("New Notification")
+                        .setMessage("\nTo: " + selected.toUpperCase() + " Entrants")
+                        .create();
+                dialog.show();
+                dialog.findViewById(R.id.new_notification_send_button).setOnClickListener(v -> {
+                    EditText edit_subject =  dialog.findViewById(R.id.new_notification_subject);
+                    String subject = edit_subject.getText().toString();
+                    EditText edit_body =  dialog.findViewById(R.id.new_notification_body);
+                    String body = edit_body.getText().toString();
+                    if (subject.isEmpty()) {
+                        edit_subject.setError("Required");
+                    } if (body.isEmpty()) {
+                        edit_body.setError("Required");
+                    } else if (body.split("\\n").length>16) {
+                        edit_body.setError("This message is too long. Try removing some newline characters.");
+                    } else if (!subject.isEmpty()) {
+                        dialog.dismiss();
+                        query.refreshData((query1, s) -> {
+                            adapter.notifyDataSetChanged();
+                            Database db = ((SyzygyApplication)getActivity().getApplication()).getDatabase();
+                            new EventAssociation.Methods<Event>(db, event, query.getInstances())
+                                    .notify(subject, body, true, true, (q, data, t) -> {});
+                            binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
+                        });
+                    }
+                });
             });
 
             updateView();
