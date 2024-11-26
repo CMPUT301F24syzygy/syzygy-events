@@ -115,6 +115,16 @@ public class DatabaseInfLoadQuery<T extends DatabaseInstance<T>> implements Data
         return Collections.unmodifiableList(instances);
     }
 
+    /**
+     * Returns an object which contains methods that help notify the user or change the status of the associations.
+     * This object must be called with {@code .dissolve} once complete
+     * @param query The query containing the associations
+     * @return The set of methods for the associations currently in the list (does not match on change)
+     */
+    @Database.MustStir
+    public static EventAssociation.Methods<DatabaseInfLoadQuery<EventAssociation>> methods(DatabaseInfLoadQuery<EventAssociation> query){
+        return DatabaseQuery.methods(query, query.query, query.instances);
+    }
 
     /**
      * Clears the set of instances

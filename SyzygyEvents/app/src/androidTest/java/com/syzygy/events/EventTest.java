@@ -229,13 +229,12 @@ public class EventTest {
         CountDownLatch latch2 = new CountDownLatch(1);
         testEvent.refreshData((query, success) -> {
             latch2.countDown();
+            assertEquals(1, query.getCurrentWaitlist(), 1);
         });
 
         if (!latch2.await(10, TimeUnit.SECONDS)) {
             fail("Operation timed out");
         }
-
-        assertEquals(1, testEvent.getCurrentWaitlist());
 
         CountDownLatch latch1 = new CountDownLatch(1);
         testEvent.getLottery(-1, (e, result, s)->{
