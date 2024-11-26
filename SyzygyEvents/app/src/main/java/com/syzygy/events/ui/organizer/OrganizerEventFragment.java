@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -101,6 +102,17 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
+
+            if (event.getRequiresLocation()) {
+                binding.entrantLocationMap.setVisibility(View.VISIBLE);
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
+                mapFragment.getMapAsync(this);
+            } else {
+                ViewGroup.LayoutParams params = binding.eventAssociatedEntrantsList.getLayoutParams();
+                params.height = (int)(params.height*1.3);
+                binding.eventAssociatedEntrantsList.setLayoutParams(params);
+                binding.div7.setVisibility(View.GONE);
+            }
 
             query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             OrganizerAssociatedEntrantsAdapter adapter = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
@@ -198,12 +210,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                 binding.eventAssociatedEntrantsList.setAdapter(a);
 
             });
-
-            if (event.getRequiresLocation()) {
-                binding.entrantLocationMap.setVisibility(View.VISIBLE);
-                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
-                mapFragment.getMapAsync(this);
-            }
 
             binding.eventAssociatedEntrantsList.setOnItemClickListener((parent, view, position, id) -> {
                 entrantUnselected();
@@ -352,30 +358,48 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
      */
     private void setLotteryPopupView(Dialog dialog) {
 
-        TextView message_full = dialog.findViewById(R.id.lottery_full_message);
-        TextView message_waitlist_empty = dialog.findViewById(R.id.lottery_empty_waitlist_message);
-        TextView button_info = dialog.findViewById(R.id.lottery_info_text);
+        TextView message = dialog.findViewById(R.id.lottery_message);
         Button button = dialog.findViewById(R.id.lottery_run_button);
-
-
-        message_full.setVisibility(View.GONE);
-        message_waitlist_empty.setVisibility(View.GONE);
+        TextView button_info = dialog.findViewById(R.id.lottery_info_text);
+        message.setVisibility(View.GONE);
         button.setVisibility(View.GONE);
         button_info.setVisibility(View.GONE);
 
+        int enrolled_c = event.getCurrentEnrolled();
+        int invited_c = event.getCurrentInvited();
+        int waitlist_c = event.getCurrentWaitlist();
+
+        TextView cap = dialog.findViewById(R.id.org_event_cap_txt);
+        cap.setText("Capacity : " + event.getCapacity());
+
+        TextView inv = dialog.findViewById(R.id.org_event_inv_txt);
+        inv.setText("- Invited : " + invited_c);
+
+        TextView enr = dialog.findViewById(R.id.org_event_enr_txt);
+        enr.setText("- Enrolled : " + enrolled_c);
+
         TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
-        waitlist.setText(getString(R.string.lottery_waitlist_count, event.getCurrentWaitlist()));
+        waitlist.setText(getString(R.string.lottery_waitlist_count, waitlist_c));
 
         TextView open = dialog.findViewById(R.id.lottery_open_text);
-        open.setText((getString(R.string.lottery_open_count, event.getCapacity() - event.getCurrentEnrolled())));
+        open.setText((getString(R.string.lottery_open_count, event.getCapacity() - enrolled_c - invited_c)));
 
-        if (event.getCurrentEnrolled() == event.getCapacity()) {
-            message_full.setVisibility(View.VISIBLE);
-        } else if (event.getCurrentWaitlist() == 0) {
-            message_waitlist_empty.setVisibility(View.VISIBLE);
-        }
-        else {
+        String m;
+        if (enrolled_c == event.getCapacity()) {
+            message.setVisibility(View.VISIBLE);
+            m = "Event is at capacity!";
+            message.setText(m);
+        } else if (enrolled_c + invited_c == event.getCapacity()) {
+            message.setVisibility(View.VISIBLE);
+            m = "There are no open spots.";
+            message.setText(m);
+        } else if (waitlist_c == 0) {
+            message.setVisibility(View.VISIBLE);
+            m = "The waitlist is empty. Remaining spots cannot be filled.";
+            message.setText(m);
+        } else {
             button.setVisibility(View.VISIBLE);
+            button.setText("Fill " + (event.getCapacity() - enrolled_c - invited_c) + " Spots");
             button_info.setVisibility(View.VISIBLE);
         }
     }
