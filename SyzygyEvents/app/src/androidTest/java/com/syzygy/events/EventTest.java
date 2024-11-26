@@ -148,7 +148,6 @@ public class EventTest {
             }
         }
         setUpComplete = true;
-
     }
 
     @AfterClass
