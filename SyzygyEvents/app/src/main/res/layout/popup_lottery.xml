@@ -6,26 +6,74 @@
     android:minHeight="300dp">
 
     <TextView
-        android:id="@+id/lottery_open_text"
-        android:layout_width="100dp"
+        android:id="@+id/org_event_cap_txt"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="70dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="42dp"
+        android:text="Capacity : 200"
+        android:textSize="16sp"
         android:fontFamily="sans-serif-medium"
-        android:textSize="18sp"
+        android:layout_marginStart="52dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/org_event_inv_txt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="- Invited : 2"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginStart="70dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/org_event_cap_txt"/>
+    <TextView
+        android:id="@+id/org_event_enr_txt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="- Enrolled : 1"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginStart="70dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/org_event_inv_txt"/>
+
+    <View
+        android:id="@+id/div101"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="42dp"
+        android:layout_marginEnd="42dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/org_event_enr_txt" />
+    <TextView
+        android:id="@+id/lottery_open_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Open: 197"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif-black"
+        android:layout_marginStart="52dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/div101"/>
 
     <TextView
         android:id="@+id/lottery_waitlist_text"
-        android:layout_width="100dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="70dp"
-        android:layout_marginTop="16dp"
-        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="6dp"
+        android:text="Waitlist: 0"
         android:textSize="18sp"
+        android:fontFamily="sans-serif-black"
+        android:layout_marginStart="52dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lottery_open_text" />
+        app:layout_constraintTop_toBottomOf="@id/lottery_open_text"/>
 
 
     <TextView
@@ -35,7 +83,7 @@
         android:layout_marginStart="48dp"
         android:layout_marginBottom="48dp"
         android:fontFamily="sans-serif-medium"
-        android:text="Cannot run the lottery. The waitlist is empty."
+        android:text="The waitlist is empty. Cannot fill remaining spots."
         android:textSize="22sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -49,7 +97,7 @@
         android:layout_marginStart="48dp"
         android:layout_marginBottom="48dp"
         android:fontFamily="sans-serif-medium"
-        android:text="Cannot run the lottery. There are no open spots to fill."
+        android:text="There are no open spots to fill. If an invited entrant is not responding, cancel them to free their spot."
         android:textSize="22sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

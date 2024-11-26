@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -101,6 +102,17 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
+
+            if (event.getRequiresLocation()) {
+                binding.entrantLocationMap.setVisibility(View.VISIBLE);
+                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
+                mapFragment.getMapAsync(this);
+            } else {
+                ViewGroup.LayoutParams params = binding.eventAssociatedEntrantsList.getLayoutParams();
+                params.height = (int)(params.height*1.3);
+                binding.eventAssociatedEntrantsList.setLayoutParams(params);
+                binding.div7.setVisibility(View.GONE);
+            }
 
             query = new DatabaseInfLoadQuery<>(DatabaseQuery.getAttachedUsers(app.getDatabase(), event, null, false));
             OrganizerAssociatedEntrantsAdapter adapter = new OrganizerAssociatedEntrantsAdapter(getContext(), query.getInstances());
@@ -198,12 +210,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                 binding.eventAssociatedEntrantsList.setAdapter(a);
 
             });
-
-            if (event.getRequiresLocation()) {
-                binding.entrantLocationMap.setVisibility(View.VISIBLE);
-                SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.entrant_location_map);
-                mapFragment.getMapAsync(this);
-            }
 
             binding.eventAssociatedEntrantsList.setOnItemClickListener((parent, view, position, id) -> {
                 entrantUnselected();
