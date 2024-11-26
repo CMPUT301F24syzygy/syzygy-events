@@ -1,12 +1,14 @@
 package com.syzygy.events.database;
 
 import android.net.Uri;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -16,6 +18,7 @@ import com.syzygy.events.R;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -315,7 +318,7 @@ public class User extends DatabaseInstance<User> {
      * Listeners for the creation of new notifications where the receiver is this user
      */
     @Database.Dissolves
-    public class NotificationListener implements Database.Dissolvable, EventListener<QuerySnapshot>, Database.InitializationListener<Notification> {
+    public class NotificationListener implements Database.Dissolvable, EventListener<QuerySnapshot> {
 
         /**
          * The registration of the query listener
@@ -349,22 +352,49 @@ public class User extends DatabaseInstance<User> {
             reg.remove();
         }
 
+
+        private boolean init = false;
+
         @Override
         public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
             if(value == null || error != null){
                 db.throwE(new RuntimeException(error));
                 return;
             }
-            value.getDocumentChanges().forEach(d -> {
-                if(d.getType() != DocumentChange.Type.ADDED) return;
-                db.getInstance(Database.Collections.NOTIFICATIONS, d.getDocument().getId(), this, d.getDocument());
-            });
-        }
+            if(!init){
+                init = true;
+                return;
+            }
 
-        @Override
-        public void onInitialization(Notification instance, boolean success) {
-            onNotification.accept(instance);
-            if(instance != null) instance.dissolve();
+            if(value.getDocumentChanges().isEmpty()){
+                return;
+            }
+
+            Database.InitializationListener<Notification> il = new Database.InitializationListener<Notification>() {
+                private int i = -1;
+                private final List<Notification> nots = new ArrayList<>();
+
+                @Override
+                public void onInitialization(Notification instance, boolean success) {
+                    if(success){
+                        nots.add(instance);
+                        onNotification.accept(instance);
+                    }
+                    i++;
+                    if(i >= value.getDocumentChanges().size()){
+                        nots.forEach(DatabaseInstance::dissolve);
+                        return;
+                    }
+                    DocumentChange d = value.getDocumentChanges().get(i);
+                    if(d.getType() != DocumentChange.Type.ADDED){
+                        this.onInitialization(null, false);
+                    }else{
+                        db.getInstance(Database.Collections.NOTIFICATIONS, d.getDocument().getId(), this, d.getDocument());
+                    }
+                }
+            };
+
+            il.onInitialization(null, false);
         }
     }
 }

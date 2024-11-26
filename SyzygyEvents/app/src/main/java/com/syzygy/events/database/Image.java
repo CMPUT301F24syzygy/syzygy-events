@@ -272,6 +272,43 @@ public class Image extends DatabaseInstance<Image> {
      * If the associated image is null, uses a default image for the instances collection.
      * @param instance The instance whos image should be loaded
      * @param collection The collection to base the default off of if the instance is null
+     * @param option The formatting options
+     * @param useBitmap Called on completion with the bitmap or null
+     *      *                    <ul>
+     *      *                    <li>If error, {@code success = false}</li>
+     *      *                    <li>If good, {@code success = true}</li>
+     *      *                    </ul>
+     * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
+     * @see #loadAsBitmap(RequestCreator, BiConsumer)
+     */
+    public static void getFormatedAssociatedImageAsBitmap(@Nullable @Database.Observes DatabaseInstance<?> instance, Database.Collections collection, Options option, BiConsumer<Boolean, Bitmap> useBitmap){
+        loadAsBitmap(getFormatedAssociatedImage(instance, collection, option), useBitmap);
+    }
+
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @param option The formatting options
+     * @param useBitmap Called on completion with the bitmap or null
+     *      *                    <ul>
+     *      *                    <li>If error, {@code success = false}</li>
+     *      *                    <li>If good, {@code success = true}</li>
+     *      *                    </ul>
+     * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
+     * @see #loadAsBitmap(RequestCreator, BiConsumer)
+     */
+    public static void getFormatedAssociatedImageAsBitmap(@NonNull @Database.Observes DatabaseInstance<?> instance, Options option, BiConsumer<Boolean, Bitmap> useBitmap){
+        loadAsBitmap(getFormatedAssociatedImage(instance, option), useBitmap);
+    }
+
+    /**
+     * Loads the associated image of the instance and formats it.
+     * If the instance is null, uses a default image.
+     * If the associated image is null, uses a default image for the instances collection.
+     * @param instance The instance whos image should be loaded
+     * @param collection The collection to base the default off of if the instance is null
      * @return The loaded and formatted image. Uses {@code .into(view)} to load the image to an {@code ImageView}
      * @see #formatDefaultImage(DatabaseInstance, Options)
      * @see #getDefaultImage(DatabaseInstance)
@@ -441,6 +478,33 @@ public class Image extends DatabaseInstance<Image> {
             public void onPrepareLoad(Drawable placeHolderDrawable) {
                 useDrawable.accept(null, placeHolderDrawable);
             }
+        };
+        loadedPicasso.into(target);
+    }
+
+    /**
+     * Turns a loaded picasso into a bitmap
+     * @param loadedPicasso The picasso element that is loaded with the image.
+     * @param useBitmap Called on completion with the bitmap or null
+     *                    <ul>
+     *                    <li>If error, {@code success = false}</li>
+     *                    <li>If good, {@code success = true}</li>
+     *                    </ul>
+     */
+    public static void loadAsBitmap(@NonNull RequestCreator loadedPicasso, BiConsumer<Boolean, Bitmap> useBitmap){
+        Target target = new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                useBitmap.accept(true, bitmap);
+            }
+
+            @Override
+            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                useBitmap.accept(false, null);
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {}
         };
         loadedPicasso.into(target);
     }

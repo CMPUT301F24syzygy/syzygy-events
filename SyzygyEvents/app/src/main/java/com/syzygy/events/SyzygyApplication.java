@@ -369,34 +369,32 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         if(!n.ignoresOptOutSettings() && !user.getOrganizerNotifications()){
             return;
         }
-        Bitmap img = null;
-        try {
-            img = Image.getFormatedAssociatedImage(n.getSender(), Database.Collections.USERS, Image.Options.LargestCircle()).get();
-        }catch (IOException e){}
+        Image.getFormatedAssociatedImageAsBitmap(n.getSender(), Database.Collections.USERS, Image.Options.LargestCircle(), (s,img)->{
+            Intent resultIntent = new Intent(this, EntrantActivity.class);
+            PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
 
-        Intent resultIntent = new Intent(this, EntrantActivity.class);
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
+            NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_profile)
+                    .setLargeIcon(img)
+                    .setContentTitle(n.getSubject())
+                    .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(n.getBody()))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .setContentIntent(pIntent);
 
-        NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.penguin_blue)
-                .setLargeIcon(img)
-                .setContentTitle(n.getSubject())
-                .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(n.getBody()))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .setContentIntent(pIntent);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+                channel.setShowBadge(true);
+                NotificationManager notificationManager = getSystemService(NotificationManager.class);
+                notificationManager.createNotificationChannel(channel);
+            }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        NotificationManagerCompat.from(this).notify(n.getDocumentID().hashCode(), b.build());
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            NotificationManagerCompat.from(this).notify(n.getDocumentID().hashCode(), b.build());
+        });
     }
 
 }
