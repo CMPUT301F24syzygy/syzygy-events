@@ -15,6 +15,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.syzygy.events.database.Event;
+import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Facility;
 import com.syzygy.events.database.User;
 
@@ -31,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Unit Test class for the user model
+ * Unit Test class for the event model
  * @author Caly Zheng
  * @version 1.0
  * @since 05nov2024
@@ -41,11 +42,19 @@ public class EventTest {
     private static boolean setUpComplete = false;
     static Event testEvent;
     static User testUser;
+    static User testUser2;
     static Facility testFacility;
+    static EventAssociation invitedUser;
     private static final TestDatabase db = new TestDatabase();
 
-    public void resetUser(){
-        testUser.update("testName", "TEST", "abc@xyz.com", "1234567890",false, false, false, (success) -> {});
+    public void resetUser() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        testUser.update("testName", "TEST", "abc@xyz.com", "1234567890",false, false, false, (success) -> {
+            latch.countDown();
+        });
+        if (!latch.await(60, TimeUnit.SECONDS)) {
+            fail("user update timed out");
+        }
     }
 
     @Before
@@ -69,6 +78,23 @@ public class EventTest {
             });
 
             if (!latch.await(60, TimeUnit.SECONDS)) {
+                fail("user creation timed out");
+            }
+
+            final CountDownLatch latch1 = new CountDownLatch(1);
+            User.NewInstance(db.testDB, UUID.randomUUID().toString(), "testName1", "TEST", null, "", "abc@xyz.com", "1234567890", false, false, false, (instance, success) -> {
+                if (success) {
+                    testUser2 = instance;
+                    // Indicate that the operation is complete
+                    System.out.println("User was created");
+                    latch1.countDown();
+                } else {
+                    fail("User was not created in db");
+                    latch1.countDown(); // Ensure latch is decremented
+                }
+            });
+
+            if (!latch1.await(60, TimeUnit.SECONDS)) {
                 fail("user creation timed out");
             }
 
@@ -105,6 +131,21 @@ public class EventTest {
             if (!elatch.await(60, TimeUnit.SECONDS)) {
                 fail("event creation timed out");
             }
+
+            final CountDownLatch ealatch = new CountDownLatch(1);
+            EventAssociation.NewInstance(db.testDB, testEvent.getDocumentID(), new GeoPoint(50,50), "Invited", testUser2.getDocumentID(), (instance, success) -> {
+                if (success) {
+                    invitedUser = instance;
+                    ealatch.countDown();
+                } else {
+                    fail("event association was not created in db");
+                    ealatch.countDown(); // Ensure latch is decremented
+                }
+            });
+
+            if (!ealatch.await(60, TimeUnit.SECONDS)) {
+                fail("event association creation timed out");
+            }
         }
         setUpComplete = true;
 
@@ -123,6 +164,16 @@ public class EventTest {
                 .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
 
         TestDatabase.firestore.collection("users").document(testUser.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
+
+        TestDatabase.firestore.collection("users").document(testUser2.getDocumentID())
+                .delete()
+                .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
+                .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
+
+        TestDatabase.firestore.collection("event_associations").document(invitedUser.getDocumentID())
                 .delete()
                 .addOnSuccessListener(aVoid -> Log.d("Delete", "DocumentSnapshot successfully deleted!"))
                 .addOnFailureListener(e -> Log.w("Delete", "Error deleting document", e));
@@ -157,10 +208,12 @@ public class EventTest {
     }
 
     @Test
-    public void testAddUserToWaitlist(){
+    public void testAddUserToWaitlist() throws InterruptedException {
         resetUser();
 
+        CountDownLatch latch = new CountDownLatch(1);
         testEvent.addUserToWaitlist(testUser, null, (q, a, s)->{
+            latch.countDown();
             assertTrue(s);
             assertNotNull(a);
             assertNotNull(a.result);
@@ -168,12 +221,45 @@ public class EventTest {
             assertEquals(a.result.getUserID(), testUser.getDocumentID());
             assertEquals(a.result.getEvent(), testEvent);
             assertEquals(a.result.getEventID(), testEvent.getDocumentID());
-
-            assertEquals(q.getCurrentWaitlist(), 1);
         });
 
+        if (!latch.await(10, TimeUnit.SECONDS)) {
+            fail("Operation timed out");
+        }
+        CountDownLatch latch2 = new CountDownLatch(1);
+        testEvent.refreshData((query, success) -> {
+            latch2.countDown();
+        });
+
+        if (!latch2.await(10, TimeUnit.SECONDS)) {
+            fail("Operation timed out");
+        }
+
+        assertEquals(1, testEvent.getCurrentWaitlist());
+
+        CountDownLatch latch1 = new CountDownLatch(1);
         testEvent.getLottery(-1, (e, result, s)->{
+            latch1.countDown();
             assertTrue((s));
         });
+
+        if (!latch1.await(10, TimeUnit.SECONDS)) {
+            fail("Operation timed out");
+        }
+    }
+
+    @Test
+    public void testAcceptInvite() throws InterruptedException {
+        resetUser();
+        CountDownLatch latch1 = new CountDownLatch(1);
+        testEvent.acceptInvite(testUser2, (q, d, s) -> {
+            latch1.countDown();
+            assertTrue(s);
+
+        });
+        if (!latch1.await(10, TimeUnit.SECONDS)) {
+            fail("Operation timed out");
+        }
+        assertEquals("Enrolled", invitedUser.getStatus());
     }
 }
