@@ -5,6 +5,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.Query;
@@ -16,6 +18,8 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 
 /**
@@ -74,7 +78,6 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      * @param db The database
      * @param query The query
      * @param collection The collection which this queries
-     * @param resultsPerPage The total number of results to be passed per page, if it is null, all results are retrieved
      */
     @Database.MustStir
     public DatabaseQuery(@NonNull Database db, @NonNull Query query, @NonNull Database.Collections collection, @Nullable Integer resultsPerPage){
@@ -82,7 +85,6 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         this.collection = collection;
         this.query = query;
         this.resultsPerPage = resultsPerPage;
-
     }
 
     /**
@@ -125,6 +127,31 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
             loadFromSnapshot(listener);
         });
     }
+
+    /**
+     * Returns an object which contains methods that help notify the user or change the status of the associations.
+     * This object must be called with {@code .dissolve} once complete
+     * @param query The query containing the associations
+     * @return The set of methods for the associations currently in the list (does not match on change)
+     */
+    @Database.MustStir
+    public static EventAssociation.Methods<DatabaseQuery<EventAssociation>> methods(@Database.Observes DatabaseQuery<EventAssociation> query){
+        return new EventAssociation.Methods<>(query.db, query, query.getCurrentInstances());
+    }
+
+    /**
+     * Returns an object which contains methods that help notify the user or change the status of the associations.
+     * This object must be called with {@code .dissolve} once complete
+     * @param querrier The querrier of the results
+     * @param query The query containing the associations
+     * @param eas The list of event associations to get methods for
+     * @return The set of methods for the associations currently in the list (does not match on change)
+     */
+    @Database.MustStir
+    static <T extends Database.Querrier<T>> EventAssociation.Methods<T> methods(@Database.Observes T querrier, @Database.Observes DatabaseQuery<EventAssociation> query, @Database.Dilutes List<EventAssociation> eas){
+        return new EventAssociation.Methods<>(query.db, querrier, eas);
+    }
+
 
     /**
      * Refreshes the query and loads the new instances starting at the instance following the last instance of the current page.
@@ -471,13 +498,20 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
      */
     @Database.MustStir
     public static DatabaseQuery<EventAssociation> getAttachedUsers(Database db, @Database.Observes Event e, String status, boolean returnAll){
+        Query q = getAttachedUsersQuery(db, e, status);
+        return new DatabaseQuery<>(db, q, Database.Collections.EVENT_ASSOCIATIONS, null);
+    }
+
+    @Database.MustStir
+    public static Query getAttachedUsersQuery(Database db, @Database.Observes Event e, String status){
         Filter f = Filter.equalTo(db.constants.getString(R.string.database_assoc_event), e.getDocumentID());
         if(status != null && !status.isBlank()){
             f = Filter.and(f, Filter.equalTo(db.constants.getString(R.string.database_assoc_status), status));
         }
-        Database.Collections c = Database.Collections.EVENT_ASSOCIATIONS;
-        Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
-        return new DatabaseQuery<>(db, q, c, null);
+        return Database.Collections.EVENT_ASSOCIATIONS
+                .getCollection(db)
+                .where(f)
+                .orderBy(db.constants.getString(R.string.database_assoc_time), Query.Direction.DESCENDING);
     }
 
     @Database.MustStir
@@ -502,6 +536,68 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
         Database.Collections c = Database.Collections.IMAGES;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_img_uploadTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, null);
+    }
+
+    /**
+     * Tools to query for documents without loading them
+     */
+    public static class Util{
+        private Util(){}
+
+        /**
+         * Gets the documents matching the query. Returns all results and does not load the instances
+         * @param q The query to evaluate
+         * @param listener The on complete listener
+         */
+        public static void getDocumentsFromQuery(Query q, BiConsumer<List<DocumentSnapshot>, Boolean> listener){
+            q.get().addOnCompleteListener(t -> {
+                if(!t.isSuccessful()){
+                    listener.accept(null, false);
+                    return;
+                }
+                listener.accept(t.getResult().getDocuments(), true);
+            });
+        }
+
+        /**
+         * Updates the field on each field
+         * WARNING!! DOES NOT TEST THE VALIDITY OF THE VALUE
+         * @param documents The documents to update
+         * @param field The field to change
+         * @param value The new value that the field should be
+         * @param onComplete The listener, returns how many errors occured
+         */
+        public static void updateFieldOfDocuments(List<DocumentSnapshot> documents, String field, Object value, Consumer<Integer> onComplete){
+            OnCompleteListener<Void> oc = new OnCompleteListener<Void>() {
+                private int i = 0;
+                private int err = 0;
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(!task.isSuccessful()){
+                        err++;
+                    }
+                    i++;
+                    if(i >= documents.size()){
+                        onComplete.accept(err);
+                    }
+                }
+            };
+            if(documents.isEmpty()){
+                onComplete.accept(0);
+            }else{
+                documents.forEach(d -> d.getReference().update(field, value).addOnCompleteListener(oc));
+            }
+        }
+
+        /**
+         * Deletes the documents from the database.
+         * WARNING!!!
+         * DOES NOT DELETE SUB INSTANCES
+         * @param documents The documents to delete
+         */
+        public static void deleteDocuments(List<DocumentSnapshot> documents){
+            documents.forEach(d -> d.getReference().delete());
+        }
     }
 
     public enum Page{

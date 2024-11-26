@@ -30,13 +30,17 @@ import java.util.function.Consumer;
 public class Event extends DatabaseInstance<Event> implements Database.Querrier<Event>{
 
     /**
-     * The number of users counting against enrollment. Includes Enrolled and Invited users
+     * The number of users counting against enrollment. Only counts Invited users
      */
     private int currentEnrolled = 0;
     /**
      * The number of users on the waitlist. Only counts Waitlist status
      */
     private int currentWaitlist = 0;
+    /**
+     * The number of users on the waitlist. Only counts Invited status
+     */
+    private int currentInvited = 0;
 
     private final Query assocUsersQuery;
 
@@ -66,12 +70,13 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 db.constants.getString(R.string.database_assoc_status),
                 db.constants.getString(R.string.event_assoc_status_waitlist)
         ).count();
-        AggregateQuery enrolledInvitedCountQuery = assocUsersQuery.whereIn(
+        AggregateQuery enrolledInvitedCountQuery = assocUsersQuery.whereEqualTo(
                 db.constants.getString(R.string.database_assoc_status),
-                Arrays.asList(
-                        db.constants.getString(R.string.event_assoc_status_invited),
-                        db.constants.getString(R.string.event_assoc_status_enrolled)
-                )
+                db.constants.getString(R.string.event_assoc_status_enrolled)
+        ).count();
+        AggregateQuery invitedCountQuery = assocUsersQuery.whereEqualTo(
+                db.constants.getString(R.string.database_assoc_status),
+                db.constants.getString(R.string.event_assoc_status_invited)
         ).count();
         waitlistCountQuery.get(AggregateSource.SERVER).addOnCompleteListener(task -> {
             if(!task.isSuccessful()){
@@ -85,7 +90,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     return;
                 }
                 currentEnrolled = (int) task2.getResult().getCount();
-                listener.onCompletion(this, true);
+                invitedCountQuery.get(AggregateSource.SERVER).addOnCompleteListener(task3 -> {
+                    if(!task2.isSuccessful()){
+                        listener.onCompletion(this, false);
+                        return;
+                    }
+                    currentInvited = (int) task3.getResult().getCount();
+                    listener.onCompletion(this, true);
+                });
             });
         });
     }
@@ -107,7 +119,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 return;
             }
             int getCount = count;
-            if(getCount <= 0) getCount = (int) (getCapacity() - currentEnrolled);
+            if(getCount <= 0) getCount = (int) (getCapacity() - currentEnrolled - currentInvited);
             shuffleWaitlist(getCount, listener);
         });
     }
@@ -345,7 +357,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     }
 
     /**
-     * @return The number of users that count against enrollment. Includes Enrolled and Invited
+     * @return The number of users that count against enrollment. Includes Enrolled
      * @see #refreshData(Listener)
      */
     public int getCurrentEnrolled() {
@@ -358,6 +370,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
      */
     public int getCurrentWaitlist() {
         return currentWaitlist;
+    }
+
+    /**
+     * @return The number of users that are invited. Includes Invited
+     * @see #refreshData(Listener)
+     */
+    public int getCurrentInvited() {
+        return currentInvited;
     }
 
     @Override
