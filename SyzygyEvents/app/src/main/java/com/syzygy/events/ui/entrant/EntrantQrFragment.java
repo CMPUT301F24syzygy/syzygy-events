@@ -28,7 +28,9 @@ public class EntrantQrFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 IntentIntegrator intentIntegrator = new IntentIntegrator(getActivity());
+                intentIntegrator.setCaptureActivity(QrCaptureActivity.class);
                 intentIntegrator.setPrompt("Scan a QR Code");
+                intentIntegrator.setBeepEnabled(false);
                 intentIntegrator.initiateScan();
             }
         });

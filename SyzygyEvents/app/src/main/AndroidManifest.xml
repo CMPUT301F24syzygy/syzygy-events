@@ -19,30 +19,33 @@
         android:theme="@style/Theme.SyzygyEvents"
         tools:targetApi="31">
         <activity
-            android:name="com.journeyapps.barcodescanner.CaptureActivity"
-            android:screenOrientation="fullSensor"
+            android:name=".ui.entrant.QrCaptureActivity"
+            android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi"
-            tools:replace="android:screenOrientation"
             android:stateNotNeeded="true"/>
         <activity
             android:name=".ui.EntrantActivity"
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false"/>
         <activity
             android:name=".ui.OrganizerActivity"
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false"/>
         <activity
             android:name=".ui.AdminActivity"
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false"/>
         <activity
             android:name=".ui.SignupActivity"
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false"/>
         <activity
             android:name=".ui.InitActivity"

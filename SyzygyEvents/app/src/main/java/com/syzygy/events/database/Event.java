@@ -531,7 +531,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     listener.onCompletion(this, null, false);
                     return;
                 }
-                if(data.size() > 1){
+                if(data.size() > 1) {
                     listener.onCompletion(this, null, false);
                     return;
                 }
@@ -550,7 +550,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     data.dissolve();
                     return;
                 }
-                //User isnt already associated
+                //User isn't already associated
                 EventAssociation.NewInstance(db, getDocumentID(), finalLocation, db.constants.getString(R.string.event_assoc_status_waitlist), user.getDocumentID(), (instance, success2) -> {
                     listener.onCompletion(this, new QueryResult<>(instance), success2);
                     data.dissolve();

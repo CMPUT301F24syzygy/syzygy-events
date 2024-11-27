@@ -1,5 +1,6 @@
 package com.syzygy.events.ui.entrant;
 
+import static androidx.core.content.res.ResourcesCompat.getColor;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -60,16 +61,20 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         if(notification.getSender() != null){
             TextView sender = view.findViewById(R.id.notification_item_sender_text);
             sender.setText(notification.getSender().getName());
+            ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
+            Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
+        }
+        else {
+            ///
         }
 
         TextView sent_date = view.findViewById(R.id.notification_item_sent_date_text);
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         sent_date.setText(df.format(notification.getSentTime().toDate()));
 
-        ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
-        Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
-
-
+        if (notification.getIsRead()) {
+            view.setBackgroundColor(getContext().getColor(R.color.highlight_01));
+        }
 
         return view;
     }

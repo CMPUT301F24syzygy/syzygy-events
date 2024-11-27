@@ -11,10 +11,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.provider.Settings;
@@ -39,12 +36,10 @@ import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.OrganizerActivity;
 import com.syzygy.events.ui.SignupActivity;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -230,6 +225,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
                     return;
                 }
                 Location loc = task.getResult();
+
                 locationListeners.forEach(l -> l.accept(loc));
                 locationListeners.clear();
             });
@@ -374,7 +370,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
 
             NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_profile)
+                    .setSmallIcon(R.drawable.t)
                     .setLargeIcon(img)
                     .setContentTitle(n.getSubject())
                     .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())
