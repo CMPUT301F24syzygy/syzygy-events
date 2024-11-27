@@ -225,6 +225,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
                     return;
                 }
                 Location loc = task.getResult();
+
                 locationListeners.forEach(l -> l.accept(loc));
                 locationListeners.clear();
             });
