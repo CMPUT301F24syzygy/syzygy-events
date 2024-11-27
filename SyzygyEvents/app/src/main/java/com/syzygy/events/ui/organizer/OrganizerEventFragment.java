@@ -184,7 +184,6 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                         .setView(R.layout.popup_lottery)
                         .create();
                 dialog.show();
-                setLotteryPopupView(dialog);
                 event.refreshData((e, s) -> {
                     setLotteryPopupView(dialog);
                 });
