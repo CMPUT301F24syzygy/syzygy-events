@@ -1,5 +1,6 @@
 package com.syzygy.events.ui.entrant;
 
+import static androidx.core.content.res.ResourcesCompat.getColor;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -69,7 +70,9 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
         Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
 
-
+        if (notification.getIsRead()) {
+            view.setBackgroundColor(getContext().getColor(R.color.highlight_01));
+        }
 
         return view;
     }

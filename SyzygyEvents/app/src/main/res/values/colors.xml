@@ -10,5 +10,6 @@
 
     <color name="grey_blue_100">#FF666e7a</color>
     <color name="grey_100">#FFD4D4D4</color>
+    <color name="highlight_01">#FFE6E8EB</color>
 
 </resources>
