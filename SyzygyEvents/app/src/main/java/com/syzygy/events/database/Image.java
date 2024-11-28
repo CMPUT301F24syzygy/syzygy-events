@@ -255,9 +255,9 @@ public class Image extends DatabaseInstance<Image> {
      * @param useDrawable Called on preparation with a placeHolder drawable, then again on completion
      *                    of load with the drawable or an error drawable if failed.
      *                    <ul>
-     *                    <li>If placeholder, {@code success = null}</li>
-     *                    <li>If error, {@code success = false}</li>
-     *                    <li>If good, {@code success = true}</li>
+     *                    <li> If placeholder, {@code success = null} </li>
+     *                    <li> If error, {@code success = false} </li>
+     *                    <li> If good, {@code success = true} </li>
      *                    </ul>
      * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
      * @see #loadAsDrawable(RequestCreator, Resources, BiConsumer)
@@ -274,10 +274,10 @@ public class Image extends DatabaseInstance<Image> {
      * @param collection The collection to base the default off of if the instance is null
      * @param option The formatting options
      * @param useBitmap Called on completion with the bitmap or null
-     *      *                    <ul>
-     *      *                    <li>If error, {@code success = false}</li>
-     *      *                    <li>If good, {@code success = true}</li>
-     *      *                    </ul>
+     *                          <ul>
+     *                          <li> If error, {@code success = false} </li>
+     *                          <li> If good, {@code success = true} </li>
+     *                          </ul>
      * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
      * @see #loadAsBitmap(RequestCreator, BiConsumer)
      */
@@ -292,10 +292,10 @@ public class Image extends DatabaseInstance<Image> {
      * @param instance The instance whos image should be loaded
      * @param option The formatting options
      * @param useBitmap Called on completion with the bitmap or null
-     *      *                    <ul>
-     *      *                    <li>If error, {@code success = false}</li>
-     *      *                    <li>If good, {@code success = true}</li>
-     *      *                    </ul>
+     *                          <ul>
+     *                          <li> If error, {@code success = false} </li>
+     *                          <li> If good, {@code success = true} </li>
+     *                          </ul>
      * @see #getFormatedAssociatedImage(DatabaseInstance, Database.Collections, Options)
      * @see #loadAsBitmap(RequestCreator, BiConsumer)
      */

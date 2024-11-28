@@ -1,0 +1,8 @@
+com.syzygy.events
+com.syzygy.events.database
+com.syzygy.events.ModelTests
+com.syzygy.events.ui
+com.syzygy.events.ui.admin
+com.syzygy.events.ui.entrant
+com.syzygy.events.ui.organizer
+com.syzygy.events.ui.signup
