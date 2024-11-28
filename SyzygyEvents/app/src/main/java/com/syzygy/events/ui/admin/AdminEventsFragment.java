@@ -13,6 +13,8 @@ import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.FragAdminEventsListBinding;
+import com.syzygy.events.ui.AdminActivity;
+import com.syzygy.events.ui.EntrantActivity;
 
 /**
  * The events tab for admin
@@ -42,6 +44,11 @@ public class AdminEventsFragment extends Fragment {
         });
 
         binding.adminEventsList.setAdapter(a);
+
+        binding.adminEventsList.setOnItemClickListener((parent, view, position, id) -> {
+            AdminActivity activity = (AdminActivity)getActivity();
+            activity.openEvent(a.getItem(position).getDocumentID());
+        });
 
         return binding.getRoot();
     }

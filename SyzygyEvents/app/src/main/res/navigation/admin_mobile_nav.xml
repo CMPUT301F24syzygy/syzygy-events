@@ -35,4 +35,10 @@
         android:label="@string/title_admin_sec_event"
         tools:layout="@layout/frag_admin_event_page" />
 
+    <fragment
+        android:id="@+id/nav_admin_facility_secondary"
+        android:name="com.syzygy.events.ui.admin.AdminFacilityFragment"
+        android:label="@string/title_admin_sec_facility"
+        tools:layout="@layout/frag_admin_facility_page" />
+
 </navigation>

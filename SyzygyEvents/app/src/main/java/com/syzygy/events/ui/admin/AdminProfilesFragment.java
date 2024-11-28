@@ -24,6 +24,7 @@ import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
 import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragAdminProfilesListBinding;
+import com.syzygy.events.ui.AdminActivity;
 import com.syzygy.events.ui.EntrantActivity;
 
 import java.util.ArrayList;
@@ -93,6 +94,12 @@ public class AdminProfilesFragment extends Fragment {
                 facility_address.setText(user.getFacility().getAddress());
                 ImageView facility_image = dialog.findViewById(R.id.card_facility_image_img);
                 Image.getFormatedAssociatedImage(user.getFacility(), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(facility_image);
+
+                card.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    ((AdminActivity)getActivity()).openFacility(user.getFacilityID());
+                });
+
             }
 
             dialog.findViewById(R.id.admin_view_delete_user_button).setOnClickListener(v -> {

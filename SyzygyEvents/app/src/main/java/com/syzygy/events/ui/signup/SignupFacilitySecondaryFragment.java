@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -142,21 +143,23 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
 
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
+        LatLng latLng = new LatLng(53.559965, -113.470836);
+
         Log.println(Log.DEBUG, "fac map", "Ready");
         map.setOnMapClickListener(this);
+        marker = map.addMarker(new MarkerOptions()
+                .draggable(true)
+                .position(latLng));
         this.map=map;
+
+        marker.setVisible(false);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 8));
     }
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
-        if(marker == null){
-            marker = map.addMarker(new MarkerOptions()
-                    .position(latLng).draggable(true)
-            );
-        }else{
-            marker.setPosition(latLng);
-        }
-
+        marker.setPosition(latLng);
+        marker.setVisible(true);
     }
     @Override
     public void onDestroyView() {

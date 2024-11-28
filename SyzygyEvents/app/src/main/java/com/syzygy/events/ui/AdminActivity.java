@@ -24,6 +24,11 @@ import com.syzygy.events.databinding.ActivityAdminBinding;
  */
 public class AdminActivity extends SyzygyActivity {
 
+    private String selectedEventID;
+    private String selectedFacilityID;
+
+    private String selectedUserID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -58,23 +63,24 @@ public class AdminActivity extends SyzygyActivity {
             PopupMenu m = new PopupMenu(AdminActivity.this, findViewById(item.getItemId()));
             m.getMenuInflater().inflate(R.menu.account_menu, m.getMenu());
             m.setForceShowIcon(true);
-            SyzygyApplication app = (SyzygyApplication)getApplication();
+
             Menu menu = m.getMenu();
+            SyzygyApplication app = (SyzygyApplication) getApplication();
             app.loadMenuItemIcons(menu);
+
             if (app.getUser().getFacility() != null) {
                 menu.findItem(R.id.add_organizer_item).setVisible(false);
                 menu.findItem(R.id.organizer_item).setVisible(true);
             }
             menu.findItem(R.id.admin_item).setVisible(true);
+
             m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     if (menuItem.getItemId() == R.id.entrant_item) {
-                        Intent intent = new Intent(AdminActivity.this, EntrantActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(EntrantActivity.class);
                     } else if (menuItem.getItemId() == R.id.organizer_item) {
-                        Intent intent = new Intent(AdminActivity.this, OrganizerActivity.class);
-                        startActivity(intent);
+                        app.switchToActivity(OrganizerActivity.class);
                     } else if (menuItem.getItemId() == R.id.add_organizer_item) {
                         navController.navigate(R.id.nav_signup_facility_secondary);
                     }
@@ -85,5 +91,28 @@ public class AdminActivity extends SyzygyActivity {
         }
         return true;
     }
+
+    public String getEventID() {
+        return selectedEventID;
+    }
+
+    public String getFacilityID() {
+        return selectedFacilityID;
+    }
+
+    public String getUserID() {
+        return selectedUserID;
+    }
+
+    public void openEvent(String id) {
+        selectedEventID = id;
+        navController.navigate(R.id.nav_admin_event_secondary);
+    }
+
+    public void openFacility(String id) {
+        selectedFacilityID = id;
+        navController.navigate(R.id.nav_admin_facility_secondary);
+    }
+
 
 }

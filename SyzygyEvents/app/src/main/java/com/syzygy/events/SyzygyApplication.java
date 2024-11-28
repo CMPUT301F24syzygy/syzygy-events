@@ -153,7 +153,9 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
                 menu.getItem(0).setIcon(d);
             });
         }else if(clazz == AdminActivity.class){
-            menu.getItem(0).setIcon(menuAdminIcon);
+            Image.getFormatedAssociatedImageAsDrawable(null, Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.ICON), getResources(), (s, d) -> {
+                menu.getItem(0).setIcon(d);
+            });
         }
     }
 
