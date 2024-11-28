@@ -41,4 +41,10 @@
         android:label="@string/title_admin_sec_facility"
         tools:layout="@layout/frag_admin_facility_page" />
 
+    <fragment
+        android:id="@+id/nav_admin_profile_secondary"
+        android:name="com.syzygy.events.ui.admin.AdminProfileFragment"
+        android:label="@string/title_admin_sec_user"
+        tools:layout="@layout/frag_admin_profile_page" />
+
 </navigation>

@@ -23,7 +23,7 @@
 
     <string name="title_admin_sec_event">Event</string>
     <string name="title_admin_sec_facility">Facility</string>
-    <string name="title_admin_sec_user">User</string>
+    <string name="title_admin_sec_user">Profile</string>
 
     <string name="title_signup_organizer">Create Facility</string>
 

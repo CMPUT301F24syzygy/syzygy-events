@@ -114,5 +114,10 @@ public class AdminActivity extends SyzygyActivity {
         navController.navigate(R.id.nav_admin_facility_secondary);
     }
 
+    public void openProfile(String id) {
+        selectedUserID = id;
+        navController.navigate(R.id.nav_admin_profile_secondary);
+    }
+
 
 }

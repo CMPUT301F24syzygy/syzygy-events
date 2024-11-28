@@ -1,5 +1,7 @@
 package com.syzygy.events;
 
+import static androidx.core.app.ActivityCompat.requestPermissions;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -19,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.ImageView;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -278,7 +281,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     public void getLocation(Consumer<Location> locationListener){
         locationListeners.add(locationListener);
         if(!canGetLocation()){
-            ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
+            requestPermissions(currentActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
         }else{
             retrieveLocation();
         }
@@ -335,6 +338,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(i);
         currentActivity.finish();
+
     }
 
     /**
