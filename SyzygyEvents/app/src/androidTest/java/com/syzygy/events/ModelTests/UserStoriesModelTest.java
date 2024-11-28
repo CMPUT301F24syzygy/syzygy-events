@@ -1,4 +1,4 @@
-package com.syzygy.events;
+package com.syzygy.events.ModelTests;
 
 
 import static org.junit.Assert.assertEquals;
@@ -16,6 +16,8 @@ import androidx.test.core.app.ApplicationProvider;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.RequestCreator;
+import com.syzygy.events.R;
+import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
 import com.syzygy.events.database.Event;
@@ -243,7 +245,7 @@ public class UserStoriesModelTest {
         getTestEventFresh(EVENT_REG, (e, r1)->{
             this.<User>getTestInstances(waitListCount+enrolledCount, (i,b)->getTestUser(b), (us, r2) -> {
                 this.<EventAssociation>getTestInstances(waitListCount+enrolledCount, (i,b)->{
-                    getTestEventAssociation(us.get(i), e, constants.getString(i<waitListCount?R.string.event_assoc_status_waitlist: R.string.event_assoc_status_enrolled), b, null);
+                    getTestEventAssociation(us.get(i), e, constants.getString(i<waitListCount? R.string.event_assoc_status_waitlist: R.string.event_assoc_status_enrolled), b, null);
                 }, (eas, r3) -> {
                     listener.accept(eas, then(r3, r2, r1));
                 });

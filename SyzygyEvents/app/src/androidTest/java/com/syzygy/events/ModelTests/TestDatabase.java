@@ -1,4 +1,4 @@
-package com.syzygy.events;
+package com.syzygy.events.ModelTests;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.syzygy.events.BuildConfig;
 import com.syzygy.events.database.Database;
 
 import java.util.concurrent.CountDownLatch;
