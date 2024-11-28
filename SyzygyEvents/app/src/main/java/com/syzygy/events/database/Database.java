@@ -511,7 +511,7 @@ public class Database implements EventListener<DocumentSnapshot> {
      *                 and the instance in an illegal state.
      *                 The listener is called before the database is updated with information
      * @param <T> The type of instance
-     * @returns The set of invalid properties.
+     * @return The set of invalid properties.
      */
     @SuppressWarnings("unchecked")
     @MustStir
