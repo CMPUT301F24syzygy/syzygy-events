@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -93,11 +94,34 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             });
 
             binding.adminRemoveQrButton.setOnClickListener(view -> {
-                event.setQrHash("");
+                Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
+                        .setTitle("Confirm")
+                        .setMessage("Are you sure you want to remove the qr code?")
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                event.setQrHash("");
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                confirmRemoveDialog.show();
             });
 
             binding.adminRemoveEventButton.setOnClickListener(view -> {
-                event.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {});
+                Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
+                        .setTitle("Confirm")
+                        .setMessage("Are you sure you want to remove this event?")
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                event.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {});
+                                ((AdminActivity)getActivity()).navigateUp();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                confirmRemoveDialog.show();
             });
 
             updateView();

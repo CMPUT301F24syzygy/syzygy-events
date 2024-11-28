@@ -189,10 +189,13 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                 });
                 dialog.findViewById(R.id.lottery_run_button).setOnClickListener(v -> {
                     event.getLottery(-1, (e, result, s) -> {
-                        result.execute((ev, r, f) -> {
-                            dialog.dismiss();
-                            updateView();
-                        }, true);
+                        result.execute(
+                                (ev, r, f) -> {
+                                    dialog.dismiss();
+                                    updateView();
+                                    },
+                                (true ? false : true)
+                        );
                     });
                 });
             });

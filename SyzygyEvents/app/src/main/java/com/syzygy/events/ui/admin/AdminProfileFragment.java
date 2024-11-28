@@ -1,5 +1,8 @@
 package com.syzygy.events.ui.admin;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,10 +69,21 @@ public class AdminProfileFragment extends Fragment {
             }
 
             binding.getRoot().findViewById(R.id.admin_view_delete_user_button).setOnClickListener(v -> {
-                user.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {});
-                activity.navigateUp();
+                Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
+                        .setTitle("Confirm")
+                        .setMessage("Are you sure you want to remove this user?")
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                user.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                                    activity.navigateUp();
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                confirmRemoveDialog.show();
             });
-
 
 
         });

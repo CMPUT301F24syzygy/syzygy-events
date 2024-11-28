@@ -2,6 +2,7 @@ package com.syzygy.events.ui.admin;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,13 +65,25 @@ public class AdminImagesFragment extends Fragment {
             Image.getFormatedAssociatedImage(img, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(imageview);
 
             dialog.findViewById(R.id.admin_view_delete_image_button).setOnClickListener(v -> {
-                img.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
-                    dialog.dismiss();
-                    query.refreshData((query1, success) -> {
-                        a.notifyDataSetChanged();
-                        binding.adminImagesList.setAdapter(a);
-                    });
-                });
+                Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
+                        .setTitle("Confirm")
+                        .setMessage("Are you sure you want to remove this image?")
+                        .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                img.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                                    dialog.dismiss();
+                                    query.refreshData((query1, success) -> {
+                                        a.notifyDataSetChanged();
+                                        binding.adminImagesList.setAdapter(a);
+                                    });
+                                });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                confirmRemoveDialog.show();
+
             });
 
         });

@@ -50,9 +50,6 @@ public class AdminProfilesAdapter extends ArrayAdapter<User> {
         Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.SMALL)).into(image);
 
 
-        ///
-        ///
-
         return view;
     }
 
