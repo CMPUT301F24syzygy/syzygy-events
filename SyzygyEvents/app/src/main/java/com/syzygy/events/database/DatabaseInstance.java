@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * An instance of a database item which should be updated whenever the database is updated.@param <T> The class of the instance.
+ * An instance of a database item which should be updated whenever the database is updated.@param T The class of the instance.
  * TODO - Add error handling on instance exchanges
  * TODO - change on instance load, if null, update subdelete
  */
@@ -304,13 +304,12 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
     /**
      * Checks if the instance is in a legal state
-     * <p>
-     *     The instance is in an illegal state if
-     *     <ol>
-     *         <li>The instance is dereferenced {@link #isDereferenced} or</li>
-     *         <li>The instance has not been initialized with data {@link #isInitialized}</li>
-     *     </ol>
-     * </p>
+     * The instance is in an illegal state if
+     * <ol>
+     *     <li>The instance is dereferenced {@link #isDereferenced} or</li>
+     *     <li>The instance has not been initialized with data {@link #isInitialized}</li>
+     * </ol>
+     *
      * @see #isDereferenced
      * @see #isInitialized
      * @throws IllegalStateException if the instance is in an illegal state
