@@ -60,6 +60,16 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         );
     }
 
+    @Override
+    protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener) {
+        db.bulkModifyField(
+                Database.Collections.NOTIFICATIONS.getCollection(db)
+                        .whereEqualTo(db.constants.getString(R.string.database_not_eventID), getDocumentID()),
+                R.string.database_not_eventID, "",
+                listener
+        );
+    }
+
     /**
      * Refreshes the current enrolled and waitlist counts
      * @param listener The listener that will be called when the counts are loaded

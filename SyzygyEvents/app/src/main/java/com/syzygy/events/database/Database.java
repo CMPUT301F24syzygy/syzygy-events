@@ -17,8 +17,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firestore.v1.Write;
 import com.syzygy.events.R;
 
 import java.lang.annotation.Documented;
@@ -146,6 +149,31 @@ public class Database implements EventListener<DocumentSnapshot> {
         DocumentReference doc = collection.getDocument(this, documentId);
         doc.update(constants.getString(propertyNameId), newValue).addOnCompleteListener(task -> {
             onComplete.accept(task.isSuccessful());
+        });
+    }
+
+    /**
+     * Updates the field in all instances returned by the query without loading the instances
+     * <p>
+     *     Does not do any cascading.
+     * </p>
+     * @param q The query which returns all documents that should be updated
+     * @param propertyNameId The id of the property to update
+     * @param newValue The new value to be put in the property
+     * @param onComplete called on completion with if the update occurred successfully.
+     */
+    void bulkModifyField(Query q, int propertyNameId, Object newValue, Consumer<Boolean> onComplete){
+        WriteBatch b = db.batch();
+        String prop = constants.getString(propertyNameId);
+        q.get().addOnCompleteListener(t -> {
+            if(!t.isSuccessful()){
+                onComplete.accept(false);
+                return;
+            }
+            t.getResult().getDocuments().forEach(d -> {
+                b.update(d.getReference(), prop, newValue);
+            });
+            b.commit().addOnCompleteListener(t2 -> onComplete.accept(t2.isSuccessful()));
         });
     }
 
@@ -603,18 +631,19 @@ public class Database implements EventListener<DocumentSnapshot> {
 
     @Override
     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-        if(error != null || value == null || !value.exists()) {
-            //TODO
-            return;
-        }
-        DatabaseInstance<?> instance = cache.get(value.getId());
-        if(instance == null){
-            //TODO
-            return;
-        }
 
+        if(error != null || value == null || !value.exists()) {
+            //todo
+            return;
+        }
+        DatabaseInstance<?> instance = cache.get(value.getReference().getPath());
+
+        if(instance == null){
+            //todo
+            return;
+        }
         instance.updateDataFromDatabase(value.getData(), s->{
-            //TODO on error
+            //todo
         });
     }
 
@@ -670,7 +699,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param instance The database instance
          * @return The unique database identifier
          */
-        String getDatabaseID(@Observes DatabaseInstance<?> instance){
+        public String getDatabaseID(@Observes DatabaseInstance<?> instance){
           return getDatabaseID(instance.getDocumentID());
         };
 
@@ -679,7 +708,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param documentID The unique identifier of the instance within the collection
          * @return The unique database identifier
          */
-        String getDatabaseID(String documentID){
+        public String getDatabaseID(String documentID){
             return dbIdentifier + '/' + documentID;
         };
 
@@ -688,7 +717,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param databaseID The unique identifier of the instance within the database
          * @return The unique identifier of the instance within the collection
          */
-        String instanceIDFromDatabaseID(String databaseID){
+        public String instanceIDFromDatabaseID(String databaseID){
             return databaseID.replaceFirst(dbIdentifier, "");
         };
 
@@ -696,7 +725,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * Returns the document ID
          * @return The document ID
          */
-        String getCollectionID(){
+        public String getCollectionID(){
             return dbIdentifier;
         }
 
@@ -705,7 +734,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param db The database
          * @return The {@code CollectionReference} for the collection
          */
-        CollectionReference getCollection(Database db){
+        public CollectionReference getCollection(Database db){
             return db.db.collection(dbIdentifier);
         }
 
@@ -715,7 +744,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param documentID The document identifier within the collection
          * @return The {@code DocumentReference} for the document
          */
-        DocumentReference getDocument(Database db, String documentID) {
+        public DocumentReference getDocument(Database db, String documentID) {
             return getCollection(db).document(documentID);
         }
 

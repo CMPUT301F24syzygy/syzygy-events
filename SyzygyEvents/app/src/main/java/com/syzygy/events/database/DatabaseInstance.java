@@ -1196,7 +1196,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Returns the collection that this instance is apart of
      * @return the {@code Database.Collections}
      */
-    protected final Database.Collections getCollection(){
+    public final Database.Collections getCollection(){
         return collection;
     }
 
@@ -1208,7 +1208,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return the database reference to this instance
      * @see Database.Collections#getCollection(Database)
      */
-    final DocumentReference getDocumentReference() {
+    public final DocumentReference getDocumentReference() {
         return collection.getDocument(db, documentID);
     }
 
