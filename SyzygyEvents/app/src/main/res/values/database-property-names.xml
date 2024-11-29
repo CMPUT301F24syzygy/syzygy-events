@@ -45,6 +45,7 @@
     <string name="database_event_end">EndDate</string>
     <string name="database_event_openDate">OpenRegistrationDate</string>
     <string name="database_event_closedDate">ClosedRegistrationDate</string>
+    <string name="database_event_lottery">LotteryIsRun</string>
     <string name="database_assoc_user">UserID</string>
     <string name="database_assoc_event">EventID</string>
     <string name="database_assoc_geo">GeoLocation</string>

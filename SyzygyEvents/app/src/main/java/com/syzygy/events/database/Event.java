@@ -233,6 +233,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                         return;
                     }
                     result.inviteUsersToEventFromLottery((query1, data1, success2) -> {
+                        if(success2) setHasRunLottery(true);
                         listener.onCompletion(query1, data1, success2);
                         if(data1!=null)data1.dissolve();
                         dissolve();
@@ -240,6 +241,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                 });
             }else{
                 result.inviteUsersToEventFromLottery((query, data, success) -> {
+                    if(success) setHasRunLottery(true);
                     listener.onCompletion(query, data, success);
                     if(data!=null)data.dissolve();
                     dissolve();
@@ -498,6 +500,14 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         return setPropertyValue(R.string.database_event_price, val, s -> {});
     }
 
+    public boolean setHasRunLottery(boolean val){
+        return setPropertyValue(R.string.database_event_lottery, val, s -> {});
+    }
+
+    public boolean hasRunLottery(){
+        return getPropertyValueI(R.string.database_event_lottery);
+    }
+
     /**
      * Adds a user to the waitlist given that the user either does not have an association with the event or the association is cancelled.
      * <p>
@@ -722,6 +732,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_start, o -> o instanceof Timestamp, false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_event_end, o -> o instanceof Timestamp, false),
             new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_dates, o -> o instanceof Long, false),
+            new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_lottery, o -> o instanceof Boolean, true),
     };
 
     @Override
@@ -787,6 +798,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         map.put(R.string.database_event_start, startDate);
         map.put(R.string.database_event_end, endDate);
         map.put(R.string.database_event_dates, eventDates);
+        map.put(R.string.database_event_lottery, false);
 
         return db.createNewInstance(Database.Collections.EVENTS, id, map, posterImage, title, listener);
     }
