@@ -193,8 +193,8 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                                 (ev, r, f) -> {
                                     dialog.dismiss();
                                     updateView();
-                                    },
-                                (true ? false : true)
+                                },
+                                !event.hasRunLottery()
                         );
                     });
                 });

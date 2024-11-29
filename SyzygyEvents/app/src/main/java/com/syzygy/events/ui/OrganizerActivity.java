@@ -6,6 +6,7 @@ import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -17,6 +18,8 @@ import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
 import com.syzygy.events.databinding.ActivityOrganizerBinding;
+
+import java.util.List;
 
 /**
  * The activity that handles all fragments that are visible in the organizer view.
@@ -58,6 +61,15 @@ public class OrganizerActivity extends SyzygyActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        List<Fragment> frags = getSupportFragmentManager().getFragments();
+        for (int i=0; i<frags.size(); i++) {
+            if (frags.get(i).isVisible() && frags.get(i).getView() != null) {
+                break;
+            } else if (i == frags.size()-1) {
+                return true;
+            }
+        }
+
         if (item.getItemId() == android.R.id.home) {
             navController.navigateUp();
         } else {

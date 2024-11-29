@@ -176,7 +176,9 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             });
         }
         event.refreshData((e, success) -> {
-
+            if (getContext() == null || binding == null) {
+                return;
+            }
             if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
                 if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
                     binding.inWaitlistLayout.setVisibility(View.VISIBLE);

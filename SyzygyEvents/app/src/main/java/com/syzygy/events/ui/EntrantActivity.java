@@ -15,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -28,6 +29,8 @@ import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 
 import com.syzygy.events.databinding.ActivityEntrantBinding;
+
+import java.util.List;
 
 /**
  * The activity that handles all fragments that are visible in the entrant view.
@@ -75,10 +78,17 @@ public class EntrantActivity extends SyzygyActivity {
     //Sets up the menu items
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        List<Fragment> frags = getSupportFragmentManager().getFragments();
+        for (int i=0; i<frags.size(); i++) {
+            if (frags.get(i).isVisible() && frags.get(i).getView() != null) {
+                break;
+            } else if (i == frags.size()-1) {
+                return true;
+            }
+        }
+
         if (item.getItemId() == android.R.id.home) {
-            //if (getSupportFragmentManager().findFragmentById(navController.getCurrentDestination().getId()).getView() != null) {
-                navController.navigateUp();
-            //}
+            navController.navigateUp();
         }
         else {
             PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));
