@@ -65,8 +65,14 @@ public abstract class SyzygyActivity extends AppCompatActivity {
      */
     public void navigateUp(String error) {
         navigateUp();
+        showErrorDialog(error);
+    }
+
+    public void showErrorDialog(String error) {
         Dialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Oops!")
                 .setMessage(error)
+                .setPositiveButton("dismiss", null)
                 .create();
         dialog.show();
     }

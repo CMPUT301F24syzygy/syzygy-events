@@ -28,9 +28,12 @@ import com.syzygy.events.R;
 import com.syzygy.events.SyzygyActivity;
 import com.syzygy.events.SyzygyApplication;
 
+import com.syzygy.events.database.Database;
+import com.syzygy.events.database.Event;
 import com.syzygy.events.databinding.ActivityEntrantBinding;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The activity that handles all fragments that are visible in the entrant view.
@@ -135,12 +138,19 @@ public class EntrantActivity extends SyzygyActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (intentResult != null && intentResult.getContents() != null) {
-            openEvent(intentResult.getContents());
+            Database db = ((SyzygyApplication)getApplication()).getDatabase();
+            ///dumb
+            db.<Event>getInstance(Database.Collections.EVENTS, intentResult.getContents(), (e, s) -> {
+                if (s && Objects.equals(e.getQrHash(), intentResult.getContents())) {
+                    openEvent(intentResult.getContents());
+                }
+                else {
+                    this.showErrorDialog("The event you are trying to access does not exist.");
+                }
+            });
         }
-
     }
 
     /**

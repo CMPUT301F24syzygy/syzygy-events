@@ -45,6 +45,9 @@ public class OrganizerAssociatedEntrantsAdapter extends ArrayAdapter<EventAssoci
         TextView name = view.findViewById(R.id.associated_entrant_item_name_text);
         name.setText(association.getUser().getName());
 
+        TextView email = view.findViewById(R.id.associated_entrant_item_info_text);
+        email.setText(association.getUser().getEmail());
+
         ImageView image = view.findViewById(R.id.associated_entrant_item_profile_img);
         Image.getFormatedAssociatedImage(association.getUser(), Image.Options.Circle(200)).into(image);
 
