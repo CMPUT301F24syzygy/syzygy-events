@@ -670,7 +670,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param instance The database instance
          * @return The unique database identifier
          */
-        String getDatabaseID(@Observes DatabaseInstance<?> instance){
+        public String getDatabaseID(@Observes DatabaseInstance<?> instance){
           return getDatabaseID(instance.getDocumentID());
         };
 
@@ -679,7 +679,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param documentID The unique identifier of the instance within the collection
          * @return The unique database identifier
          */
-        String getDatabaseID(String documentID){
+        public String getDatabaseID(String documentID){
             return dbIdentifier + '/' + documentID;
         };
 
@@ -688,7 +688,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param databaseID The unique identifier of the instance within the database
          * @return The unique identifier of the instance within the collection
          */
-        String instanceIDFromDatabaseID(String databaseID){
+        public String instanceIDFromDatabaseID(String databaseID){
             return databaseID.replaceFirst(dbIdentifier, "");
         };
 
@@ -696,7 +696,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * Returns the document ID
          * @return The document ID
          */
-        String getCollectionID(){
+        public String getCollectionID(){
             return dbIdentifier;
         }
 
@@ -705,7 +705,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param db The database
          * @return The {@code CollectionReference} for the collection
          */
-        CollectionReference getCollection(Database db){
+        public CollectionReference getCollection(Database db){
             return db.db.collection(dbIdentifier);
         }
 
@@ -715,7 +715,7 @@ public class Database implements EventListener<DocumentSnapshot> {
          * @param documentID The document identifier within the collection
          * @return The {@code DocumentReference} for the document
          */
-        DocumentReference getDocument(Database db, String documentID) {
+        public DocumentReference getDocument(Database db, String documentID) {
             return getCollection(db).document(documentID);
         }
 

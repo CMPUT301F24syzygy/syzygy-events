@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -40,6 +41,9 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Tests the user stories
@@ -207,7 +211,7 @@ public class UserStoriesModelTest {
     private void getTestNotification(User send, User rec, Event e, BiConsumer<Notification, Runnable> listener){
         instances++;
         Set<Integer> invalidIDs = Notification.NewInstance(db.testDB, "Subject"+instances, "Body"+instances,
-                e.getDocumentID(), rec.getDocumentID(), send.getDocumentID(), false, (instance, success) -> {
+                e == null ? "" : e.getDocumentID(), rec.getDocumentID(), send == null ? "" : send.getDocumentID(), false, (instance, success) -> {
                     if(!success){
                         fail("failed to create notification");
                     }else{
@@ -217,6 +221,47 @@ public class UserStoriesModelTest {
                     }
                 });
         assertTrue(invalidIDs.isEmpty());
+    }
+
+    private static final int N_FRESH_REC = 0b001, N_FRESH_SEND = 0b010, N_FRESH_EVENT = 0b100, N_FRESH_ALL = 0b111;
+    private void getTestNotificationFresh(int which, User send, User rec, Event ev, BiConsumer<Notification, Runnable> listener) {
+
+        Function<Event, Function<User, Function<User, Function<Runnable, Runnable>>>> create = e -> r -> s -> rs -> () -> {
+            getTestNotification(s, r, e, (n, r2) -> {
+                Log.d("Testing", "D");
+                listener.accept(n, then(r2, rs));
+            });
+        };
+
+        Function<Event, Function<User, Function<Runnable, Runnable>>> getSender = e -> r -> rs -> () -> {
+            if((which & N_FRESH_SEND) != 0){
+                Log.d("Testing", "C1");
+                getTestUser((s,r2) -> create.apply(e).apply(r).apply(s).apply(then(r2,rs)).run());
+            }else{
+                Log.d("Testing", "C2");
+                create.apply(e).apply(r).apply(send).apply(rs).run();
+            }
+        };
+
+        Function<Event, Function<Runnable, Runnable>> getReceiver = e -> rs -> () -> {
+            if((which & N_FRESH_REC) != 0){
+                Log.d("Testing", "B1");
+                getTestUser((r,r2) -> getSender.apply(e).apply(r).apply(then(r2,rs)).run());
+            }else{
+                Log.d("Testing", "B2");
+                getSender.apply(e).apply(rec).apply(rs).run();
+            }
+        };
+
+        if((which & N_FRESH_EVENT) != 0){
+            Log.d("Testing", "A1");
+            getTestEventFresh(EVENT_REG, (e,re) -> {
+                getReceiver.apply(e).apply(re).run();
+            }, false);
+        }else{
+            Log.d("Testing", "A2");
+            getReceiver.apply(ev).apply(then()).run();
+        }
     }
 
     private <T extends DatabaseInstance<T>> void getTestInstances(int count, BiConsumer<Integer, BiConsumer<T, Runnable>> getNext, BiConsumer<List<T>, Runnable> listener){
@@ -467,6 +512,7 @@ public class UserStoriesModelTest {
                     }, false);
                 }catch (Exception ex){
                     r1.run();
+                    fail(ex.getMessage());;
                 }
             });
         });
@@ -549,6 +595,7 @@ public class UserStoriesModelTest {
                     assertEquals(e,i);
                 }catch (Exception ex) {
                     r.run();
+                    fail(ex.getMessage());;
                 }
                 getTestUser((u,r2)->{
                     i.addUserToWaitlist(u, new GeoPoint(0,0), (q,d,s2) -> {
@@ -671,6 +718,7 @@ public class UserStoriesModelTest {
                     }finally {
                         r.run();
                     }
+                    fail(ex.getMessage());;
                 }
             });
         });
@@ -741,6 +789,7 @@ public class UserStoriesModelTest {
                             }finally {
                                 r.run();
                             }
+                            fail(ex.getMessage());;
                         }
                     });
         });
@@ -775,6 +824,7 @@ public class UserStoriesModelTest {
                                 }catch (Exception ex){
                                     i.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{});
                                     r.run();
+                                    fail(ex.getMessage());;
                                 }
                             });
                         }catch (Exception ex) {
@@ -783,6 +833,7 @@ public class UserStoriesModelTest {
                             }finally {
                                 r.run();
                             }
+                            fail(ex.getMessage());;
                         }
                     });
         });
@@ -885,6 +936,7 @@ public class UserStoriesModelTest {
                     }, false);
                 }catch (Exception ex){
                     r1.run();
+                    fail(ex.getMessage());;
                 }
             });
         });
@@ -956,17 +1008,20 @@ public class UserStoriesModelTest {
                                     }, false);
                                 }catch (Exception ex){
                                     r1.run();
+                                    fail(ex.getMessage());;
                                 }
                             });
-                        }catch (Exception e1){
+                        }catch (Exception ex){
                             d.result.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
                             d.failedNotifications.forEach(n -> n.deleteInstance(DatabaseInstance.DeletionType.SILENT, s3->{}));
                             r1.run();
+                            fail(ex.getMessage());;
                         }
 
                     }, false);
                 }catch (Exception ex){
                     r1.run();
+                    fail(ex.getMessage());;
                 }
             });
         });
@@ -976,6 +1031,161 @@ public class UserStoriesModelTest {
         }
     }
 
+    public void testDeletedInstance(DatabaseInstance<?> instance, Runnable onComplete){
+        if(instance == null){
+            onComplete.run();
+            return;
+        }
+        assertFalse(instance.isLegalState());
+        instance.getCollection().getDocument(db.testDB, instance.getDocumentID()).get().addOnCompleteListener(t -> {
+            assertTrue(t.isSuccessful());
+            assertFalse(t.getResult().exists());
+            onComplete.run();
+        });
+    }
+
+    public void testDeletedEventAssociation(EventAssociation ea, Runnable onComplete){
+        if(ea == null){
+            onComplete.run();
+            return;
+        }
+        assertTrue(ea.getUser().isLegalState());
+        assertTrue(ea.getEvent().isLegalState());
+        testDeletedInstance(ea, onComplete);
+    }
+
+    public void testDeletedNotification(Notification n, Runnable onComplete){
+        if(n == null){
+            onComplete.run();
+            return;
+        }
+        assertTrue(n.getSender().isLegalState());
+        assertTrue(n.getReceiver().isLegalState());
+        assertTrue(n.getEvent() == null || n.getEvent().isLegalState());
+        testDeletedInstance(n, onComplete);
+    }
+
+    public void testDeletedImage(Image i, Runnable onComplete){
+        if(i == null){
+            onComplete.run();
+            return;
+        }
+        i.getLocType().getDocument(db.testDB, i.getLocType().instanceIDFromDatabaseID(i.getLocID())).get().addOnCompleteListener(t -> {
+            assertTrue(t.isSuccessful());
+            assertFalse(t.getResult().exists());
+            testDeletedImageCascade(i, onComplete);
+        });
+    }
+
+    public void testDeletedImageCascade(Image i, Runnable onComplete){
+        if(i == null){
+            onComplete.run();
+            return;
+        }
+        //todo storage
+        testDeletedInstance(i, onComplete);
+    }
+
+    public void testDeletedEvent(Event e, EventAssociation ea, Notification n, Runnable onComplete){
+        if(e == null){
+            onComplete.run();
+            return;
+        }
+        assertTrue(e.getFacility().isLegalState());
+        assertTrue(n == null || n.getEvent() == null);
+        testDeletedImageCascade(e.getAssociatedImage(), () -> {
+            testDeletedEventAssociation(ea, () -> testDeletedInstance(e, onComplete));
+        });
+    }
+
+    public void testDeletedFacilityShallow(Facility f, Event e, Runnable onComplete){
+        testDeletedFacilityDeep(f, e, null, null, onComplete);
+    }
+
+    public void testDeletedFacilityDeep(Facility f, Event e, EventAssociation ea, Notification n, Runnable onComplete){
+        if(f == null){
+            onComplete.run();
+            return;
+        }
+        assertTrue(e == null || e.getFacility() == f);
+        assertTrue(e == null || ea == null || ea.getEvent() == e);
+        assertTrue(e == null || n == null || (n.getEvent() == null && n.isLegalState())); //assumes correct, asserts set to null
+        testDeletedImageCascade(f.getAssociatedImage(), () -> {
+            testDeletedEvent(e, ea, n, () -> testDeletedInstance(f, onComplete));
+        });
+    }
+
+    public void testDeletedUserDeep(
+            User u, Event e_ofFacility,
+            EventAssociation ea_associated, EventAssociation ea_ofEvent,
+            Notification n_receiver, Notification n_sender, Notification n_event,
+            Runnable onComplete
+    ){
+        if(u == null){
+            onComplete.run();
+            return;
+        }
+        Facility f = u.getFacility();
+        assertTrue(ea_associated == null || ea_associated.getUser() == u);
+        assertTrue(f == null || e_ofFacility == null || e_ofFacility.getFacility() == f);
+        assertTrue(f == null || e_ofFacility == null || ea_ofEvent == null || ea_ofEvent.getEvent() == e_ofFacility);
+        assertTrue(n_receiver == null || n_receiver.getReceiver() == u);
+
+        assertTrue(n_sender == null || (n_sender.getSender() == null && n_sender.isLegalState())); //assumes correct, asserts set to null
+
+        testDeletedImageCascade(u.getAssociatedImage(),
+                () -> testDeletedFacilityDeep(f, e_ofFacility, ea_ofEvent, n_event,
+                        () -> testDeletedEventAssociation(ea_associated,
+                                () -> testDeletedInstance(u, onComplete)
+                        )
+                )
+        );
+    }
+
+    public void testDeletedUserShallow(User u, Runnable onComplete){
+        testDeletedUserDeep(u, null, null, null, null, null, null, onComplete);
+    }
+
+    @Test
+    public void US030201() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        getTestEventAssociationFresh(EVENT_REG, "Waitlist", (ea, reae) -> {
+            Log.d("Testing", "1");
+            Event e = ea.getEvent();
+            User u = e.getFacility().getOrganizer();
+            getTestEventAssociationFreshUser(u, EVENT_REG, "Waitlist", (ea_assoc, reaa) -> {
+                Log.d("Testing", "2");
+                getTestNotificationFresh(N_FRESH_REC | N_FRESH_SEND, null, null, e, (n_event, rne) -> {
+                    Log.d("Testing", "3");
+                    getTestNotificationFresh(N_FRESH_REC | N_FRESH_EVENT, u, null, null, (n_send, rns) -> {
+                        Log.d("Testing", "4");
+                        getTestNotificationFresh(N_FRESH_SEND | N_FRESH_EVENT, null, u, null, (n_rec, rnr) -> {
+                            Log.d("Testing", "5");
+                            try{
+                                u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                                    try{
+                                        assertTrue(s);
+                                        testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, () -> {
+                                            latch.countDown();
+                                        });
+                                    }catch(Exception ex){
+                                        finish(rnr, rns, rne, reaa, reae);
+                                        fail(ex.getMessage());
+                                    }
+                                });
+                            }catch (Exception ex){
+                                finish(rnr, rns, rne, reaa, reae);
+                                fail(ex.getMessage());
+                            }
+                        });
+                    });
+                });
+            }, false, null);
+        }, false, null);
+        if (!latch.await(30, TimeUnit.SECONDS)) {
+            fail("Timeout");
+        }
+    }
 
 
 

@@ -1150,7 +1150,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                         public void accept(Boolean success) {
                             s2 = s2 || success;
                             j++;
-                            if(j > dq.getCurrentInstances().size()){
+                            if(j >= dq.getCurrentInstances().size()){
                                 dq.dissolve();
                                 thiser.accept(s2);
                                 return;
@@ -1196,7 +1196,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Returns the collection that this instance is apart of
      * @return the {@code Database.Collections}
      */
-    protected final Database.Collections getCollection(){
+    public final Database.Collections getCollection(){
         return collection;
     }
 
