@@ -10,6 +10,8 @@ import android.content.res.Resources;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.syzygy.events.BuildConfig;
 import com.syzygy.events.database.Database;
 
@@ -18,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TestDatabase {
     public static FirebaseFirestore firestore;
+    public static StorageReference storage;
     public Database testDB;
     Context context;
     Resources constants;
@@ -55,7 +58,8 @@ public class TestDatabase {
             firebaseApp = FirebaseApp.getInstance("test");
         }
         firestore = FirebaseFirestore.getInstance(firebaseApp);
-        testDB = new Database(constants, firestore, null);
+        storage = FirebaseStorage.getInstance().getReference();
+        testDB = new Database(constants, firestore, storage);
         System.out.println("Created");
 
         // Decrement the latch count to signal task completion
