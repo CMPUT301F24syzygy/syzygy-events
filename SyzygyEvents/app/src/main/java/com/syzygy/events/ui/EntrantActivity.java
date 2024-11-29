@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -74,7 +76,9 @@ public class EntrantActivity extends SyzygyActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            navController.navigateUp();
+            //if (getSupportFragmentManager().findFragmentById(navController.getCurrentDestination().getId()).getView() != null) {
+                navController.navigateUp();
+            //}
         }
         else {
             PopupMenu m = new PopupMenu(EntrantActivity.this, findViewById(item.getItemId()));

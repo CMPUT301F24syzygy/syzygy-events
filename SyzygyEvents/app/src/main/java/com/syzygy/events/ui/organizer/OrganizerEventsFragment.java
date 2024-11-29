@@ -46,8 +46,11 @@ public class OrganizerEventsFragment extends Fragment {
         binding.organizerEventsList.setAdapter(a);
 
         binding.organizerEventsList.setOnItemClickListener((parent, view, position, id) -> {
-            OrganizerActivity activity = (OrganizerActivity)getActivity();
-            activity.openEvent(a.getItem(position).getDocumentID());
+            ((OrganizerActivity)getActivity()).openEvent(a.getItem(position).getDocumentID());
+        });
+
+        binding.openCreateEventButton.setOnClickListener(view -> {
+            ((OrganizerActivity)getActivity()).openCreateEvent();
         });
 
 

@@ -68,7 +68,6 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.capacityInfoText.setText(String.format(Locale.getDefault(), "Capacity: %d", event.getCapacity()));
             if (event.getWaitlistCapacity() > 0) {
                 binding.waitlistCapacityInfoText.setText(String.format(Locale.getDefault(), "Waitlist Limit: %d", event.getWaitlistCapacity()));
-                binding.waitlistCapacityInfoText.setVisibility(View.VISIBLE);
             }
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name_text);

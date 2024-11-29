@@ -72,11 +72,6 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             binding.eventWeekdaysTimeText.setText(event.getFormattedEventDates());
             binding.eventGeoRequiredText.setVisibility(event.getRequiresLocation() ? View.VISIBLE : View.GONE);
             binding.eventDescriptionText.setText(event.getDescription());
-            binding.capacityInfoText.setText(String.format (Locale.getDefault(), "Capacity: %d", event.getCapacity()));
-            if(event.getWaitlistCapacity() > 0){
-                binding.waitlistCapacityInfoText.setText(String.format (Locale.getDefault(), "Waitlist Limit: %d", event.getWaitlistCapacity()));
-                binding.waitlistCapacityInfoText.setVisibility(View.VISIBLE);
-            }
 
             TextView facility_name = binding.getRoot().findViewById(R.id.card_facility_name_text);
             facility_name.setText(event.getFacility().getName());
@@ -162,8 +157,8 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
      */
     private void updateView() {
 
-        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
+        Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
 
         binding.inWaitlistLayout.setVisibility(View.GONE);
         binding.inInvitedLayout.setVisibility(View.GONE);
@@ -181,6 +176,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             });
         }
         event.refreshData((e, success) -> {
+
             if (association != null && !Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_cancelled))) {
                 if (Objects.equals(association.getStatus(), getString(R.string.event_assoc_status_waitlist))) {
                     binding.inWaitlistLayout.setVisibility(View.VISIBLE);
@@ -208,6 +204,7 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
         } else {
             binding.registrationDateInfoText.setText(getString(R.string.after_reg_text));
         }
+
     }
 
     /**
