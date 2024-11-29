@@ -26,7 +26,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -56,6 +58,9 @@ public class UserStoriesModelTest {
     private static Resources constants;
     private static String random;
 
+    @Rule
+    public TestName name = new TestName();
+
     private static int instances = 0;
 
     @BeforeClass
@@ -68,18 +73,20 @@ public class UserStoriesModelTest {
         Log.d("Testing", "BeforeClass");
     }
 
-    private static final List<DatabaseInstance<?>> objects = new ArrayList<>();
+    private final List<DatabaseInstance<?>> objects = new ArrayList<>();
+    private static final List<DatabaseInstance<?>> allObjectsUsed = new ArrayList<>();
 
     private AssertionError error = null;
     private CountDownLatch latch = null;
 
     @After
-    public void cleanUp() {
+    public void cleanUp(){
         Log.i("Testing", "After");
         for(DatabaseInstance<?> i : objects){
             if(i==null) continue;
             i.getDocumentReference().delete();
         }
+        allObjectsUsed.addAll(objects);
         objects.clear();
     }
 
@@ -91,8 +98,15 @@ public class UserStoriesModelTest {
         latch = new CountDownLatch(1);
     }
     @AfterClass
-    public static void clean(){
+    public static void clean() throws InterruptedException {
         Log.d("Testing", "AfterClass");
+        for(DatabaseInstance<?> i : allObjectsUsed){
+            if(i==null) continue;
+            CountDownLatch l = new CountDownLatch(1);
+            i.getDocumentReference().delete().addOnCompleteListener(t -> l.countDown());
+            l.await();
+        }
+        allObjectsUsed.clear();
     }
 
     private void completeTest(){
@@ -122,7 +136,7 @@ public class UserStoriesModelTest {
     private void getTestUser(Consumer<User> listener){
         instances++;
         Set<Integer> invalidIDs = User.NewInstance(
-                db.testDB, random+"u"+instances, "Name"+instances, "Des"+instances,
+                db.testDB, random+"u"+instances, name.getMethodName()+'|'+instances, "Des"+instances,
                 null, "", "email"+instances+"@email.com", "12345678901",
                 true, true, false, (instance, success) -> {
                     objects.add(instance);
@@ -137,7 +151,7 @@ public class UserStoriesModelTest {
 
     private void getTestFacility(User u, Consumer<Facility> listener){
         instances++;
-        Set<Integer> invalidIDs = Facility.NewInstance(db.testDB, "Name"+instances, new GeoPoint(0,0),
+        Set<Integer> invalidIDs = Facility.NewInstance(db.testDB, name.getMethodName()+'|'+instances, new GeoPoint(0,0),
                 "Address"+instances, "Des"+instances, null, u.getDocumentID(), (instance, success) -> {
                     objects.add(instance);
                     if(!success){
@@ -187,7 +201,7 @@ public class UserStoriesModelTest {
                 break;
         }
 
-        Set<Integer> invalidIDs = Event.NewInstance(db.testDB, "Name"+instances, null, f.getDocumentID(),
+        Set<Integer> invalidIDs = Event.NewInstance(db.testDB, name.getMethodName()+'|'+instances, null, f.getDocumentID(),
                 geo, "Des"+instances, 2L, 3L, 0.00,
                 open, close, start, end, Event.Dates.EVERY_DAY, (instance, success) -> {
                     objects.add(instance);
@@ -328,7 +342,7 @@ public class UserStoriesModelTest {
         
         getTestUser(u-> getTestEventAssociationFreshUser(u, EVENT_REG, constants.getString(R.string.event_assoc_status_waitlist), ea -> ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s->{
             if(!asserts(()->assertTrue(s))) return;
-            testDeletedInstance(ea, latch::countDown);
+            testDeletedInstance(ea, this::completeTest);
         }), false, null));
         await(10);
     }
@@ -493,7 +507,7 @@ public class UserStoriesModelTest {
         
         getTestUser(u-> getTestEventAssociationFreshUser(u, EVENT_AFTER_REG, constants.getString(R.string.event_assoc_status_invited), ea-> ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s->{
             if(!asserts(() -> assertTrue(s)))return;
-            testDeletedInstance(ea, latch::countDown);
+            testDeletedInstance(ea, this::completeTest);
         }), false, null));
         await(10);
     }
@@ -1009,7 +1023,7 @@ public class UserStoriesModelTest {
         getTestUser(u -> {
             u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                 assertTrue(s);
-                testDeletedUserShallow(u, latch::countDown);
+                testDeletedUserShallow(u, this::completeTest);
             });
         });
         await(30);
@@ -1023,7 +1037,7 @@ public class UserStoriesModelTest {
             getTestEventAssociationFreshUser(u, EVENT_REG, "Waitlist", ea_assoc -> {
                 u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                     if(!asserts(() -> assertTrue(s))) return;
-                    testDeletedUserDeep(u, e, ea_assoc, ea, null, null, null, latch::countDown);
+                    testDeletedUserDeep(u, e, ea_assoc, ea, null, null, null, this::completeTest);
                 });
             }, false, null);
         }, false, null);
@@ -1041,7 +1055,7 @@ public class UserStoriesModelTest {
                         getTestNotificationFresh(N_FRESH_SEND | N_FRESH_EVENT, null, u, null, n_rec -> {
                             u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                                 if(asserts(() -> assertTrue(s))){
-                                    testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, latch::countDown);
+                                    testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, this::completeTest);
                                 };
                             });
                         });
