@@ -1099,9 +1099,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 listener.accept(false);
                 return;
             }
-            isDeleted = true;
-            db.deleteFromDatabase(this);
             deleteSubInstances(deletionType, success2 -> {
+                isDeleted = true;
+                db.deleteFromDatabase(this);
                 notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
                 fullDissolve();
                 listener.accept(true);//TODO true or success
@@ -1208,7 +1208,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @return the database reference to this instance
      * @see Database.Collections#getCollection(Database)
      */
-    final DocumentReference getDocumentReference() {
+    public final DocumentReference getDocumentReference() {
         return collection.getDocument(db, documentID);
     }
 

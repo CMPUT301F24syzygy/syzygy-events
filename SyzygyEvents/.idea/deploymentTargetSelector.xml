@@ -16,7 +16,10 @@
       <SelectionState runConfigName="UserStoriesModelTest (1)">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="US030201()">
+      <SelectionState runConfigName="US030201_deep()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="error()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
