@@ -1004,6 +1004,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
         db.replaceImage(image, getAssociatedImage(), getAssociatedImageLocName(), getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
             setPropertyInstance(getCollection().getAssociatedImagePropertyId(), newImage);
+            returnSuccess.accept(null, true);
         }, (_null, success) -> onComplete.accept(success));
     }
 
