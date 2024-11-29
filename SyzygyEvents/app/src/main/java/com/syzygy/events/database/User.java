@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.syzygy.events.R;
 
 import org.apache.commons.validator.routines.EmailValidator;
@@ -240,6 +241,16 @@ public class User extends DatabaseInstance<User> {
                         .whereEqualTo(db.constants.getString(R.string.database_assoc_user), getDocumentID()), Database.Collections.EVENT_ASSOCIATIONS),
                 new Pair<>(Database.Collections.NOTIFICATIONS.getCollection(db)
                         .whereEqualTo(db.constants.getString(R.string.database_not_receiverID), getDocumentID()), Database.Collections.NOTIFICATIONS)
+        );
+    }
+
+    @Override
+    protected void requiredFirstDelete(int deletionType, Consumer<Boolean> listener) {
+        db.bulkModifyField(
+                Database.Collections.NOTIFICATIONS.getCollection(db)
+                    .whereEqualTo(db.constants.getString(R.string.database_not_senderID), getDocumentID()),
+                R.string.database_not_senderID, "",
+                listener
         );
     }
 

@@ -17,8 +17,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firestore.v1.Write;
 import com.syzygy.events.R;
 
 import java.lang.annotation.Documented;
@@ -146,6 +149,31 @@ public class Database implements EventListener<DocumentSnapshot> {
         DocumentReference doc = collection.getDocument(this, documentId);
         doc.update(constants.getString(propertyNameId), newValue).addOnCompleteListener(task -> {
             onComplete.accept(task.isSuccessful());
+        });
+    }
+
+    /**
+     * Updates the field in all instances returned by the query without loading the instances
+     * <p>
+     *     Does not do any cascading.
+     * </p>
+     * @param q The query which returns all documents that should be updated
+     * @param propertyNameId The id of the property to update
+     * @param newValue The new value to be put in the property
+     * @param onComplete called on completion with if the update occurred successfully.
+     */
+    void bulkModifyField(Query q, int propertyNameId, Object newValue, Consumer<Boolean> onComplete){
+        WriteBatch b = db.batch();
+        String prop = constants.getString(propertyNameId);
+        q.get().addOnCompleteListener(t -> {
+            if(!t.isSuccessful()){
+                onComplete.accept(false);
+                return;
+            }
+            t.getResult().getDocuments().forEach(d -> {
+                b.update(d.getReference(), prop, newValue);
+            });
+            b.commit().addOnCompleteListener(t2 -> onComplete.accept(t2.isSuccessful()));
         });
     }
 
@@ -603,18 +631,19 @@ public class Database implements EventListener<DocumentSnapshot> {
 
     @Override
     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-        if(error != null || value == null || !value.exists()) {
-            //TODO
-            return;
-        }
-        DatabaseInstance<?> instance = cache.get(value.getId());
-        if(instance == null){
-            //TODO
-            return;
-        }
 
+        if(error != null || value == null || !value.exists()) {
+            //todo
+            return;
+        }
+        DatabaseInstance<?> instance = cache.get(value.getReference().getPath());
+
+        if(instance == null){
+            //todo
+            return;
+        }
         instance.updateDataFromDatabase(value.getData(), s->{
-            //TODO on error
+            //todo
         });
     }
 

@@ -78,15 +78,18 @@ public class UserStoriesModelTest {
 
     private AssertionError error = null;
     private CountDownLatch latch = null;
+    private boolean ignoreDelete = false;
 
     @After
     public void cleanUp(){
         Log.i("Testing", "After");
-        for(DatabaseInstance<?> i : objects){
-            if(i==null) continue;
-            i.getDocumentReference().delete();
+        if(!ignoreDelete){
+            for(DatabaseInstance<?> i : objects){
+                if(i==null) continue;
+                i.getDocumentReference().delete();
+            }
+            allObjectsUsed.addAll(objects);
         }
-        allObjectsUsed.addAll(objects);
         objects.clear();
     }
 
@@ -96,6 +99,7 @@ public class UserStoriesModelTest {
         random = Integer.toHexString(Instant.now().hashCode());
         error = null;
         latch = new CountDownLatch(1);
+        ignoreDelete = false;
     }
     @AfterClass
     public static void clean() throws InterruptedException {
@@ -961,7 +965,9 @@ public class UserStoriesModelTest {
             onComplete.run();
             return;
         }
-        if(!asserts(()->assertTrue(n == null || n.getEvent() == null))) return;
+        if(!asserts(()->{
+            assertTrue(n == null || (n.getEvent() == null && n.isLegalState()));
+        })) return;
         testDeletedImageCascade(e.getAssociatedImage(), () -> {
             testDeletedEventAssociationCascade(ea, () -> testDeletedInstance(e, onComplete));
         });
@@ -978,8 +984,6 @@ public class UserStoriesModelTest {
         }
         if(!asserts(()->{
             assertTrue(e == null || e.getFacility() == f);
-            assertTrue(e == null || ea == null || ea.getEvent() == e);
-            assertTrue(e == null || n == null || (n.getEvent() == null && n.isLegalState())); //assumes correct, asserts set to null
         }))return;
         testDeletedImageCascade(f.getAssociatedImage(), () -> {
             testDeletedEventCascade(e, ea, n, () -> testDeletedInstance(f, onComplete));
@@ -1045,7 +1049,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US030201_deep() throws InterruptedException{
+    public void US030201_deep_noImages() throws InterruptedException{
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", ea -> {
             Event e = ea.getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1055,6 +1059,9 @@ public class UserStoriesModelTest {
                         getTestNotificationFresh(N_FRESH_SEND | N_FRESH_EVENT, null, u, null, n_rec -> {
                             u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                                 if(asserts(() -> assertTrue(s))){
+                                    try {
+                                        TimeUnit.SECONDS.sleep(2); //wait for updates
+                                    } catch (InterruptedException ignored) {}
                                     testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, this::completeTest);
                                 };
                             });
