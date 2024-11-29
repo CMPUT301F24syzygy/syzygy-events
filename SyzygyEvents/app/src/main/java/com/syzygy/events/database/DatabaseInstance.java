@@ -1099,9 +1099,9 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 listener.accept(false);
                 return;
             }
-            isDeleted = true;
-            db.deleteFromDatabase(this);
             deleteSubInstances(deletionType, success2 -> {
+                isDeleted = true;
+                db.deleteFromDatabase(this);
                 notifyUpdate(Database.UpdateListener.Type.DELETE); //Might need to change which order
                 fullDissolve();
                 listener.accept(true);//TODO true or success
@@ -1150,7 +1150,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                         public void accept(Boolean success) {
                             s2 = s2 || success;
                             j++;
-                            if(j > dq.getCurrentInstances().size()){
+                            if(j >= dq.getCurrentInstances().size()){
                                 dq.dissolve();
                                 thiser.accept(s2);
                                 return;
