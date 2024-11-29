@@ -71,21 +71,36 @@ public class Database implements EventListener<DocumentSnapshot> {
      * The firebase storage for images
      */
     private final StorageReference storage;
+    /**
+     * If all created instances should be tracked
+     */
+    private final boolean trackCreatedInstances;
+    private final List<DatabaseInstance<?>> trackedInstances = new ArrayList<>();
 
     public Database(@NonNull Resources constants){
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance().getReference();
         this.constants = constants;
+        trackCreatedInstances = false;
     }
 
     public Database(@NonNull Resources constants, FirebaseFirestore db, StorageReference storage) {
         this.constants = constants;
         this.db = db;
         this.storage = storage;
+        trackCreatedInstances = true;
     }
 
     public void setConstants(@NonNull Resources constants){
         this.constants = constants;
+    }
+
+    /**
+     * Gets all tracked instances reference
+     * @return A list if tracked instances is set to true
+     */
+    public List<DatabaseInstance<?>> getTrackedInstances(){
+        return trackedInstances;
     }
 
     /**
@@ -767,21 +782,27 @@ public class Database implements EventListener<DocumentSnapshot> {
         @NonNull
         @Salty
         <T extends DatabaseInstance<T>> DatabaseInstance<T> newInstance(Database db, String id) {
+            DatabaseInstance<T> inst;
             switch(this){
                 case USERS:
-                    return (DatabaseInstance<T>) new User(db, id);
+                    inst = (DatabaseInstance<T>) new User(db, id); break;
                 case EVENTS:
-                    return (DatabaseInstance<T>) new Event(db, id);
+                    inst = (DatabaseInstance<T>) new Event(db, id); break;
                 case IMAGES:
-                    return (DatabaseInstance<T>) new Image(db, id);
+                    inst = (DatabaseInstance<T>) new Image(db, id); break;
                 case FACILITIES:
-                    return (DatabaseInstance<T>) new Facility(db, id);
+                    inst = (DatabaseInstance<T>) new Facility(db, id); break;
                 case NOTIFICATIONS:
-                    return (DatabaseInstance<T>) new Notification(db, id);
+                    inst = (DatabaseInstance<T>) new Notification(db, id); break;
                 case EVENT_ASSOCIATIONS:
-                    return (DatabaseInstance<T>) new EventAssociation(db, id);
+                    inst = (DatabaseInstance<T>) new EventAssociation(db, id); break;
+                default:
+                    throw new IllegalStateException("All cases covered, so can't reach this point");
             }
-          throw new IllegalStateException("All cases covered, so can't reach this point");
+            if(db.trackCreatedInstances){
+                db.trackedInstances.add(inst);
+            }
+            return inst;
         };
 
         public static final int DOES_NOT_HAVE_ASSOCIATED_IMAGE = -1,
