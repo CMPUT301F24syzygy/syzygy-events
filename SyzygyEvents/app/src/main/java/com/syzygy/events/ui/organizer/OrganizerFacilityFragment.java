@@ -57,6 +57,7 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
             ((OrganizerActivity)getActivity()).openEdit();
         });
         updateValues();
+        getActivity().invalidateOptionsMenu();
 
         return binding.getRoot();
     }

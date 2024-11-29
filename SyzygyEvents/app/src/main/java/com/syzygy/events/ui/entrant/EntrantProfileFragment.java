@@ -1,5 +1,6 @@
 package com.syzygy.events.ui.entrant;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +37,7 @@ public class EntrantProfileFragment extends Fragment implements Database.UpdateL
         user = ((SyzygyApplication)getActivity().getApplication()).getUser().fetch(this);
 
         updateValues();
+        getActivity().invalidateOptionsMenu();
 
         binding.entrantProfileEditButton.setOnClickListener(v -> {
             ((EntrantActivity)getActivity()).openEditProfile();

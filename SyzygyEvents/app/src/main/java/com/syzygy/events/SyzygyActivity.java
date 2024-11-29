@@ -1,6 +1,9 @@
 package com.syzygy.events;
 
+import static android.app.PendingIntent.getActivity;
+
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
@@ -15,6 +18,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
+
+import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInstance;
 
 /**
  * An abstract class for all activities related to syzugy-events.
