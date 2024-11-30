@@ -384,7 +384,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
 
             NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.t)
+                    .setSmallIcon(R.drawable.ic_dashboard_black_24dp)
                     .setLargeIcon(img)
                     .setContentTitle(n.getSubject())
                     .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())

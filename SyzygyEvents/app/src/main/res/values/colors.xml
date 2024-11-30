@@ -8,8 +8,15 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+
+    <color name="grey_purple_100">#FFC9C2D1</color>
+    <color name="grey_blue_300">#798fb8</color>
+    <color name="grey_blue_400">#6a80a8</color>
     <color name="grey_blue_100">#FF666e7a</color>
+    <color name="grey_purple_200">#FFA0A1BA</color>
+
+
     <color name="grey_100">#FFD4D4D4</color>
-    <color name="highlight_01">#FFE6E8EB</color>
+    <color name="highlight_01">#ffefefef</color>
 
 </resources>
