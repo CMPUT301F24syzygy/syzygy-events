@@ -776,20 +776,22 @@ public class UserStoriesModelTest {
     public void US020401() throws InterruptedException {
         
         completeTest();
-        //TODO need image file
+        //TODO
         await(10);
     }
 
     @Test
     public void US020402() throws InterruptedException {
         completeTest();
-        //TODO need image file
+        //TODO
         await(10);
     }
 
     @Test
     public void US020501() throws InterruptedException {
-        //TODO not applicable
+        completeTest();
+        //TODO
+        await(10);
     }
 
     @Test
@@ -899,6 +901,48 @@ public class UserStoriesModelTest {
             });
         });
 
+        await(10);
+    }
+
+    @Test
+    public void US020601() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US020602() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US020603() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US020701() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US020702() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US020703() throws InterruptedException {
+        completeTest();
+        //TODO
         await(10);
     }
 
@@ -1054,6 +1098,13 @@ public class UserStoriesModelTest {
     }
 
     @Test
+    public void US030101() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
     public void US030201_shallow() throws InterruptedException {
         getTestUser(false, u -> {
             u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
@@ -1145,4 +1196,55 @@ public class UserStoriesModelTest {
         });
         await(30);
     }
+
+    @Test
+    public void US030301_event() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030301_facility() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030302() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030401() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030501() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030601() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+    @Test
+    public void US030701() throws InterruptedException {
+        completeTest();
+        //TODO
+        await(10);
+    }
+
+
 }
