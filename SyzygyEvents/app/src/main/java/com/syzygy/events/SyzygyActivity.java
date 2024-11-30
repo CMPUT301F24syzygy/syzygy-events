@@ -6,6 +6,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +23,11 @@ import androidx.navigation.NavController;
 
 import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInstance;
+import com.syzygy.events.database.User;
+import com.syzygy.events.ui.AdminActivity;
+import com.syzygy.events.ui.EntrantActivity;
+import com.syzygy.events.ui.InitActivity;
+import com.syzygy.events.ui.OrganizerActivity;
 
 /**
  * An abstract class for all activities related to syzugy-events.
@@ -42,7 +49,54 @@ public abstract class SyzygyActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((SyzygyApplication) getApplication()).registerActivity(this);
+        SyzygyApplication app = (SyzygyApplication) getApplication();
+        app.registerActivity(this);
+
+        Activity activity = this;
+        User user = app.getUser();
+        if (user!=null) {
+            user.addListener(new Database.UpdateListener() {
+                @Override
+                public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+                    if (!user.isLegalState()) {
+                        Dialog dialog = new AlertDialog.Builder(activity)
+                                .setCancelable(false)
+                                .setTitle("Notice")
+                                .setMessage("This account has been removed and can no longer be accessed.")
+                                .setPositiveButton("Ok", null)
+                                .create();
+                        dialog.setOnDismissListener(d -> {
+                            app.switchToActivity(InitActivity.class);
+                        });
+                        dialog.show();
+                    }
+                    else if (user.getFacility() == null && activity.getClass() == OrganizerActivity.class) {
+                        Dialog dialog = new AlertDialog.Builder(activity)
+                                .setCancelable(false)
+                                .setTitle("Notice")
+                                .setMessage("This facility has been removed and can no longer be accessed. Upon closing this dialog you will be taken to your user account.")
+                                .setPositiveButton("Ok", null)
+                                .create();
+                        dialog.setOnDismissListener(d -> {
+                            app.switchToActivity(EntrantActivity.class);
+                        });
+                        dialog.show();
+                    }
+                    else if (!user.isAdmin() && activity.getClass() == AdminActivity.class) {
+                        Dialog dialog = new AlertDialog.Builder(activity)
+                                .setCancelable(false)
+                                .setTitle("Notice")
+                                .setMessage("You no longer have admin privileges. Upon closing this dialog you will be taken to your user account.")
+                                .setPositiveButton("Ok", null)
+                                .create();
+                        dialog.setOnDismissListener(d -> {
+                            app.switchToActivity(EntrantActivity.class);
+                        });
+                        dialog.show();
+                    }
+                }
+            });
+        }
     }
 
     @Override
