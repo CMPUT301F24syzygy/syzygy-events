@@ -72,9 +72,7 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         sent_date.setText(df.format(notification.getSentTime().toDate()));
 
-        if (notification.getIsRead()) {
-            view.setBackgroundColor(getContext().getColor(R.color.highlight_01));
-        }
+        view.setBackgroundColor(getContext().getColor(notification.getIsRead() ? R.color.highlight_01 : R.color.white));
 
         return view;
     }

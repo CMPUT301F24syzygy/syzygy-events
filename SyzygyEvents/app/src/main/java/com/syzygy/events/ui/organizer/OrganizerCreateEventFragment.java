@@ -1,16 +1,22 @@
 package com.syzygy.events.ui.organizer;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
@@ -26,9 +32,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * The fragment that the user sees when they create an event. The add event tab
@@ -61,6 +69,9 @@ public class OrganizerCreateEventFragment extends Fragment {
 
 
         setImage(null);
+
+        showDatePicker("", binding.eventCreateOpenDate);
+
 
         return binding.getRoot();
     }
@@ -290,6 +301,24 @@ public class OrganizerCreateEventFragment extends Fragment {
         super.onDestroyView();
         if (event != null) event.dissolve();
         binding = null;
+    }
+
+    private void showDatePicker(String str, EditText txt) {
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        MaterialDatePicker.Builder<Long> materialDatePickerBuilder = MaterialDatePicker.Builder.datePicker();
+        materialDatePickerBuilder.setTitleText("SELECT A DATE");
+        materialDatePickerBuilder.setTextInputFormat(format);
+
+        MaterialDatePicker<Long> materialDatePicker = materialDatePickerBuilder.build();
+        materialDatePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
+
+
+        materialDatePicker.addOnPositiveButtonClickListener(v -> {
+            TimeZone timeZoneUTC = TimeZone.getDefault();
+            int offsetFromUTC = timeZoneUTC.getOffset(new Date().getTime()) * -1;
+            txt.setText(format.format(new Date(materialDatePicker.getSelection() + offsetFromUTC)));
+        });
+
     }
 
 
