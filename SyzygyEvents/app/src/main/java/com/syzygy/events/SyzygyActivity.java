@@ -33,7 +33,7 @@ import com.syzygy.events.ui.OrganizerActivity;
  * An abstract class for all activities related to syzugy-events.
  * Contains helper methods and functions
  */
-public abstract class SyzygyActivity extends AppCompatActivity {
+public abstract class SyzygyActivity extends AppCompatActivity implements Database.UpdateListener{
 
     /**
      * The navigation controller to switch between fragments
@@ -51,52 +51,48 @@ public abstract class SyzygyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         SyzygyApplication app = (SyzygyApplication) getApplication();
         app.registerActivity(this);
+    }
 
-        Activity activity = this;
-        User user = app.getUser();
-        if (user!=null) {
-            user.addListener(new Database.UpdateListener() {
-                @Override
-                public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
-                    if (!user.isLegalState()) {
-                        Dialog dialog = new AlertDialog.Builder(activity)
-                                .setCancelable(false)
-                                .setTitle("Notice")
-                                .setMessage("This account has been removed and can no longer be accessed.")
-                                .setPositiveButton("Ok", null)
-                                .create();
-                        dialog.setOnDismissListener(d -> {
-                            app.clearUser();
-                            app.switchToActivity(InitActivity.class);
-                        });
-                        dialog.show();
-                    }
-                    else if (user.getFacility() == null && activity.getClass() == OrganizerActivity.class) {
-                        Dialog dialog = new AlertDialog.Builder(activity)
-                                .setCancelable(false)
-                                .setTitle("Notice")
-                                .setMessage("This facility has been removed and can no longer be accessed. Upon closing this dialog you will be taken to your user account.")
-                                .setPositiveButton("Ok", null)
-                                .create();
-                        dialog.setOnDismissListener(d -> {
-                            app.switchToActivity(EntrantActivity.class);
-                        });
-                        dialog.show();
-                    }
-                    else if (!user.isAdmin() && activity.getClass() == AdminActivity.class) {
-                        Dialog dialog = new AlertDialog.Builder(activity)
-                                .setCancelable(false)
-                                .setTitle("Notice")
-                                .setMessage("You no longer have admin privileges. Upon closing this dialog you will be taken to your user account.")
-                                .setPositiveButton("Ok", null)
-                                .create();
-                        dialog.setOnDismissListener(d -> {
-                            app.switchToActivity(EntrantActivity.class);
-                        });
-                        dialog.show();
-                    }
-                }
+    @Override
+    public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
+        SyzygyApplication app = (SyzygyApplication) getApplication();
+        User user = (User) instance;
+        if (!user.isLegalState()) {
+            Dialog dialog = new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setTitle("Notice")
+                    .setMessage("This account has been removed and can no longer be accessed.")
+                    .setPositiveButton("Ok", null)
+                    .create();
+            app.clearUser();
+            dialog.setOnDismissListener(d -> {
+                app.switchToActivity(InitActivity.class);
             });
+            dialog.show();
+        }
+        else if (user.getFacility() == null && this.getClass() == OrganizerActivity.class) {
+            Dialog dialog = new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setTitle("Notice")
+                    .setMessage("This facility has been removed and can no longer be accessed. Upon closing this dialog you will be taken to your user account.")
+                    .setPositiveButton("Ok", null)
+                    .create();
+            dialog.setOnDismissListener(d -> {
+                app.switchToActivity(EntrantActivity.class);
+            });
+            dialog.show();
+        }
+        else if (!user.isAdmin() && this.getClass() == AdminActivity.class) {
+            Dialog dialog = new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setTitle("Notice")
+                    .setMessage("You no longer have admin privileges. Upon closing this dialog you will be taken to your user account.")
+                    .setPositiveButton("Ok", null)
+                    .create();
+            dialog.setOnDismissListener(d -> {
+                app.switchToActivity(EntrantActivity.class);
+            });
+            dialog.show();
         }
     }
 

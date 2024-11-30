@@ -507,7 +507,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }
         if (!prop.meta.loadsNullable && newInstance == null)
             db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID));
-        if(newInstance!=null)newInstance.fetch();
+        if(newInstance!=null)newInstance.fetch(this);
         if(prop.instance != null){
             prop.instance.dissolve();
         }

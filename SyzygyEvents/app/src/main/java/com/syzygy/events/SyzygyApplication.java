@@ -186,11 +186,18 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     }
 
     /**
-     * Called on create of activities to register that this activity is the current activity
+     * Called on create of activities to register that this activity is the current activity.
+     * Switches the update listener over to the new activity
      * @param activity The now current activity
      */
     void registerActivity(SyzygyActivity activity){
+        if(user != null && this.currentActivity != null){
+            user.removeListener(this.currentActivity);
+        }
         this.currentActivity = activity;
+        if(user != null){
+            user.addListener(activity);
+        }
     }
 
     /**
