@@ -66,6 +66,7 @@ public abstract class SyzygyActivity extends AppCompatActivity {
                                 .setPositiveButton("Ok", null)
                                 .create();
                         dialog.setOnDismissListener(d -> {
+                            app.clearUser();
                             app.switchToActivity(InitActivity.class);
                         });
                         dialog.show();
