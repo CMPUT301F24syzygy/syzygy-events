@@ -202,6 +202,14 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
     }
 
     /**
+     * Sets the user to null
+     */
+    public void clearUser(){
+        user.dissolve();
+        user = null;
+    }
+
+    /**
      * Gets the database
      * @return the database
      */

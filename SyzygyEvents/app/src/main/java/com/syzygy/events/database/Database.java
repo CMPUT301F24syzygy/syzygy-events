@@ -647,19 +647,21 @@ public class Database implements EventListener<DocumentSnapshot> {
     @Override
     public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
 
-        if(error != null || value == null || !value.exists()) {
-            //todo
+        if(error != null || value == null) {
             return;
         }
+
         DatabaseInstance<?> instance = cache.get(value.getReference().getPath());
 
         if(instance == null){
-            //todo
             return;
         }
-        instance.updateDataFromDatabase(value.getData(), s->{
-            //todo
-        });
+
+        if(!value.exists()){
+            instance.deleteInstance(DatabaseInstance.DeletionType.FROM_DATABASE, s->{});
+        }else{
+            instance.updateDataFromDatabase(value.getData(), s->{});
+        }
     }
 
     /**

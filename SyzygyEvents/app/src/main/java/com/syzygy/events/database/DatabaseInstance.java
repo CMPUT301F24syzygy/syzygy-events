@@ -1049,27 +1049,31 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         /**
          * If the instance is being deleted because it is being replaced by another version of the instance.
          */
-        public final static int REPLACEMENT = 0b000001;
+        public final static int REPLACEMENT = 0b0000001;
         /**
          * If the instance is being deleted explicitly
          */
-        public final static int HARD_DELETE = 0b000010;
+        public final static int HARD_DELETE = 0b0000010;
         /**
          * If the instance is being deleted because another instance was deleted
          */
-        public final static int CASCADE = 0b000100;
+        public final static int CASCADE = 0b0000100;
         /**
          * If the instance is being deleted because a non nullable sub instance was deleted
          */
-        public final static int UP_FALL = 0b001000;
+        public final static int UP_FALL = 0b0001000;
         /**
          * If the instance is being deleted because
          */
-        public final static int ERROR = 0b010000;
+        public final static int ERROR = 0b0010000;
         /**
          * If sub instance should not be deleted. Does not notify updates
          */
-        public final static int SILENT = 0b100000;
+        public final static int SILENT = 0b0100000;
+        /**
+         * If the database record was deleted by another instance
+         */
+        public final static int FROM_DATABASE = 0b1000000;
     }
 
     /**
@@ -1087,9 +1091,15 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         };
         Log.println(Log.DEBUG, "DeleteInstance", getDocumentID() + " " + getCollection());
 
-        if((deletionType & DeletionType.SILENT) != 0){
+        if((deletionType & (DeletionType.SILENT | DeletionType.FROM_DATABASE)) != 0){
             isDeleted = true;
-            db.deleteFromDatabase(this);
+            if((deletionType & DeletionType.SILENT) != 0){
+                db.deleteFromDatabase(this);
+            }
+            if((deletionType & DeletionType.FROM_DATABASE) != 0) {
+                Log.d("Deletion", getDatabaseID());
+                notifyUpdate(Type.DELETE);
+            }
             fullDissolve();
             listener.accept(true);
             return;
