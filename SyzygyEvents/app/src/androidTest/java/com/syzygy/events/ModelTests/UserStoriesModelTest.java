@@ -49,10 +49,6 @@ import java.util.function.Function;
  *
  * @author Gareth
  */
-
-//https://stackoverflow.com/questions/9903341/cleanup-after-all-junit-tests/49448319
-//public class UserStoriesSuite
-
 public class UserStoriesModelTest {
 
     private static final TestDatabase db = new TestDatabase();
@@ -1099,9 +1095,24 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030101() throws InterruptedException {
-        completeTest();
-        //TODO
-        await(10);
+        getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, true, false, true, true, ea -> {
+            Event e = ea.getEvent();
+            Facility f = e.getFacility();
+            getTestNotificationFresh(N_FRESH_REC | N_FRESH_SEND, null, null, e, n_event -> {
+                e.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                    try {
+                        TimeUnit.SECONDS.sleep(2); //wait for updates
+                    } catch (InterruptedException ignored) {}
+                    if(asserts(() -> {
+                        assertTrue(s);
+                        assertTrue(f.isLegalState());
+                    })){
+                        testDeletedEvent(e, ea, n_event, this::completeTest);
+                    };
+                });
+            });
+        });
+        await(30);
     }
 
     @Test
@@ -1199,15 +1210,33 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030301_event() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventFresh(EVENT_REG, false, true, false, false, e -> {
+            Image i = e.getPoster();
+            i.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
+                if(!asserts(() -> assertTrue(success))) return;
+                try {
+                    TimeUnit.SECONDS.sleep(2); //wait for updates
+                } catch (InterruptedException ignored) {}
+                if(!asserts(() -> assertEquals("", e.getPosterID()))) return;
+                testDeletedImage(i, this::completeTest);
+            });
+        });
         await(10);
     }
 
     @Test
     public void US030301_facility() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestFacilityFresh(true, false, f -> {
+            Image i = f.getImage();
+            i.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
+                if(!asserts(() -> assertTrue(success))) return;
+                try {
+                    TimeUnit.SECONDS.sleep(2); //wait for updates
+                } catch (InterruptedException ignored) {}
+                if(!asserts(() -> assertEquals("", f.getImageID()))) return;
+                testDeletedImage(i, this::completeTest);
+            });
+        });
         await(10);
     }
 
@@ -1241,9 +1270,27 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030701() throws InterruptedException {
-        completeTest();
-        //TODO
-        await(10);
+        getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, true, false, true, true, ea -> {
+            Event e = ea.getEvent();
+            Facility f = e.getFacility();
+            User u = e.getFacility().getOrganizer();
+            getTestNotificationFresh(N_FRESH_REC | N_FRESH_SEND, null, null, e, n_event -> {
+                f.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                    try {
+                        TimeUnit.SECONDS.sleep(2); //wait for updates
+                    } catch (InterruptedException ignored) {}
+                    if(asserts(() -> {
+                        assertTrue(s);
+                        assertEquals("", u.getFacilityID());
+                        assertNull(u.getFacility());
+                        assertTrue(u.isLegalState());
+                    })){
+                        testDeletedFacilityDeep(f, e, ea, n_event, this::completeTest);
+                    };
+                });
+            });
+        });
+        await(30);
     }
 
 
