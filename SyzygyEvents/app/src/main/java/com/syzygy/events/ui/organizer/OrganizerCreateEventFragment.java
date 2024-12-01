@@ -58,6 +58,8 @@ public class OrganizerCreateEventFragment extends Fragment {
      */
     private Event event;
 
+    MaterialDatePicker<Long> datePicker;
+
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragOrgCreateEventBinding.inflate(inflater, container, false);
 
@@ -70,8 +72,21 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         setImage(null);
 
-        showDatePicker("", binding.eventCreateOpenDate);
-
+        binding.eventCreateOpenDate.setOnClickListener(v -> {
+            openDatePicker(binding.eventCreateOpenDate);
+        });
+        binding.eventCreateCloseDate.setOnClickListener(v -> {
+            openDatePicker(binding.eventCreateCloseDate);
+        });
+        binding.eventCreateStartDate.setOnClickListener(v -> {
+            openDatePicker(binding.eventCreateStartDate);
+        });
+        binding.eventCreateEndDate.setOnClickListener(v -> {
+            openDatePicker(binding.eventCreateEndDate);
+        });
+        binding.eventCreateDate.setOnClickListener(v -> {
+            openDatePicker(binding.eventCreateDate);
+        });
 
         return binding.getRoot();
     }
@@ -303,22 +318,31 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding = null;
     }
 
-    private void showDatePicker(String str, EditText txt) {
+    private void openDatePicker(EditText txt) {
+        if (datePicker!=null && datePicker.isAdded())
+            return;
+
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        MaterialDatePicker.Builder<Long> materialDatePickerBuilder = MaterialDatePicker.Builder.datePicker();
-        materialDatePickerBuilder.setTitleText("SELECT A DATE");
-        materialDatePickerBuilder.setTextInputFormat(format);
 
-        MaterialDatePicker<Long> materialDatePicker = materialDatePickerBuilder.build();
-        materialDatePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
+        MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
+        builder.setTitleText("");
+        builder.setTextInputFormat(format);
 
+        try {
+            builder.setSelection(format.parse(txt.getText().toString()).getTime());
+        } catch (ParseException|NullPointerException e) {
+            builder.setSelection((new Date()).getTime());
+        }
 
-        materialDatePicker.addOnPositiveButtonClickListener(v -> {
-            TimeZone timeZoneUTC = TimeZone.getDefault();
-            int offsetFromUTC = timeZoneUTC.getOffset(new Date().getTime()) * -1;
-            txt.setText(format.format(new Date(materialDatePicker.getSelection() + offsetFromUTC)));
+        datePicker =  builder.build();
+
+        datePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
+        datePicker.addOnPositiveButtonClickListener(w -> {
+            if (datePicker.getSelection() != null) {
+                int offsetFromUTC = TimeZone.getDefault().getOffset(new Date().getTime()) * -1;
+                txt.setText(format.format(new Date(datePicker.getSelection() + offsetFromUTC)));
+            }
         });
-
     }
 
 
