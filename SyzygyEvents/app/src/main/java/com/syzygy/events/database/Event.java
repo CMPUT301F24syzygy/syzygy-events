@@ -234,7 +234,17 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
                     }
                     result.inviteUsersToEventFromLottery((query1, data1, success2) -> {
                         if(success2) setHasRunLottery(true);
-                        listener.onCompletion(query1, data1, success2);
+                        EventAssociation.NotificationResult nr = data;
+                        if(data1 != null){
+                            List<Notification> s = new ArrayList<>();
+                            s.addAll(data.result);
+                            s.addAll(data1.result);
+                            List<Notification> f = new ArrayList<>();
+                            f.addAll(data.failedNotifications);
+                            f.addAll(data1.failedNotifications);
+                            nr = new EventAssociation.NotificationResult(s,f);
+                        }
+                        listener.onCompletion(query1, nr, success2);
                         if(data1!=null)data1.dissolve();
                         dissolve();
                     });

@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -85,7 +86,7 @@ public class UserStoriesModelTest {
         Log.i("Testing", "After");
         if(!ignoreDelete){
             for(DatabaseInstance<?> i : db.testDB.getTrackedInstances()){
-                if(i==null) continue;
+                if(i==null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID)) continue;
                 i.getDocumentReference().delete();
                 if(i.getCollection() == Database.Collections.IMAGES){
                     db.testDB.deleteFile(((Image)i).getImageID(), (success) -> {});
@@ -108,7 +109,7 @@ public class UserStoriesModelTest {
     public static void clean() throws InterruptedException {
         Log.d("Testing", "AfterClass");
         for(DatabaseInstance<?> i : allObjectsUsed){
-            if(i==null) continue;
+            if(i==null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID)) continue;
             CountDownLatch l = new CountDownLatch(1);
             i.getDocumentReference().delete().addOnCompleteListener(t -> {
                 if(i.getCollection() == Database.Collections.IMAGES){
@@ -122,6 +123,16 @@ public class UserStoriesModelTest {
         allObjectsUsed.clear();
     }
 
+    private void completeTest(boolean fullComplete){
+        if(fullComplete){
+            for(int i = 0; i< latch.getCount(); i++){
+                completeTest();
+            }
+        }else{
+            completeTest();
+        }
+    }
+
     private void completeTest(){
         latch.countDown();
     }
@@ -132,7 +143,7 @@ public class UserStoriesModelTest {
             return true;
         }catch (AssertionError ex){
             error = ex;
-            completeTest();
+            completeTest(true);
             return false;
         }
     }
@@ -485,8 +496,85 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010401(){
-        //TODO NA applicable to this project part
+    public void US010401_own_pos() throws InterruptedException {
+        latch = new CountDownLatch(2);
+        getTestEventFresh(EVENT_AFTER_REG, false, false, false, false, e -> {
+            User u = e.getFacility().getOrganizer();
+            u.new NotificationListener(n -> {
+                if(asserts(() -> {
+                    assertTrue(n.isLegalState());
+                })) completeTest();
+            });
+            getTestEventAssociation(u, e, constants.getString(R.string.event_assoc_status_waitlist), ea -> {
+                e.getLottery(1, (query, data, success) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success);
+                        assertTrue(data.filledAllSpots());
+                        assertEquals(0, data.notChosen.size());
+                        assertEquals(data.result.result.get(0), ea);
+                    })) return;
+                    data.execute((query1, data1, success1) -> {
+                        if(asserts(() -> {
+                            assertTrue(success1);
+                            assertTrue(data1.failedNotifications.isEmpty());
+                            assertEquals(1, data1.result.size());
+                            Notification n = data1.result.get(0);
+                            assertEquals(n.getEvent(), e);
+                            assertEquals(n.getSender(), u);
+                            assertEquals(n.getReceiver(), u);
+                        })) completeTest();
+                    }, false);
+                });
+            }, null);
+        });
+        await(10);
+    }
+
+    @Test
+    public void US010401_US010402() throws InterruptedException {
+        latch = new CountDownLatch(4);
+        AtomicInteger chosen = new AtomicInteger(0);
+        AtomicInteger lost = new AtomicInteger(0);
+        getEventWithUsersInWaitlistAndEnrolled(3,0, eas -> {
+            Event e = eas.get(0).getEvent();
+            eas.forEach(ea -> {
+                ea.getUser().new NotificationListener(n -> {
+                    Log.d("Testing", n.getDocumentID()+" : "+ea.getUserID());
+                    if(!asserts(() -> {
+                        assertTrue(n.isLegalState());
+                        assertEquals(n.getReceiver(), ea.getUser());
+                        assertEquals(n.getEvent(), e);
+                    })) return;
+                    if(n.getSubject().equals(constants.getString(R.string.notification_lottery_chosen_subject))){
+                        chosen.incrementAndGet();
+                    }else if(n.getSubject().equals(constants.getString(R.string.notification_lottery_notChosen_subject))){
+                        lost.incrementAndGet();
+                    }
+                    completeTest();
+                });
+            });
+            e.getLottery(0, (query, data, success) -> {
+                Log.d("Testing", "got lottery");
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertTrue(data.filledAllSpots());
+                    assertEquals(2, data.result.size());
+                    assertEquals(1, data.notChosen.size());
+                })) return;
+                Log.d("Testing", "executing");
+                data.execute((query1, data1, success1) -> {
+                    Log.d("Testing", "executed");
+                    if(!asserts(() -> {
+                        assertTrue(data1.failedNotifications.isEmpty());
+                        assertEquals(3, data1.result.size());
+                    })) return;
+                    completeTest();
+                }, true);
+            });
+        });
+        await(10);
+        assertEquals(2, chosen.get());
+        assertEquals(1, lost.get());
     }
 
     @Test
