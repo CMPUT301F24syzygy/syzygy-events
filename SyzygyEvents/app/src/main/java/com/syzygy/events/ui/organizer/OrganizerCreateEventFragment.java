@@ -323,6 +323,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             return;
 
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        int offsetFromUTC = TimeZone.getDefault().getOffset(new Date().getTime()) * -1;
 
         MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
         builder.setTitleText("");
@@ -331,7 +332,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         try {
             builder.setSelection(format.parse(txt.getText().toString()).getTime());
         } catch (ParseException|NullPointerException e) {
-            builder.setSelection((new Date()).getTime());
+            builder.setSelection((new Date()).getTime() - offsetFromUTC);
         }
 
         datePicker =  builder.build();
@@ -339,7 +340,6 @@ public class OrganizerCreateEventFragment extends Fragment {
         datePicker.show(getActivity().getSupportFragmentManager(), "DATE_PICKER");
         datePicker.addOnPositiveButtonClickListener(w -> {
             if (datePicker.getSelection() != null) {
-                int offsetFromUTC = TimeZone.getDefault().getOffset(new Date().getTime()) * -1;
                 txt.setText(format.format(new Date(datePicker.getSelection() + offsetFromUTC)));
             }
         });

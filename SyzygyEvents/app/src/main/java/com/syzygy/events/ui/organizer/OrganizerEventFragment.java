@@ -8,6 +8,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.Layout;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -28,6 +32,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -242,13 +247,17 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                     EditText edit_subject =  dialog.findViewById(R.id.new_notification_subject);
                     String subject = edit_subject.getText().toString();
                     EditText edit_body =  dialog.findViewById(R.id.new_notification_body);
+                    TextInputLayout edit_body_layout =  dialog.findViewById(R.id.new_notification_body_layout);
+                    TextInputLayout edit_subject_layout =  dialog.findViewById(R.id.new_notification_subject_layout);
+                    edit_body_layout.setError(null);
+                    edit_subject_layout.setError(null);
                     String body = edit_body.getText().toString();
                     if (subject.isEmpty()) {
-                        edit_subject.setError("Required");
+                        edit_subject_layout.setError("Required.");
                     } if (body.isEmpty()) {
-                        edit_body.setError("Required");
+                        edit_body_layout.setError("Required.");
                     } else if (body.split("\\n").length>16) {
-                        edit_body.setError("This message is too long. Try removing some newline characters.");
+                        edit_body_layout.setError("This message is too long.");
                     } else if (!subject.isEmpty()) {
                         dialog.dismiss();
                         query.refreshData((query1, s) -> {
@@ -256,6 +265,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                             Database db = ((SyzygyApplication)getActivity().getApplication()).getDatabase();
                             new EventAssociation.Methods<Event>(db, event, query.getInstances())
                                     .notify(subject, body, true, true, false, (q, data, t) -> {});
+                            Toast.makeText(getContext(), "Notification Sent", Toast.LENGTH_SHORT).show();
                             binding.composeNotificationButton.setVisibility(binding.eventAssociatedEntrantsList.getCount()<1 ? View.GONE : View.VISIBLE);
                         });
                     }

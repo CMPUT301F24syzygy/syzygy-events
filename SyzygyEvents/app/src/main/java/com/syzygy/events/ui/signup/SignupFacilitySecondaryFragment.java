@@ -74,7 +74,7 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
      * Validates the information. If valid, creates the facility and navigates to the profile
      */
     private void submitData(){
-        if(marker == null){
+        if(marker == null || !marker.isVisible()){
             Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
             return;
         }
