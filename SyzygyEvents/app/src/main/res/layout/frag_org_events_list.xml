@@ -20,14 +20,29 @@
         android:layout_height="80dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/white"
-        android:clickable="true"
-        android:drawableLeft="@drawable/ic_add_event"
-        android:drawableTint="@color/grey_blue_100"
-        android:paddingLeft="30dp"
+        android:drawableLeft="@drawable/plus_white_foreground"
+        android:drawableTint="@color/white"
+        android:backgroundTint="@color/grey_blue_300"
+        android:paddingLeft="16dp"
         app:cornerRadius="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <TextView
+        android:id="@+id/empty_list_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:visibility="gone"
+        android:text="No Events Yet"
+        android:textColor="@color/grey_blue_100"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,7 +50,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/facility_location_text"
         app:mapType="terrain"
-        app:uiZoomGestures="true" />
+        app:uiZoomGestures="true"
+        app:uiZoomControls="true"/>
 
     <View
         android:id="@+id/div"

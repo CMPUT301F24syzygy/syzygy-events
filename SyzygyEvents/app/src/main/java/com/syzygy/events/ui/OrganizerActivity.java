@@ -53,6 +53,7 @@ public class OrganizerActivity extends SyzygyActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 for (; navController.navigateUp(); ) ;
                 NavigationUI.onNavDestinationSelected(item, navController);
+                invalidateOptionsMenu();
                 return true;
             }
         });

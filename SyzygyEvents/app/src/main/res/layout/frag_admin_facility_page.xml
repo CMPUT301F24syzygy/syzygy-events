@@ -48,6 +48,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/facility_location_text"
         app:mapType="terrain"
+        app:uiZoomControls="true"
         app:uiZoomGestures="true" />
 
     <View
@@ -74,9 +75,10 @@
         android:id="@+id/admin_remove_facility_button"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="remove facility"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -71,7 +71,7 @@ public class AdminProfileFragment extends Fragment {
             binding.getRoot().findViewById(R.id.admin_view_delete_user_button).setOnClickListener(v -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove this user?")
+                        .setMessage("Are you sure you want to remove this user? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

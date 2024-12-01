@@ -67,7 +67,7 @@ public class AdminImagesFragment extends Fragment {
             dialog.findViewById(R.id.admin_view_delete_image_button).setOnClickListener(v -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove this image?")
+                        .setMessage("Are you sure you want to remove this image? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

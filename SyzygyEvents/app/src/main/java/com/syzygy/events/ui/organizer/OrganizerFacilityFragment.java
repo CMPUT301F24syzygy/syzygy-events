@@ -57,7 +57,6 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
             ((OrganizerActivity)getActivity()).openEdit();
         });
         updateValues();
-        getActivity().invalidateOptionsMenu();
 
         return binding.getRoot();
     }
@@ -78,6 +77,7 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
         binding.facilityDescriptionText.setText(facility.getDescription());
         Image.getFormatedAssociatedImage(facility, Image.Options.Square(400)).into(binding.facilityImage);
         updateMapPoints();
+        getActivity().invalidateOptionsMenu();
     }
 
     /**
@@ -96,6 +96,7 @@ public class OrganizerFacilityFragment extends Fragment implements Database.Upda
         this.map = map;
         marker = map.addMarker(new MarkerOptions().draggable(false).position(new LatLng(0,0)));
         updateMapPoints();
+        updateValues();
     }
 
     @Override

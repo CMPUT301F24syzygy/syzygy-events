@@ -50,6 +50,7 @@ public class EntrantNotificationsFragment extends Fragment {
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();
+            binding.emptyNotificationsText.setVisibility(binding.entrantNotificationsList.getCount()<1 ? View.VISIBLE : View.GONE);
         });
 
         binding.entrantNotificationsList.setAdapter(a);
