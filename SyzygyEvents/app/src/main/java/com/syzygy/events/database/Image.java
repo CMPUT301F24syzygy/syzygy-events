@@ -178,6 +178,7 @@ public class Image extends DatabaseInstance<Image> {
     ){
 
         String docID = Database.Collections.IMAGES.getNewID(db);
+        Log.d("New Image", docID);
 
         String imageID = locType.toString() + "/" + docID;
 

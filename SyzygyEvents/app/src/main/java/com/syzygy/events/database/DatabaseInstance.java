@@ -407,7 +407,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             if(!prop.meta.loadsNullable){
                 deleteInstance(DeletionType.UP_FALL, success -> {});
             }else{
-                notifyUpdate(Type.UPDATE);
+                processUpdate();
             }
         }
     }

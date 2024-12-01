@@ -1331,6 +1331,7 @@ public class UserStoriesModelTest {
         }
         if(!asserts(()->{
             assertTrue(e == null || e.getFacility() == f);
+            assertNull(f.getOrganizer().getFacility());
         }))return;
         testDeletedImageCascade(f.getAssociatedImage(), () -> {
             testDeletedEventCascade(e, ea, n, () -> testDeletedInstance(f, onComplete));
