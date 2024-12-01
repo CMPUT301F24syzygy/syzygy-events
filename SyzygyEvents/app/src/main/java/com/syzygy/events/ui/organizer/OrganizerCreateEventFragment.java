@@ -228,10 +228,10 @@ public class OrganizerCreateEventFragment extends Fragment {
             endDate = null;
         }
 
-        openDate = openDay.matches("\\d{2}/\\d{2}/\\d{4}") ? openDate : null;
-        closeDate = closeDay.matches("\\d{2}/\\d{2}/\\d{4}") ? closeDate : null;
-        startDate = startDay.matches("\\d{2}/\\d{2}/\\d{4}") ? startDate : null;
-        endDate = endDay.matches("\\d{2}/\\d{2}/\\d{4}") ? endDate : null;
+        openDate = openDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}") ? openDate : null;
+        closeDate = closeDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}") ? closeDate : null;
+        startDate = startDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}") ? startDate : null;
+        endDate = endDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}") ? endDate : null;
 
         Long dates;
         if (repeat) {
@@ -254,61 +254,66 @@ public class OrganizerCreateEventFragment extends Fragment {
                 this.event = evnt;
                 ((OrganizerActivity) getActivity()).openEvent(evnt.getDocumentID());
             } else {
-                Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
             }
         });
+
+        binding.eventCreateNameLayout.setError(null);
+        binding.eventCreateCapacityLayout.setError(null);
+        binding.eventCreateWaitlistCapLayout.setError(null);
+        binding.eventCreatePriceLayout.setError(null);
+        binding.eventCreateOpenDateLayout.setError(null);
+        binding.eventCreateCloseDateLayout.setError(null);
+        binding.eventCreateStartDateLayout.setError(null);
+        binding.eventCreateEndDateLayout.setError(null);
+        binding.eventCreateDateLayout.setError(null);
 
         if (invalidIds.isEmpty()) return;
         binding.progressBar.setVisibility(View.GONE);
 
         if (invalidIds.contains(R.string.database_event_title)) {
-            binding.eventCreateName.setError(getString(R.string.val_create_event_title));
-        }
-        if (invalidIds.contains(R.string.database_event_description)) {
-            binding.eventCreateBio.setError(getString(R.string.val_create_event_description));
+            binding.eventCreateNameLayout.setError("Required");
         }
         if (invalidIds.contains(R.string.database_event_capacity)) {
-            binding.eventCreateCapacity.setError(getString(R.string.val_create_event_capacity));
+            binding.eventCreateCapacityLayout.setError("Must be greater than 0");
         }
         if (invalidIds.contains(R.string.database_event_waitlist)) {
-            binding.eventCreateWaitlistCap.setError(getString(R.string.val_create_event_waitlist_cap));
+            binding.eventCreateWaitlistCapLayout.setError("Invalid");
         }
         if (invalidIds.contains(R.string.database_event_price)) {
-            binding.eventCreatePrice.setError(getString(R.string.val_create_event_price));
+            binding.eventCreatePriceLayout.setError("Required");
         }
         if (invalidIds.contains(R.string.database_event_openDate)) {
-            if (!openDay.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                binding.eventCreateOpenDate.setError("Invalid format");
+            if (!openDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                binding.eventCreateOpenDateLayout.setError("Invalid");
             }
-            else binding.eventCreateOpenDate.setError(getString(R.string.val_create_event_open));
+            else binding.eventCreateOpenDateLayout.setError(getString(R.string.val_create_event_open));
         }
         if (invalidIds.contains(R.string.database_event_closedDate)) {
-            if (!closeDay.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                binding.eventCreateCloseDate.setError("Invalid format");
+            if (!closeDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                binding.eventCreateCloseDateLayout.setError("Invalid");
             }
-            else binding.eventCreateCloseDate.setError(getString(R.string.val_create_event_closed));
+            else binding.eventCreateCloseDateLayout.setError(getString(R.string.val_create_event_closed));
         }
         if (invalidIds.contains(R.string.database_event_start)) {
             if (repeat) {
-                if (!startDay.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                    binding.eventCreateStartDate.setError("Invalid format");
+                if (!startDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                    binding.eventCreateStartDateLayout.setError("Invalid");
                 }
-                else binding.eventCreateStartDate.setError(getString(R.string.val_create_event_start));
+                else binding.eventCreateStartDateLayout.setError(getString(R.string.val_create_event_start));
             } else {
-                if (!startDay.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                    binding.eventCreateDate.setError("Invalid format");
+                if (!startDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                    binding.eventCreateDateLayout.setError("Invalid");
                 }
-                else binding.eventCreateDate.setError(getString(R.string.val_create_event_date));
+                else binding.eventCreateDateLayout.setError(getString(R.string.val_create_event_date));
             }
         }
         if (invalidIds.contains(R.string.database_event_end)) {
-            if (!endDay.matches("\\d{2}/\\d{2}/\\d{4}")) {
-                binding.eventCreateEndDate.setError("Invalid format");
+            if (!endDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
+                binding.eventCreateEndDateLayout.setError("Invalid");
             }
-            else binding.eventCreateEndDate.setError(getString(R.string.val_create_event_end));
+            else binding.eventCreateEndDateLayout.setError(getString(R.string.val_create_event_end));
         }
-        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
 
     @Override

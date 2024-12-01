@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -94,9 +93,10 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
      */
     private void submitData(){
         if(marker == null){
-            Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
             return;
         }
+        binding.editFacilityNameLayout.setError(null);
+
         String name = binding.editFacilityName.getText().toString().replaceAll("\\s+", " ");
         LatLng pos = marker.getPosition();
         GeoPoint loc = new GeoPoint(pos.latitude,pos.longitude);
@@ -120,13 +120,10 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
 
         if(invalidIds.isEmpty()) return;
 
+
         if(invalidIds.contains(R.string.database_fac_name)){
-            binding.editFacilityName.setError(getString(R.string.val_create_facility_name));
+            binding.editFacilityNameLayout.setError(getString(R.string.val_create_facility_name));
         }
-        if(invalidIds.contains(R.string.database_fac_description)){
-            binding.editFacilityDescription.setError(getString(R.string.val_create_facility_description));
-        }
-        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
         binding.progressBar.setVisibility(View.GONE);
     }
 
@@ -141,7 +138,6 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
             //This forces the menu icons to refresh in case the profile image was changed
             ((SyzygyApplication)getActivity().getApplication()).switchToActivity(OrganizerActivity.class);
         }else{
-            Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
             binding.progressBar.setVisibility(View.GONE);
         }
     }
@@ -152,7 +148,6 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
-                Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
             setImage(uri);

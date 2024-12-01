@@ -74,6 +74,11 @@ public class EntrantEditProfileFragment extends Fragment {
      * Validates and submits the edit. If valid, navigates back to the user profile
      */
     private void submitData(){
+        binding.entrantEditNameLayout.setError(null);
+        binding.entrantEditPhoneLayout.setError(null);
+        binding.entrantEditEmailLayout.setError(null);
+        binding.entrantEditBioLayout.setError(null);
+
         String name = binding.entrantEditName.getText().toString().replaceAll("\\s+", " ");
         String phone = binding.entrantEditPhone.getText().toString();
         String email = binding.entrantEditEmail.getText().toString();
@@ -97,16 +102,16 @@ public class EntrantEditProfileFragment extends Fragment {
         if(invalidIds.isEmpty()) return;
 
         if(invalidIds.contains(R.string.database_user_name)){
-            binding.entrantEditName.setError(getString(R.string.val_create_user_name));
+            binding.entrantEditNameLayout.setError(getString(R.string.val_create_user_name));
         }
         if(invalidIds.contains(R.string.database_user_phoneNumber)){
-            binding.entrantEditPhone.setError(getString(R.string.val_create_user_phoneNumber));
+            binding.entrantEditPhoneLayout.setError(getString(R.string.val_create_user_phoneNumber));
         }
         if(invalidIds.contains(R.string.database_user_email)){
-            binding.entrantEditEmail.setError(getString(R.string.val_create_user_email));
+            binding.entrantEditEmailLayout.setError(getString(R.string.val_create_user_email));
         }
         if(invalidIds.contains(R.string.database_user_description)){
-            binding.entrantEditBio.setError(getString(R.string.val_create_user_description));
+            binding.entrantEditBioLayout.setError(getString(R.string.val_create_user_description));
         }
         binding.progressBar.setVisibility(View.GONE);
 

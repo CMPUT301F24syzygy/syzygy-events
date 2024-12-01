@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +19,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.GeoPoint;
 import com.squareup.picasso.Picasso;
 import com.syzygy.events.R;
@@ -74,10 +74,17 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
      * Validates the information. If valid, creates the facility and navigates to the profile
      */
     private void submitData(){
+        binding.createFacilityNameLayout.setError(null);
+
         if(marker == null || !marker.isVisible()){
-            Toast.makeText(getActivity(), "Select a location", Toast.LENGTH_LONG).show();
+            Snackbar.make(getActivity(), binding.getRoot(), "Please select a location", Snackbar.LENGTH_LONG)
+                    .show();
+            if (binding.createFacilityName.getText().toString().isEmpty()) {
+                binding.createFacilityNameLayout.setError(getString(R.string.val_create_facility_name));
+            }
             return;
         }
+
         String name = binding.createFacilityName.getText().toString().replaceAll("\\s+", " ");
         LatLng pos = marker.getPosition();
         GeoPoint loc = new GeoPoint(pos.latitude,pos.longitude);
@@ -95,7 +102,6 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
                 fac.dissolve();
                 app.switchToActivity(OrganizerActivity.class);
             }else{
-                Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
             }
         });
@@ -103,12 +109,8 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
         if(invalidIds.isEmpty()) return;
 
         if(invalidIds.contains(R.string.database_fac_name)){
-            binding.createFacilityName.setError(getString(R.string.val_create_facility_name));
+            binding.createFacilityNameLayout.setError(getString(R.string.val_create_facility_name));
         }
-        if(invalidIds.contains(R.string.database_fac_description)){
-            binding.createFacilityDescription.setError(getString(R.string.val_create_facility_description));
-        }
-        Toast.makeText(getActivity(), "Invalid", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -117,7 +119,6 @@ public class SignupFacilitySecondaryFragment extends Fragment implements OnMapRe
     private void choosePhoto(){
         ((SyzygyApplication)getActivity().getApplication()).getImage(uri -> {
             if(uri == null){
-                Toast.makeText(getActivity(), "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
             setImage(uri);

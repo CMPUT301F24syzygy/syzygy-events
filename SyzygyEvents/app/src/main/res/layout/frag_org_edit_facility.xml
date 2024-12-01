@@ -10,6 +10,7 @@
         android:layout_height="wrap_content">
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/edit_facility_name_layout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="200dp"
         android:layout_height="wrap_content"

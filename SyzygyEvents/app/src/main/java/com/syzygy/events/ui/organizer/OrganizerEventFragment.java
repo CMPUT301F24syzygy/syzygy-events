@@ -197,6 +197,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
                         result.execute(
                                 (ev, r, f) -> {
                                     dialog.dismiss();
+                                    Toast.makeText(getContext(), "Invites Sent!", Toast.LENGTH_SHORT).show();
                                     updateView();
                                 },
                                 !event.hasRunLottery()

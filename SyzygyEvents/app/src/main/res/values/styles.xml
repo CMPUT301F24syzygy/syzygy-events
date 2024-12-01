@@ -1,0 +1,7 @@
+<resources>
+    <style name="WriteTheme" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <!-- Other theme overrides here -->
+        <item name="android:colorAccent">@color/grey_blue_100</item>
+    </style>
+
+</resources>

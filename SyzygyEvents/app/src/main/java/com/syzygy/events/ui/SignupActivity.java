@@ -52,7 +52,6 @@ public class SignupActivity extends SyzygyActivity {
     private void choosePhoto(){
         ((SyzygyApplication)getApplication()).getImage(uri -> {
             if(uri == null){
-                Toast.makeText(this, "Failed to get image", Toast.LENGTH_LONG).show();
                 return;
             }
             setImage(uri);
@@ -79,6 +78,12 @@ public class SignupActivity extends SyzygyActivity {
      * Validates the information. If valid, creates the account and switches to the next activity
      */
     private void submitData(){
+        binding.signupNameLayout.setError(null);
+        binding.signupPhoneLayout.setError(null);
+        binding.signupEmailLayout.setError(null);
+        binding.signupBioLayout.setError(null);
+
+
         String name = binding.signupName.getText().toString().replaceAll("\\s+", " ");
         String phone = binding.signupPhone.getText().toString();
         String email = binding.signupEmail.getText().toString();
@@ -94,25 +99,23 @@ public class SignupActivity extends SyzygyActivity {
             if(success){
                 app.switchToActivity(EntrantActivity.class);
             }else{
-                Toast.makeText(this, "An error occurred: Image", Toast.LENGTH_LONG).show();
                 binding.progressBar.setVisibility(View.GONE);
             }
         });
         if(invalidIds.isEmpty()) return;
         binding.progressBar.setVisibility(View.GONE);
         if(invalidIds.contains(R.string.database_user_name)){
-            binding.signupName.setError(getString(R.string.val_create_user_name));
+            binding.signupNameLayout.setError(getString(R.string.val_create_user_name));
         }
         if(invalidIds.contains(R.string.database_user_phoneNumber)){
-            binding.signupPhone.setError(getString(R.string.val_create_user_phoneNumber));
+            binding.signupPhoneLayout.setError(getString(R.string.val_create_user_phoneNumber));
         }
         if(invalidIds.contains(R.string.database_user_email)){
-            binding.signupEmail.setError(getString(R.string.val_create_user_email));
+            binding.signupEmailLayout.setError(getString(R.string.val_create_user_email));
         }
         if(invalidIds.contains(R.string.database_user_description)){
-            binding.signupBio.setError(getString(R.string.val_create_user_description));
+            binding.signupBioLayout.setError(getString(R.string.val_create_user_description));
         }
-        Toast.makeText(this, "Invalid", Toast.LENGTH_SHORT).show();
     }
 
     @Override
