@@ -653,7 +653,7 @@ public class Database implements EventListener<DocumentSnapshot> {
 
         DatabaseInstance<?> instance = cache.get(value.getReference().getPath());
 
-        if(instance == null){
+        if(instance == null || !instance.isLegalState()){
             return;
         }
 
