@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -16,7 +17,9 @@ import com.squareup.picasso.RequestCreator;
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
 import com.syzygy.events.database.Database;
+import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseInstance;
+import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
 import com.syzygy.events.database.EventAssociation;
 import com.syzygy.events.database.Facility;
@@ -40,6 +43,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -145,6 +149,13 @@ public class UserStoriesModelTest {
             error = ex;
             completeTest(true);
             return false;
+        }
+    }
+
+    private void awaitAndContinue(long timeout) throws InterruptedException{
+        latch.await(timeout, TimeUnit.SECONDS);
+        if(error != null){
+            throw error;
         }
     }
 
@@ -338,11 +349,21 @@ public class UserStoriesModelTest {
         l1.run();
     }
 
-    private void getEventWithUsersInWaitlistAndEnrolled(int waitListCount, int enrolledCount, Consumer<List<EventAssociation>> listener){
+    private void getTestEventWithEventAssociations(int waitListCount, int enrolledCount, int invitedCount, int canceledCount, Consumer<List<EventAssociation>> listener){
+        int all = waitListCount+enrolledCount+invitedCount+canceledCount;
         getTestEventFresh(EVENT_REG, false, false, false, false, e->{
-            this.<User>getTestInstances(waitListCount+enrolledCount, (i,b)->getTestUser(false, b), us -> {
-                getTestInstances(waitListCount+enrolledCount, (i, b)->{
-                    getTestEventAssociation(us.get(i), e, constants.getString(i<waitListCount? R.string.event_assoc_status_waitlist: R.string.event_assoc_status_enrolled), b, null);
+            this.<User>getTestInstances(all, (i,b)->getTestUser(false, b), us -> {
+                getTestInstances(all, (i, b)->{
+                    getTestEventAssociation(us.get(i), e, constants.getString(
+                            i < waitListCount?
+                                    R.string.event_assoc_status_waitlist :
+                                    i < waitListCount+enrolledCount?
+                                            R.string.event_assoc_status_enrolled:
+                                            i < waitListCount+enrolledCount+invitedCount?
+                                                R.string.event_assoc_status_invited:
+                                                R.string.event_assoc_status_cancelled
+                        ), b, null
+                    );
                 }, listener);
             });
         });
@@ -445,23 +466,18 @@ public class UserStoriesModelTest {
     @Test
     public void US010301() throws InterruptedException {
         getTestUser(false, u -> {
-            Log.d("Testing", "GotUser");
             u.setProfileImage(img, success -> {
-                Log.d("Testing", "CompleteSet");
                 if(!asserts(() -> {
                     assertTrue(success);
-                    Log.d("Testing", "CompleteAssert");
-                    //todo asserts
+                    assertNotNull(u.getProfileImageID());
+                    // cant really test if images are equal
                 })) {
-                    Log.d("Testing", "FailedAssert");
                     return;
                 };
-                Log.d("Testing", "Complete");
                 completeTest();
             });
         });
         await(10);
-        Log.d("Testing", "Complete Full");
     }
 
     @Test
@@ -531,11 +547,11 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010401_US010402() throws InterruptedException {
+    public void US010401_US010402_US020501() throws InterruptedException {
         latch = new CountDownLatch(4);
         AtomicInteger chosen = new AtomicInteger(0);
         AtomicInteger lost = new AtomicInteger(0);
-        getEventWithUsersInWaitlistAndEnrolled(3,0, eas -> {
+        getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             eas.forEach(ea -> {
                 ea.getUser().new NotificationListener(n -> {
@@ -567,6 +583,7 @@ public class UserStoriesModelTest {
                     if(!asserts(() -> {
                         assertTrue(data1.failedNotifications.isEmpty());
                         assertEquals(3, data1.result.size());
+                        assertTrue(e.hasRunLottery());
                     })) return;
                     completeTest();
                 }, true);
@@ -577,19 +594,26 @@ public class UserStoriesModelTest {
         assertEquals(1, lost.get());
     }
 
+
     @Test
-    public void US010402(){
-        //TODO NA applicable to this project part
-    }
-    @Test
-    public void US010403(){
-        //TODO NA applicable to this project part
+    public void US010403() throws InterruptedException {
+        AtomicBoolean notified = new AtomicBoolean(false);
+        getTestUser(false, u -> {
+            u.setOrganizerNotifications(false);
+            u.new NotificationListener(n -> {
+                notified.set(true);
+                completeTest();
+            });
+            getTestNotification(null, u, null, n -> {});
+        });
+        awaitAndContinue(10);
+        assertFalse(notified.get());
     }
 
     @Test
     public void US010501() throws InterruptedException {
         
-        getEventWithUsersInWaitlistAndEnrolled(3,0,eas -> {
+        getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getLottery(-1, (q,l,s) -> {
                 if(!asserts(() -> {
@@ -692,7 +716,7 @@ public class UserStoriesModelTest {
 
     @Test
     public void US010701(){
-        //TODO this is done by application which is not set up for testing
+        //This is done by application which is not set up for testing
     }
 
     @Test
@@ -732,7 +756,13 @@ public class UserStoriesModelTest {
 
     @Test
     public void US020102() throws InterruptedException {
-        //Visual
+        //Implemented by application not database
+        getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
+            if(asserts(() -> assertEquals(e.getDocumentID(), e.getQrHash()))){
+                completeTest();
+            };
+        });
+        await(10);
     }
 
 
@@ -771,7 +801,7 @@ public class UserStoriesModelTest {
     @Test
     public void US020201() throws InterruptedException {
         
-        getEventWithUsersInWaitlistAndEnrolled(3, 0, eas->{
+        getTestEventWithEventAssociations(3, 0, 0, 0, eas->{
             Event e = eas.get(0).getEvent();
             e.getWaitlistUsers((query, data, success) -> {
                 if(!asserts(() -> {
@@ -791,8 +821,23 @@ public class UserStoriesModelTest {
 
     @Test
     public void US020202() throws InterruptedException {
-        completeTest();
-        //TODO
+        GeoPoint p = new GeoPoint(1,1);
+        getTestEventAssociationFresh(EVENT_REG, constants.getString(R.string.event_assoc_status_waitlist), true, p, false, false,false, false, ea->{
+            User u = ea.getUser().fetch();
+            Event e = ea.getEvent().fetch();
+            e.getUserAssociation(u,(query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertNotNull(data);
+                    assertEquals(data.result.size(), 1);
+                    EventAssociation ea1 = data.result.get(0);
+                    assertEquals(ea1.getUser(), u);
+                    assertEquals(ea1.getEvent(), e);
+                    assertEquals(ea1.getLocation(), p);
+                })) return;
+                completeTest();
+            });
+        });
         await(10);
     }
 
@@ -858,29 +903,44 @@ public class UserStoriesModelTest {
 
     @Test
     public void US020401() throws InterruptedException {
-        
-        completeTest();
-        //TODO
+        getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
+            e.setPoster(img, success -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertNotNull(e.getPoster());
+                    // cant really test if images are equal
+                })) {
+                    return;
+                };
+                completeTest();
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020402() throws InterruptedException {
-        completeTest();
-        //TODO
-        await(10);
-    }
-
-    @Test
-    public void US020501() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventFresh(EVENT_REG, false, true, false, false, e -> {
+            Image i = e.getPoster();
+            if(!asserts(() -> {
+                assertNotNull(i);
+            })) return;
+            e.setPoster(img, success -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertNotNull(e.getPoster());
+                    assertNotEquals(i, e.getPoster());
+                    // cant really test if images are equal
+                })) return;
+                completeTest();
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020502() throws InterruptedException {
-        getEventWithUsersInWaitlistAndEnrolled(3,0,eas -> {
+        getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getLottery(-1, (q,l,s) -> {
                 if(!asserts(() -> {
@@ -917,7 +977,7 @@ public class UserStoriesModelTest {
 
     @Test
     public void US020503() throws InterruptedException {
-        getEventWithUsersInWaitlistAndEnrolled(3,0,eas -> {
+        getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getLottery(-1, (q,l,s) -> {
                 if(!asserts(() -> {
@@ -990,43 +1050,171 @@ public class UserStoriesModelTest {
 
     @Test
     public void US020601() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(0,0,2, 0, eas -> {
+            Event e = eas.get(0).getEvent();
+            e.getUsersByStatus(R.string.event_assoc_status_invited, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertEquals(2, data.size());
+                    EventAssociation a = data.result.get(0);
+                    EventAssociation b = data.result.get(1);
+                    assertTrue(a == eas.get(0) || b == eas.get(0));
+                    assertTrue(a == eas.get(1) || b == eas.get(1));
+                })) return;
+                completeTest();
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020602() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(0,0,0, 2, eas -> {
+            Event e = eas.get(0).getEvent();
+            e.getUsersByStatus(R.string.event_assoc_status_cancelled, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertEquals(2, data.size());
+                    EventAssociation a = data.result.get(0);
+                    EventAssociation b = data.result.get(1);
+                    assertTrue(a == eas.get(0) || b == eas.get(0));
+                    assertTrue(a == eas.get(1) || b == eas.get(1));
+                })) return;
+                completeTest();
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020603() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(0,2,0, 0, eas -> {
+            Event e = eas.get(0).getEvent();
+            e.getUsersByStatus(R.string.event_assoc_status_enrolled, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                    assertEquals(2, data.size());
+                    EventAssociation a = data.result.get(0);
+                    EventAssociation b = data.result.get(1);
+                    assertTrue(a == eas.get(0) || b == eas.get(0));
+                    assertTrue(a == eas.get(1) || b == eas.get(1));
+                })) return;
+                completeTest();
+            });
+        });
         await(10);
     }
 
     @Test
+    public void US020604() throws InterruptedException {
+        getTestEventAssociationFresh(EVENT_REG, constants.getString(R.string.event_assoc_status_invited), false, null, false, false, false, false, ea -> {
+            Event e = ea.getEvent();
+            User u = ea.getUser();
+            ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                if(!asserts(() -> {
+                    assertTrue(s);
+                })) return;
+                testDeletedEventAssociation(ea, () -> {
+                    e.getUserAssociation(u, (query, data, success) -> {
+                        if(!asserts(()->{
+                            assertTrue(success);
+                            assertTrue(data.result.isEmpty());
+                        })) return;
+                        completeTest();
+                    });
+                });
+            });
+        });
+        await(30);
+    }
+
+    @Test
     public void US020701() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(2,0,0, 0, eas -> {
+            Event e = eas.get(0).getEvent();
+            User u = e.getFacility().getOrganizer();
+            e.getUsersByStatus(R.string.event_assoc_status_waitlist, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                })) return;
+                data.notify("CustomSubject", "CustomBody", true, true, false, (query1, data1, success1) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success1);
+                        assertEquals(2, data1.result.size());
+                        assertTrue(data1.failedNotifications.isEmpty());
+                        for(Notification n : data1.result){
+                            assertEquals(e, n.getEvent());
+                            assertEquals(u, n.getSender());
+                            assertEquals("CustomSubject", n.getSubject());
+                            assertEquals("CustomBody", n.getBody());
+                            assertTrue(n.getReceiver() == eas.get(0).getUser() || n.getReceiver() == eas.get(1).getUser());
+                        }
+                        assertNotEquals(data1.result.get(0).getReceiver(), data1.result.get(1).getReceiver());
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020702() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(0,2,0, 0, eas -> {
+            Event e = eas.get(0).getEvent();
+            User u = e.getFacility().getOrganizer();
+            e.getUsersByStatus(R.string.event_assoc_status_enrolled, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                })) return;
+                data.notify("CustomSubject", "CustomBody", true, true, false, (query1, data1, success1) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success1);
+                        assertEquals(2, data1.result.size());
+                        assertTrue(data1.failedNotifications.isEmpty());
+                        for(Notification n : data1.result){
+                            assertEquals(e, n.getEvent());
+                            assertEquals(u, n.getSender());
+                            assertEquals("CustomSubject", n.getSubject());
+                            assertEquals("CustomBody", n.getBody());
+                            assertTrue(n.getReceiver() == eas.get(0).getUser() || n.getReceiver() == eas.get(1).getUser());
+                        }
+                        assertNotEquals(data1.result.get(0).getReceiver(), data1.result.get(1).getReceiver());
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 
     @Test
     public void US020703() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventWithEventAssociations(0,0,0, 2, eas -> {
+            Event e = eas.get(0).getEvent();
+            User u = e.getFacility().getOrganizer();
+            e.getUsersByStatus(R.string.event_assoc_status_cancelled, (query, data, success) -> {
+                if(!asserts(() -> {
+                    assertTrue(success);
+                })) return;
+                data.notify("CustomSubject", "CustomBody", true, true, false, (query1, data1, success1) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success1);
+                        assertEquals(2, data1.result.size());
+                        assertTrue(data1.failedNotifications.isEmpty());
+                        for(Notification n : data1.result){
+                            assertEquals(e, n.getEvent());
+                            assertEquals(u, n.getSender());
+                            assertEquals("CustomSubject", n.getSubject());
+                            assertEquals("CustomBody", n.getBody());
+                            assertTrue(n.getReceiver() == eas.get(0).getUser() || n.getReceiver() == eas.get(1).getUser());
+                        }
+                        assertNotEquals(data1.result.get(0).getReceiver(), data1.result.get(1).getReceiver());
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 
@@ -1330,29 +1518,73 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030302() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
+            e.setQrHash("");
+            if(asserts(() -> {
+                assertNotEquals(e.getQrHash(), e.getDocumentID());
+                assertEquals("", e.getQrHash());
+            })) completeTest();
+        });
         await(10);
     }
 
     @Test
     public void US030401() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestEventFresh(EVENT_REG, false, false, false, false, e1 -> {
+            getTestEventFresh(EVENT_REG, false, false, false, false, e2 -> {
+                DatabaseInfLoadQuery<Event> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getEvents(db.testDB));
+                q.incrementData((query, success) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success);
+                        List<Event> es = q.getInstances();
+                        assertTrue(es.size() >= 2);
+                        assertTrue(es.contains(e1));
+                        assertTrue(es.contains(e2));
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 
     @Test
     public void US030501() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestUser(false, e1 -> {
+            getTestUser(false, e2 -> {
+                DatabaseInfLoadQuery<User> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getUsers(db.testDB));
+                q.incrementData((query, success) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success);
+                        List<User> es = q.getInstances();
+                        assertTrue(es.size() >= 2);
+                        assertTrue(es.contains(e1));
+                        assertTrue(es.contains(e2));
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 
     @Test
     public void US030601() throws InterruptedException {
-        completeTest();
-        //TODO
+        getTestUser(true, e1 -> {
+            getTestUser(true, e2 -> {
+                DatabaseInfLoadQuery<Image> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(db.testDB));
+                q.incrementData((query, success) -> {
+                    if(!asserts(() -> {
+                        assertTrue(success);
+                        List<Image> es = q.getInstances();
+                        assertTrue(es.size() >= 2);
+                        assertTrue(es.contains(e1.getProfileImage()));
+                        assertTrue(es.contains(e2.getProfileImage()));
+                    })) return;
+                    completeTest();
+                });
+            });
+        });
         await(10);
     }
 

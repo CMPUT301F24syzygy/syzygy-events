@@ -383,9 +383,6 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      */
     public void sendNotification(Notification n){
         if(n == null) return;
-        if(!n.ignoresOptOutSettings() && !user.getOrganizerNotifications()){
-            return;
-        }
         Image.getFormatedAssociatedImageAsBitmap(n.getSender(), Database.Collections.USERS, Image.Options.LargestCircle(), (s,img)->{
             Intent resultIntent = new Intent(this, EntrantActivity.class);
             PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);

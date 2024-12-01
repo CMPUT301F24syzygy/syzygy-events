@@ -388,8 +388,10 @@ public class User extends DatabaseInstance<User> {
                 @Override
                 public void onInitialization(Notification instance, boolean success) {
                     if(success){
-                        nots.add(instance);
-                        onNotification.accept(instance);
+                        if(instance.ignoresOptOutSettings() || User.this.getOrganizerNotifications()){
+                            nots.add(instance);
+                            onNotification.accept(instance);
+                        }
                     }
                     i++;
                     if(i >= value.getDocumentChanges().size()){
