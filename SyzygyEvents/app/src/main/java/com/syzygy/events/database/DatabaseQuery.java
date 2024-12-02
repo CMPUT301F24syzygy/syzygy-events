@@ -1,5 +1,6 @@
 package com.syzygy.events.database;
 
+import android.app.Application;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,10 +9,12 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.syzygy.events.R;
+import com.syzygy.events.SyzygyApplication;
 
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -520,7 +523,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
 
     @Database.MustStir
     public static DatabaseQuery<User> getUsers(Database db){
-        Filter f = Filter.and(); //TODO - does this work
+        Filter f = Filter.notEqualTo(FieldPath.documentId(), SyzygyApplication.SYSTEM_ACCOUNT_ID); //TODO - does this work
         Database.Collections c = Database.Collections.USERS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_user_createdTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, null);
