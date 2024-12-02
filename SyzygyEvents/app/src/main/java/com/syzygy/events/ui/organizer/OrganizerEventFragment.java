@@ -1,5 +1,7 @@
 package com.syzygy.events.ui.organizer;
 
+import static java.lang.Math.min;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
@@ -387,10 +389,10 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
         cap.setText("Capacity : " + event.getCapacity());
 
         TextView inv = dialog.findViewById(R.id.org_event_inv_txt);
-        inv.setText("- Invited : " + invited_c);
+        inv.setText("Invited : " + invited_c);
 
         TextView enr = dialog.findViewById(R.id.org_event_enr_txt);
-        enr.setText("- Enrolled : " + enrolled_c);
+        enr.setText("Enrolled : " + enrolled_c);
 
         TextView waitlist = dialog.findViewById(R.id.lottery_waitlist_text);
         waitlist.setText(getString(R.string.lottery_waitlist_count, waitlist_c));
@@ -405,7 +407,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             message.setText(m);
         } else if (enrolled_c + invited_c == event.getCapacity()) {
             message.setVisibility(View.VISIBLE);
-            m = "There are no open spots.";
+            m = "There are no open spots to fill.";
             message.setText(m);
         } else if (waitlist_c == 0) {
             message.setVisibility(View.VISIBLE);
@@ -413,9 +415,10 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             message.setText(m);
         } else {
             button.setVisibility(View.VISIBLE);
-            button.setText("Fill " + (event.getCapacity() - enrolled_c - invited_c) + " Spots");
+            button.setText("Fill " + min(event.getCapacity() - enrolled_c - invited_c, waitlist_c) + " Spots");
             button_info.setVisibility(View.VISIBLE);
         }
+        dialog.findViewById(R.id.div101).setVisibility(View.VISIBLE);
     }
 
 

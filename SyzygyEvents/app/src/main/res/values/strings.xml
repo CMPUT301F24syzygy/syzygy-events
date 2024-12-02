@@ -78,7 +78,7 @@
     <string name="requires_geo_warning">To join the waitlist for this event you must agree to share your join location with the event organizer.</string>
     <string name="failed_scan_qr">QR scan unsucessfull.</string>
     <string name="button_open_lottery">Lottery</string>
-    <string name="lottery_info_text">Entrants from the waitlist will be randomly selected and invited to join your event.</string>
+    <string name="lottery_info_text">This will fill each open spot with a random selection from the waitlist. Each selected entrant will be sent an invitation to enroll.</string>
     <string name="run_lottery_button">Fill Open Spots</string>
 
 
