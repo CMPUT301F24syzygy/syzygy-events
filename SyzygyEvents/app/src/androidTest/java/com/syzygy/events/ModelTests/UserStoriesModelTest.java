@@ -1577,7 +1577,6 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030601() throws InterruptedException {
-        ignoreDelete = true;
         getTestUser(true, e1 -> {
             getTestUser(true, e2 -> {
                 DatabaseInfLoadQuery<Image> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(db.testDB));
