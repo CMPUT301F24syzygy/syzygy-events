@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,12 +43,12 @@ public class AdminFacilityFragment extends Fragment implements OnMapReadyCallbac
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         app.getDatabase().<Facility>getInstance(Database.Collections.FACILITIES, activity.getFacilityID(), (instance, success) -> {
             if (!success) {
-                activity.navigateUp("An unexpected error occured");
+                activity.navigateUp("The facility was not found.");
                 return;
             }
             facility = instance;
             if(facility == null){
-                activity.navigateUp("The facility was not found");
+                activity.navigateUp("The facility was not found.");
                 return;
             }
             facility.fetch();
@@ -66,8 +67,10 @@ public class AdminFacilityFragment extends Fragment implements OnMapReadyCallbac
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                facility.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {});
-                                activity.navigateUp();
+                                Log.println(Log.DEBUG, "NAV", "start delete");
+                                facility.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                                    activity.navigateUp();
+                                });
                             }
                         })
                         .setNegativeButton("Cancel", null)

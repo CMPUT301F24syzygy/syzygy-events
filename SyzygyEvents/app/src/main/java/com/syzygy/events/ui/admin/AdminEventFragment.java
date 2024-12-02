@@ -50,7 +50,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
         //Get the event from the selected id stored in the activity
         app.getDatabase().<Event>getInstance(Database.Collections.EVENTS, ((AdminActivity) getActivity()).getEventID(), (instance, success) -> {
             if (!success) {
-                ((AdminActivity) getActivity()).navigateUp("The selected event was not found");
+                ((AdminActivity) getActivity()).navigateUp("The event you are trying to access no longer exists.");
                 return;
             }
 
@@ -183,7 +183,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
-            ((AdminActivity) getActivity()).navigateUp("This event no longer exists.");
+            ((AdminActivity) getActivity()).navigateUp("The event you were viewing no longer exists.");
             return;
         }
         updateView();
