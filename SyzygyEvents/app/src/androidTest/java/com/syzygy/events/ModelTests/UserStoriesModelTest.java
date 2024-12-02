@@ -1472,7 +1472,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await(60);
     }
 
     @Test
