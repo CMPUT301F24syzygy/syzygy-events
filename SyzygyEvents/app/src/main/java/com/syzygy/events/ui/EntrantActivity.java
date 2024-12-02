@@ -82,6 +82,7 @@ public class EntrantActivity extends SyzygyActivity {
     //Sets up the menu items
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        this.invalidateOptionsMenu();
         List<Fragment> frags = getSupportFragmentManager().getFragments();
         for (int i=0; i<frags.size(); i++) {
             if (frags.get(i).isVisible() && frags.get(i).getView() != null) {
@@ -159,6 +160,7 @@ public class EntrantActivity extends SyzygyActivity {
      */
     public void openEditProfile() {
         navController.navigate(R.id.nav_entrant_edit_secondary);
+        this.invalidateOptionsMenu();
     }
 
     /**
