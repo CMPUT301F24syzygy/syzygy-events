@@ -389,9 +389,9 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
 
             NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.drawable.t100)
-                    .setLargeIcon(img)
+                    //.setLargeIcon(img)
                     .setContentTitle(n.getSubject())
-                    .setContentText(n.getSender() == null ? "Syzygy" : n.getSender().getName())
+                    .setContentText(n.getBody())
                     .setStyle(new NotificationCompat.BigTextStyle().bigText(n.getBody()))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)

@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.syzygy.events.R;
 import com.syzygy.events.SyzygyApplication;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.DatabaseInfLoadQuery;
 import com.syzygy.events.database.DatabaseQuery;
 import com.syzygy.events.database.Event;
@@ -67,9 +68,6 @@ public class EntrantNotificationsFragment extends Fragment {
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
 
-                TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
-                sender.setText(notification.getSender() == null ? "" : notification.getSender().getName());
-
                 TextView date = dialog.findViewById(R.id.popup_notification_date_text);
                 date.setText(app.formatTimestamp(notification.getSentTime()));
 
@@ -77,8 +75,15 @@ public class EntrantNotificationsFragment extends Fragment {
                 body.setText(notification.getBody());
 
                 ImageView image = dialog.findViewById(R.id.popup_notification_sender_profile_img);
-                Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(Image.Options.Sizes.SMALL)).into(image);
+                TextView sender = dialog.findViewById(R.id.popup_notification_sender_text);
 
+                if(notification.getSender() != null){
+                    sender.setText(notification.getSender() == null ? "" : notification.getSender().getName());
+                    Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(Image.Options.Sizes.SMALL)).into(image);
+                }
+                else {
+                    Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(image);
+                }
 
                 if (notification.getEvent() != null) {
                     View event_card = dialog.findViewById(R.id.event_card);

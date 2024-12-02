@@ -114,8 +114,9 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                event.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {});
-                                ((AdminActivity)getActivity()).navigateUp();
+                                event.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
+                                    ((AdminActivity)getActivity()).navigateUp();
+                                });
                             }
                         })
                         .setNegativeButton("Cancel", null)
@@ -182,7 +183,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
-            ((AdminActivity) getActivity()).navigateUp();
+            ((AdminActivity) getActivity()).navigateUp("This event no longer exists.");
             return;
         }
         updateView();

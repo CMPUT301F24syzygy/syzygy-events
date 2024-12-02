@@ -191,7 +191,7 @@
             android:id="@+id/facility_event_qr_img"
             android:layout_width="170dp"
             android:layout_height="170dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:layout_marginTop="2dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/div4" />

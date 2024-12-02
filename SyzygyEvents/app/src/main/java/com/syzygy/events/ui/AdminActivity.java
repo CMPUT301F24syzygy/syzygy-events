@@ -47,7 +47,7 @@ public class AdminActivity extends SyzygyActivity {
         adminBinding.adminNavView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                for (; navController.navigateUp(); ) ;
+                for (; navController.navigateUp(); );
                 NavigationUI.onNavDestinationSelected(item, navController);
                 return true;
             }

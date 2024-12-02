@@ -66,7 +66,7 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
             Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
         }
         else {
-            sender.setText("-");
+            sender.setText("------");
             Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(image);
         }
 

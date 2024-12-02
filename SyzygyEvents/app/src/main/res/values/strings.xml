@@ -11,8 +11,8 @@
     <string name="title_entrant_sec_edit">Edit Profile</string>
 
     <string name="title_organizer_profile">My Facility</string>
-    <string name="title_organizer_events">Events</string>
-    <string name="title_organizer_create">Add Event</string>
+    <string name="title_organizer_events">My Events</string>
+    <string name="title_organizer_create">New Event</string>
 
     <string name="title_organizer_sec_event">Event</string>
     <string name="title_organizer_sec_edit">Edit Facility</string>
@@ -23,7 +23,7 @@
 
     <string name="title_admin_sec_event">Event</string>
     <string name="title_admin_sec_facility">Facility</string>
-    <string name="title_admin_sec_user">Profile</string>
+    <string name="title_admin_sec_user">User</string>
 
     <string name="title_signup_organizer">Create Facility</string>
 
