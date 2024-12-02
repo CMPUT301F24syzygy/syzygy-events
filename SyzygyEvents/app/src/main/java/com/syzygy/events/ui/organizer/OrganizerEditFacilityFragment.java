@@ -75,6 +75,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         binding.editFacilityEditImage.setText(facility.getImage() != null ? R.string.change_image_button : R.string.add_image_button);
         binding.editFacilityDescription.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
+        getActivity().invalidateOptionsMenu();
         return binding.getRoot();
     }
 
@@ -134,9 +135,8 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
      */
     private void onUpdateInstance(boolean success) {
         if(success){
-            //Instead of navigating back were going to use the switch application
-            //This forces the menu icons to refresh in case the profile image was changed
             ((SyzygyApplication)getActivity().getApplication()).switchToActivity(OrganizerActivity.class);
+            getActivity().invalidateOptionsMenu();
         }else{
             binding.progressBar.setVisibility(View.GONE);
         }
