@@ -308,7 +308,7 @@ public class OrganizerCreateEventFragment extends Fragment {
                 else binding.eventCreateDateLayout.setError(getString(R.string.val_create_event_date));
             }
         }
-        if (invalidIds.contains(R.string.database_event_end)) {
+        if (invalidIds.contains(R.string.database_event_end) && repeat) {
             if (!endDay.matches("\\d{1,2}/\\d{1,2}/\\d{4}")) {
                 binding.eventCreateEndDateLayout.setError("Invalid");
             }

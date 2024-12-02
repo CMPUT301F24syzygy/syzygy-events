@@ -58,7 +58,7 @@
 
         <Button
             android:id="@+id/event_create_edit_poster_button"
-            android:layout_width="190dp"
+            android:layout_width="155dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/add_poster_button"
@@ -68,7 +68,7 @@
 
         <Button
             android:id="@+id/event_create_remove_poster_button"
-            android:layout_width="190dp"
+            android:layout_width="155dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
             android:text="@string/remove_image_button"
