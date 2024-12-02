@@ -323,6 +323,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         binding = null;
     }
 
+    //Opens a date picker dialog for selection of dates
     private void openDatePicker(EditText txt) {
         if (datePicker!=null && datePicker.isAdded())
             return;

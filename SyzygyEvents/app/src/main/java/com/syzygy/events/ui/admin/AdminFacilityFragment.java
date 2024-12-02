@@ -28,6 +28,16 @@ import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragAdminFacilityPageBinding;
 import com.syzygy.events.ui.AdminActivity;
 
+/**
+ * The fragment used to display information of a facility. Contains functionality to remove the
+ * facility
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Events -> Event -> Facility
+ * 2. Admin Activity -> Browse Users -> User -> Facility
+ * </pre>
+ */
 public class AdminFacilityFragment extends Fragment implements OnMapReadyCallback {
 
     private FragAdminFacilityPageBinding binding;
@@ -59,7 +69,7 @@ public class AdminFacilityFragment extends Fragment implements OnMapReadyCallbac
 
             SupportMapFragment map = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.facility_location_map);
             map.getMapAsync(this);
-
+            //Delete on button press
             binding.adminRemoveFacilityButton.setOnClickListener(v -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")

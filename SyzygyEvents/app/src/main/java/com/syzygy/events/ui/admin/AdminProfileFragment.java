@@ -22,6 +22,15 @@ import com.syzygy.events.database.User;
 import com.syzygy.events.databinding.FragAdminProfilePageBinding;
 import com.syzygy.events.ui.AdminActivity;
 
+/**
+ * The fragment to display user information. Contains functionality to remove the user.
+ * Also contains link to facility
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Users -> User
+ * </pre>
+ */
 public class AdminProfileFragment extends Fragment {
 
     private FragAdminProfilePageBinding binding;
@@ -52,6 +61,7 @@ public class AdminProfileFragment extends Fragment {
             ImageView image = binding.adminViewEntrantImage;
             Image.getFormatedAssociatedImage(user, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(image);
 
+            //Display link if needed
             if (user.getFacility() != null) {
                 View card = binding.getRoot().findViewById(R.id.entrant_facility_card);
                 card.setVisibility(View.VISIBLE);
@@ -67,7 +77,7 @@ public class AdminProfileFragment extends Fragment {
                 });
 
             }
-
+            //Delete user on button press
             binding.getRoot().findViewById(R.id.admin_view_delete_user_button).setOnClickListener(v -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")

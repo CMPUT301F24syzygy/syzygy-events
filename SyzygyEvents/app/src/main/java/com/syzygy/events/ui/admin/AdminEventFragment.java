@@ -33,6 +33,15 @@ import com.syzygy.events.ui.AdminActivity;
 
 import java.util.Locale;
 
+/**
+ * The fragment containing information about an event. Also has functionality to remove the event.
+ * In addition, contains link to facility
+ * <p>
+ * Map
+ * <pre>
+ * 1. Admin Activity -> Browse Events -> Event
+ * </pre>
+ */
 public class AdminEventFragment extends Fragment implements Database.UpdateListener {
 
     private FragAdminEventPageBinding binding;
@@ -95,6 +104,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
                 clipboard.setPrimaryClip(ClipData.newPlainText("QR hash", event.getQrHash()));
             });
 
+            // Set QR hash to null on button press
             binding.adminRemoveQrButton.setOnClickListener(view -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
@@ -110,6 +120,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
                 confirmRemoveDialog.show();
             });
 
+            //Remove event
             binding.adminRemoveEventButton.setOnClickListener(view -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
@@ -144,7 +155,10 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
         binding = null;
     }
 
-
+    /**
+     * Called whenever the view needs to be up[dated. This is triggered by the user pressing one of
+     * the buttons, or the event being updated
+     */
     private void updateView() {
 
         if (getContext() == null || binding == null) {

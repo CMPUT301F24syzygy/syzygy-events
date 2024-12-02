@@ -127,6 +127,9 @@ public class OrganizerActivity extends SyzygyActivity {
         navController.navigate(R.id.nav_organizer_edit_secondary);
     }
 
+    /**
+     * Opens the create event fragment
+     */
     public void openCreateEvent() {
         navController.navigate(R.id.nav_organizer_create);
     }
