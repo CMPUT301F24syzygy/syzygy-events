@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>7</zoom_level><help_text></help_text><element><id>UMLClass</id><coordinates><x>665</x><y>3556</y><w>420</w><h>350</h></coordinates><panel_attributes>/database::DatabaseInstance/
+<diagram program="umletino" version="15.1"><zoom_level>5</zoom_level><help_text></help_text><element><id>UMLClass</id><coordinates><x>475</x><y>2540</y><w>300</w><h>250</h></coordinates><panel_attributes>/database::DatabaseInstance/
 --
 -referenceCount: Integer
 -db: Database
@@ -32,7 +32,7 @@
 +bulkModifyField(q: Query, propertyNameId: int, newValue: Object): Boolean
 +/getAssociatedImageLocName(): String/
 __+isDataValid(data: Map&lt;Integer,Object&gt;, collection: Collections): Set&lt;Integer&gt;__
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>294</x><y>2485</y><w>175</w><h>245</h></coordinates><panel_attributes>database::User
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>210</x><y>1775</y><w>125</w><h>175</h></coordinates><panel_attributes>database::User
 --
 __-fields: PropertyField__
 -name: String
@@ -55,7 +55,7 @@ __-fields: PropertyField__
 	 orgNotifications, adminNotifications, 
 	isAdmin
 ): Set&lt;Integer&gt;
-__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>826</x><y>2485</y><w>133</w><h>119</h></coordinates><panel_attributes>database::Notification
+__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>590</x><y>1775</y><w>95</w><h>85</h></coordinates><panel_attributes>database::Notification
 --
 __-fields: PropertyField__
 -subject: String
@@ -66,7 +66,7 @@ __-fields: PropertyField__
 -sender: User
 -receiver: User
 --
-__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>532</x><y>2485</y><w>259</w><h>210</h></coordinates><panel_attributes>database::Image
+__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>1775</y><w>185</w><h>150</h></coordinates><panel_attributes>database::Image
 --
 __-fields: PropertyField__
 -locType: String
@@ -87,7 +87,7 @@ __+loadAsDrawable(__
 __	image: RequestCreator,__
 __	options, resources__
 __): Drawable__
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>133</x><y>2485</y><w>147</w><h>147</h></coordinates><panel_attributes>database::Facility
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>95</x><y>1775</y><w>105</w><h>105</h></coordinates><panel_attributes>database::Facility
 --
 __-fields: PropertyField__
 -name: String
@@ -102,7 +102,7 @@ __-fields: PropertyField__
 	description, image: Uri
 ): Set&lt;Integer&gt;
 __+NewInstance(...): Set&lt;Integer&gt;__
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1078</x><y>2485</y><w>280</w><h>329</h></coordinates><panel_attributes>database::Event
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>770</x><y>1775</y><w>200</w><h>235</h></coordinates><panel_attributes>database::Event
 --
 __-fields: PropertyField__
 -title: String
@@ -133,7 +133,7 @@ __-fields: PropertyField__
 +getUserAssociation(user: User): EventAssociation::Methods
 +isRegistrationOpen(): Boolean
 +update(title, description, qrHas, price): Set&lt;Integer&gt;
-__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1414</x><y>2485</y><w>189</w><h>119</h></coordinates><panel_attributes>database::EventAssociation
+__+NewInstance(...): Set&lt;Integer&gt;__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1010</x><y>1775</y><w>135</w><h>85</h></coordinates><panel_attributes>database::EventAssociation
 --
 __-fields: PropertyField__
 -location: GeoPoint
@@ -145,7 +145,7 @@ __-fields: PropertyField__
 +update(location, status): Set&lt;Integer&gt;
 +methods(): EventAssocation::Methods
 __+NewInstance(...): Set&lt;Integer&gt;__
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2051</x><y>3563</y><w>294</w><h>301</h></coordinates><panel_attributes>database::DatabaseQuery
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1465</x><y>2545</y><w>210</w><h>215</h></coordinates><panel_attributes>database::DatabaseQuery
 --
 -db: Database
 -collection: Collections
@@ -173,7 +173,7 @@ __+getMyNotifications(db: Database, User u): DatabaseQuery__
 __+getAttachedUsers(db: Database, Event e, status: String): DatabaseQuery__
 __+getUsers(db: Database): DatabaseQuery__
 __+getEvents(db: Database): DatabaseQuery__
-__+getImages(db: Database): DatabaseQuery__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2037</x><y>3192</y><w>280</w><h>105</h></coordinates><panel_attributes>database::DatabaseInfLoadQuery
+__+getImages(db: Database): DatabaseQuery__</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1455</x><y>2280</y><w>200</w><h>75</h></coordinates><panel_attributes>database::DatabaseInfLoadQuery
 --
 -query: DatabaseQuery
 -instances: List&lt;DatabaseInstance&gt;
@@ -183,7 +183,7 @@ __+getImages(db: Database): DatabaseQuery__</panel_attributes><additional_attrib
 +isOutOfDate()
 +hasUnloadedData(): Boolean
 +getInstance(): UnmodifableList&lt;DatabaseInstance&gt;
-+dissolve()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1267</x><y>3822</y><w>196</w><h>63</h></coordinates><panel_attributes>database::DatabaseInstance::PropertyWrapper
++dissolve()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>905</x><y>2730</y><w>140</w><h>45</h></coordinates><panel_attributes>database::DatabaseInstance::PropertyWrapper
 --
 +meta: PropertyField
 +value: Object
@@ -191,7 +191,7 @@ __+getImages(db: Database): DatabaseQuery__</panel_attributes><additional_attrib
 --
 +setValue(Object value)
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1505</x><y>4116</y><w>406</w><h>182</h></coordinates><panel_attributes>database::Database
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1075</x><y>2940</y><w>290</w><h>130</h></coordinates><panel_attributes>database::Database
 --
 -cache: HashMap&lt;String, DatabaseInstance&gt;
 -database: FirebaseFirestore
@@ -209,7 +209,7 @@ __+getImages(db: Database): DatabaseQuery__</panel_attributes><additional_attrib
 +addFileToStorage(name: String, file: Uri)
 +deleteFile(fileName: String)
 +cleanup()
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1267</x><y>3633</y><w>245</w><h>154</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>905</x><y>2595</y><w>175</w><h>110</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
 database::Database::Collections
 --
 USERS
@@ -222,7 +222,7 @@ EVENT_ASSOCIATIONS
 +newID(db: Database): String
 +getCollection(db: Database): CollectionReference
 +newInstance(db: Database, id: String): DatabaseInstance
-+getImageProperty(): Integer</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1638</x><y>3794</y><w>182</w><h>105</h></coordinates><panel_attributes>&lt;&lt;record&gt;&gt;
++getImageProperty(): Integer</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1170</x><y>2710</y><w>130</w><h>75</h></coordinates><panel_attributes>&lt;&lt;record&gt;&gt;
 database::DatabaseInstance::PropertyField
 --
 +propertyNameID: Integer
@@ -232,7 +232,7 @@ database::DatabaseInstance::PropertyField
 +loadsCollection: Collections
 +loadsNullable: Boolean
 +cascadeDelete: Boolean
---</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1736</x><y>2478</y><w>196</w><h>245</h></coordinates><panel_attributes>database::EventAssociation::Methods
+--</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1240</x><y>1770</y><w>140</w><h>175</h></coordinates><panel_attributes>database::EventAssociation::Methods
 --
 -results: List&lt;EventAssociation&gt;
 -db: Database
@@ -255,11 +255,11 @@ database::DatabaseInstance::PropertyField
 +cancelUsers()
 +delete()
 +dissolve()
-+size(): Integer</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>371</x><y>2723</y><w>392</w><h>847</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>540;1190;540;990;10;990;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>819</x><y>2597</y><w>84</w><h>973</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1370;10;1100;100;1100;100;10</additional_attributes></element><element><id>Relation</id><coordinates><x>644</x><y>2688</y><w>161</w><h>882</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>210;1240;210;970;10;970;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>196</x><y>2625</y><w>525</w><h>945</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>730;1330;730;1210;10;1210;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>917</x><y>2597</y><w>574</w><h>973</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1370;10;1210;800;1210;800;10</additional_attributes></element><element><id>Relation</id><coordinates><x>868</x><y>2807</y><w>378</w><h>763</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1070;10;860;520;860;520;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1890</x><y>3024</y><w>147</w><h>49</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
++size(): Integer</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>265</x><y>1945</y><w>280</w><h>605</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>540;1190;540;990;10;990;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>585</x><y>1855</y><w>60</w><h>695</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1370;10;1100;100;1100;100;10</additional_attributes></element><element><id>Relation</id><coordinates><x>460</x><y>1920</y><w>115</w><h>630</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>210;1240;210;970;10;970;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>140</x><y>1875</y><w>375</w><h>675</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>730;1330;730;1210;10;1210;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>655</x><y>1855</y><w>410</w><h>695</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1370;10;1210;800;1210;800;10</additional_attributes></element><element><id>Relation</id><coordinates><x>620</x><y>2005</y><w>270</w><h>545</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1070;10;860;520;860;520;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1350</x><y>2160</y><w>105</w><h>35</h></coordinates><panel_attributes>&lt;&lt;interface&gt;&gt;
 /database::Database::Dissolvable/
 --
 --
-/+dissolve()/</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>966</x><y>3066</y><w>1015</w><h>504</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>1430;10;1430;620;10;620;10;700</additional_attributes></element><element><id>Relation</id><coordinates><x>1862</x><y>2716</y><w>56</w><h>406</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>60;510;60;560;10;560;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1988</x><y>3066</y><w>175</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;110;230;110;230;180</additional_attributes></element><element><id>Relation</id><coordinates><x>2016</x><y>3066</y><w>329</w><h>511</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;70;450;70;450;710</additional_attributes></element><element><id>Relation</id><coordinates><x>1785</x><y>2905</y><w>161</w><h>252</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>210;240;210;340;10;340;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1596</x><y>2814</y><w>217</w><h>98</h></coordinates><panel_attributes>database::Event::LotteryResult
+/+dissolve()/</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>690</x><y>2190</y><w>725</w><h>360</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>1430;10;1430;620;10;620;10;700</additional_attributes></element><element><id>Relation</id><coordinates><x>1330</x><y>1940</y><w>40</w><h>290</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>60;510;60;560;10;560;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1420</x><y>2190</y><w>125</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;110;230;110;230;180</additional_attributes></element><element><id>Relation</id><coordinates><x>1440</x><y>2190</y><w>235</w><h>365</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;70;450;70;450;710</additional_attributes></element><element><id>Relation</id><coordinates><x>1275</x><y>2075</y><w>115</w><h>180</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>210;240;210;340;10;340;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1140</x><y>2010</y><w>155</w><h>70</h></coordinates><panel_attributes>database::Event::LotteryResult
 --
 +event: Event
 +result: EventAssociation::Methods
@@ -268,52 +268,52 @@ database::DatabaseInstance::PropertyField
 --
 +filledAllSpots: Boolean
 +execute()
-+dissolve()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>462</x><y>2674</y><w>84</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>10;10;100;10</additional_attributes></element><element><id>Relation</id><coordinates><x>266</x><y>2625</y><w>42</w><h>63</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
++dissolve()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>330</x><y>1910</y><w>60</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>10;10;100;10</additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>1875</y><w>30</w><h>45</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..1</panel_attributes><additional_attributes>40;60;10;60;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>175</x><y>2625</y><w>1057</w><h>301</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..1</panel_attributes><additional_attributes>40;60;10;60;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>125</x><y>1875</y><w>755</w><h>215</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=0..*
-m2=1</panel_attributes><additional_attributes>10;10;10;410;1480;410;1480;270</additional_attributes></element><element><id>Relation</id><coordinates><x>245</x><y>2625</y><w>392</w><h>189</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>10;10;10;250;520;250;520;100</additional_attributes></element><element><id>Relation</id><coordinates><x>1351</x><y>2597</y><w>105</w><h>98</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=1</panel_attributes><additional_attributes>10;10;10;410;1480;410;1480;270</additional_attributes></element><element><id>Relation</id><coordinates><x>175</x><y>1875</y><w>280</w><h>135</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>10;10;10;250;520;250;520;100</additional_attributes></element><element><id>Relation</id><coordinates><x>965</x><y>1855</y><w>75</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
 m1=0..*
-m2=1</panel_attributes><additional_attributes>110;10;110;110;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>2597</y><w>1141</w><h>308</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1610;10;1610;420;10;420;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>763</x><y>2688</y><w>427</w><h>196</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>110;10;110;110;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>300</x><y>1855</y><w>815</w><h>220</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1610;10;1610;420;10;420;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>545</x><y>1920</y><w>305</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
 m2=0..1
-</panel_attributes><additional_attributes>590;180;590;260;10;260;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>441</x><y>2597</y><w>434</w><h>203</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes>590;180;590;260;10;260;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>315</x><y>1855</y><w>310</w><h>145</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;&gt;
 m1=0..*
 m2=1..2
 comp if reciever
-</panel_attributes><additional_attributes>580;10;580;260;10;260;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>931</x><y>2597</y><w>224</w><h>266</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>10;10;10;360;280;360;280;310</additional_attributes></element><element><id>Relation</id><coordinates><x>1078</x><y>3654</y><w>203</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;270;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1078</x><y>3836</y><w>203</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes>580;10;580;260;10;260;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>665</x><y>1855</y><w>160</w><h>190</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>10;10;10;360;280;360;280;310</additional_attributes></element><element><id>Relation</id><coordinates><x>770</x><y>2610</y><w>145</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;270;10</additional_attributes></element><element><id>Relation</id><coordinates><x>770</x><y>2740</y><w>145</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=0..1
-m2=0..*</panel_attributes><additional_attributes>10;10;270;10</additional_attributes></element><element><id>Relation</id><coordinates><x>224</x><y>2625</y><w>1456</w><h>1183</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;270;10</additional_attributes></element><element><id>Relation</id><coordinates><x>160</x><y>1875</y><w>1040</w><h>845</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=6</panel_attributes><additional_attributes>10;10;10;850;2050;850;2050;1670</additional_attributes></element><element><id>Relation</id><coordinates><x>392</x><y>2723</y><w>1309</w><h>1085</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=6</panel_attributes><additional_attributes>10;10;10;850;2050;850;2050;1670</additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>1945</y><w>935</w><h>775</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=10</panel_attributes><additional_attributes>10;10;10;680;1840;680;1840;1530</additional_attributes></element><element><id>Relation</id><coordinates><x>679</x><y>2688</y><w>1043</w><h>1120</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=10</panel_attributes><additional_attributes>10;10;10;680;1840;680;1840;1530</additional_attributes></element><element><id>Relation</id><coordinates><x>485</x><y>1920</y><w>745</w><h>800</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=6</panel_attributes><additional_attributes>10;10;10;710;1460;710;1460;1580</additional_attributes></element><element><id>Relation</id><coordinates><x>903</x><y>2597</y><w>840</w><h>1211</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=6</panel_attributes><additional_attributes>10;10;10;710;1460;710;1460;1580</additional_attributes></element><element><id>Relation</id><coordinates><x>645</x><y>1855</y><w>600</w><h>865</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=7</panel_attributes><additional_attributes>10;10;10;820;1170;820;1170;1710</additional_attributes></element><element><id>Relation</id><coordinates><x>1281</x><y>2807</y><w>483</w><h>1001</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=7</panel_attributes><additional_attributes>10;10;10;820;1170;820;1170;1710</additional_attributes></element><element><id>Relation</id><coordinates><x>915</x><y>2005</y><w>345</w><h>715</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=15</panel_attributes><additional_attributes>10;10;10;500;660;500;660;1410</additional_attributes></element><element><id>Relation</id><coordinates><x>1498</x><y>2597</y><w>287</w><h>1211</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=15</panel_attributes><additional_attributes>10;10;10;500;660;500;660;1410</additional_attributes></element><element><id>Relation</id><coordinates><x>1070</x><y>1855</y><w>205</w><h>865</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 static-agg
-m2=5</panel_attributes><additional_attributes>10;10;10;780;380;780;380;1710</additional_attributes></element><element><id>Relation</id><coordinates><x>1456</x><y>3850</y><w>196</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;260;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1470</x><y>3780</y><w>182</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>240;80;10;80;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1827</x><y>2716</y><w>28</w><h>1414</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;10;2000</additional_attributes></element><element><id>Relation</id><coordinates><x>1596</x><y>2527</y><w>154</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
+m2=5</panel_attributes><additional_attributes>10;10;10;780;380;780;380;1710</additional_attributes></element><element><id>Relation</id><coordinates><x>1040</x><y>2750</y><w>140</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;260;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1050</x><y>2700</y><w>130</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>240;80;10;80;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1305</x><y>1940</y><w>20</w><h>1010</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;10;2000</additional_attributes></element><element><id>Relation</id><coordinates><x>1140</x><y>1805</y><w>110</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-
 m1=0..*
-m2=0..*</panel_attributes><additional_attributes>200;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1309</x><y>2807</y><w>301</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>200;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>935</x><y>2005</y><w>215</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;10;10;70;410;70</additional_attributes></element><element><id>Relation</id><coordinates><x>1750</x><y>2716</y><w>35</w><h>112</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>10;140;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1078</x><y>3598</y><w>987</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>1390;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1078</x><y>3241</y><w>973</w><h>364</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>1370;10;1320;10;1320;490;10;490</additional_attributes></element><element><id>Relation</id><coordinates><x>2142</x><y>3290</y><w>28</w><h>287</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;10;390</additional_attributes></element><element><id>Relation</id><coordinates><x>1505</x><y>3647</y><w>560</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>780;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>833</x><y>3899</y><w>847</w><h>231</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;10;70;410;70</additional_attributes></element><element><id>Relation</id><coordinates><x>1250</x><y>1940</y><w>25</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>10;140;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>770</x><y>2570</y><w>705</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>1390;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>770</x><y>2315</y><w>695</w><h>260</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>1370;10;1320;10;1320;490;10;490</additional_attributes></element><element><id>Relation</id><coordinates><x>1530</x><y>2350</y><w>20</w><h>205</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;10;390</additional_attributes></element><element><id>Relation</id><coordinates><x>1075</x><y>2605</y><w>400</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>780;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>595</x><y>2785</y><w>605</w><h>165</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;&gt;
 m1=0..*
-m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</additional_attributes></element><element><id>UMLClass</id><coordinates><x>336</x><y>1498</y><w>147</w><h>98</h></coordinates><panel_attributes>ui::SignupActivity
+m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</additional_attributes></element><element><id>UMLClass</id><coordinates><x>240</x><y>1070</y><w>105</w><h>70</h></coordinates><panel_attributes>ui::SignupActivity
 --
 -binding
 -image
@@ -322,7 +322,7 @@ m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</ad
 -choosePhoto()
 -setImage(image: Uri)
 -submitData()
-+onDestory()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>889</x><y>1708</y><w>147</w><h>126</h></coordinates><panel_attributes>ui::EntrantActivity
++onDestory()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>635</x><y>1220</y><w>105</w><h>90</h></coordinates><panel_attributes>ui::EntrantActivity
 --
 -selectedEventID: String
 --
@@ -332,7 +332,7 @@ m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</ad
 +onActivityResult()
 +openEditProfile()
 +openEvent()
-+openFacility()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>952</x><y>833</y><w>161</w><h>98</h></coordinates><panel_attributes>ui::OganizerActivity
++openFacility()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>680</x><y>595</y><w>115</w><h>70</h></coordinates><panel_attributes>ui::OganizerActivity
 --
 -selecetedEventID: String
 --
@@ -342,7 +342,7 @@ m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</ad
 +openEvent(id: String)
 +openEdit()
 +openCreateEvent()
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>945</x><y>210</y><w>182</w><h>105</h></coordinates><panel_attributes>ui::AdminActivity
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>675</x><y>150</y><w>130</w><h>75</h></coordinates><panel_attributes>ui::AdminActivity
 --
 +onCreate()
 +onOptionsItemSelected(item: menuItem)
@@ -351,7 +351,7 @@ m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</ad
 +getFacilityID(): String
 +openEvent(id: String)
 +openFacility(id: String)
-+openProfile(id: String)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>420</x><y>1358</y><w>217</w><h>91</h></coordinates><panel_attributes>/SyzygyActivity/
++openProfile(id: String)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>970</y><w>155</w><h>65</h></coordinates><panel_attributes>/SyzygyActivity/
 --
 -navController: NavController
 --
@@ -359,7 +359,7 @@ m2=1</panel_attributes><additional_attributes>10;10;10;160;1180;160;1180;310</ad
 +onCreateOptionsMenu(menu: Menu)
 +navigateUp()
 +navigateUp(error: String)
-+onRequestPermissionsResult(requestCode: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>490</x><y>1281</y><w>91</w><h>21</h></coordinates><panel_attributes>AppCompatActivity</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>1323</y><w>287</w><h>217</h></coordinates><panel_attributes>SyzygyApplication
++onRequestPermissionsResult(requestCode: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>350</x><y>915</y><w>65</w><h>15</h></coordinates><panel_attributes>AppCompatActivity</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>945</y><w>205</w><h>155</h></coordinates><panel_attributes>SyzygyApplication
 --
 __+SYSTEM_ACCOUNT_ID: String__
 -db: Database
@@ -380,16 +380,16 @@ __+SYSTEM_ACCOUNT_ID: String__
 +signupUser(name, email, phone, bio, admin, org, image): Set&lt;Integer&gt;
 +switchToActivity(to: Class)
 +formatTimestamp(t: Timestamp): String
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>98</x><y>1246</y><w>70</w><h>21</h></coordinates><panel_attributes>Application</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>126</x><y>1260</y><w>21</w><h>77</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>1428</y><w>154</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>70</x><y>890</y><w>50</w><h>15</h></coordinates><panel_attributes>Application</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>90</x><y>900</y><w>15</w><h>55</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>Relation</id><coordinates><x>200</x><y>1020</y><w>110</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=1..*</panel_attributes><additional_attributes>10;10;200;10</additional_attributes></element><element><id>Relation</id><coordinates><x>49</x><y>1533</y><w>1470</w><h>2709</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;10;3840;2080;3840</additional_attributes></element><element><id>Relation</id><coordinates><x>511</x><y>1295</y><w>21</w><h>77</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>Relation</id><coordinates><x>441</x><y>1442</y><w>21</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;80</additional_attributes></element><element><id>UMLClass</id><coordinates><x>511</x><y>1498</y><w>147</w><h>49</h></coordinates><panel_attributes>ui::InitActivity
+m2=1..*</panel_attributes><additional_attributes>10;10;200;10</additional_attributes></element><element><id>Relation</id><coordinates><x>35</x><y>1095</y><w>1050</w><h>1935</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;10;3840;2080;3840</additional_attributes></element><element><id>Relation</id><coordinates><x>365</x><y>925</y><w>15</w><h>55</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;90</additional_attributes></element><element><id>Relation</id><coordinates><x>315</x><y>1030</y><w>15</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;80</additional_attributes></element><element><id>UMLClass</id><coordinates><x>365</x><y>1070</y><w>105</w><h>35</h></coordinates><panel_attributes>ui::InitActivity
 --
 --
 +onCreate()
-+openEntrant()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>560</x><y>1442</y><w>21</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;80</additional_attributes></element><element><id>Relation</id><coordinates><x>98</x><y>1533</y><w>210</w><h>1197</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>10;10;10;1680;280;1680</additional_attributes></element><element><id>Relation</id><coordinates><x>630</x><y>1407</y><w>273</w><h>406</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;110;10;110;560;370;560</additional_attributes></element><element><id>UMLClass</id><coordinates><x>819</x><y>0</y><w>140</w><h>21</h></coordinates><panel_attributes>Fragment
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1351</y><w>168</w><h>105</h></coordinates><panel_attributes>ui::entrant::EntrantEditProfileFragment
++openEntrant()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>400</x><y>1030</y><w>15</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;80</additional_attributes></element><element><id>Relation</id><coordinates><x>70</x><y>1095</y><w>150</w><h>855</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>10;10;10;1680;280;1680</additional_attributes></element><element><id>Relation</id><coordinates><x>450</x><y>1005</y><w>195</w><h>290</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;110;10;110;560;370;560</additional_attributes></element><element><id>UMLClass</id><coordinates><x>585</x><y>0</y><w>100</w><h>15</h></coordinates><panel_attributes>Fragment
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>965</y><w>120</w><h>75</h></coordinates><panel_attributes>ui::entrant::EntrantEditProfileFragment
 --
 -user: User
 -image: Uri
@@ -400,9 +400,9 @@ m2=0..1</panel_attributes><additional_attributes>10;10;10;1680;280;1680</additio
 -choosePhoto()
 -setImage(uri: Uri)
 +onDestoryView()
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1379</y><w>231</w><h>378</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>985</y><w>165</w><h>270</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;510;60;510;60;10;310;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1470</y><w>168</w><h>98</h></coordinates><panel_attributes>ui::entrant::EntrantEventPageFragment
+m2=0..*</panel_attributes><additional_attributes>10;510;60;510;60;10;310;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1050</y><w>120</w><h>70</h></coordinates><panel_attributes>ui::entrant::EntrantEventPageFragment
 --
 -event: Event
 -association: EventAssociation
@@ -413,71 +413,71 @@ m2=0..*</panel_attributes><additional_attributes>10;510;60;510;60;10;310;10</add
 -deleteAssociation()
 +onUpdate(inst: DatabaseInstance, updateType)
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1407</x><y>1491</y><w>154</w><h>1008</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>10;10;200;10;200;930;60;930;60;1420</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>1533</y><w>434</w><h>966</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>420;10;600;10;600;860;10;860;10;1360</additional_attributes></element><element><id>Relation</id><coordinates><x>329</x><y>1407</y><w>1239</w><h>1092</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1550;10;1750;10;1750;1060;10;1050;10;1540</additional_attributes></element><element><id>UMLClass</id><coordinates><x>714</x><y>0</y><w>70</w><h>21</h></coordinates><panel_attributes>ArrayAdapter</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>868</x><y>14</y><w>392</w><h>1407</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1990;540;1990</additional_attributes></element><element><id>Relation</id><coordinates><x>861</x><y>14</y><w>399</w><h>1533</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2170;550;2170</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1589</y><w>140</w><h>35</h></coordinates><panel_attributes>ui::entrant::EntrantEventsAdapter
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1005</x><y>1065</y><w>395</w><h>720</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>10;10;770;10;770;1340;60;1340;60;1420</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>1095</y><w>555</w><h>690</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>420;10;1090;10;1090;1190;10;1190;10;1360</additional_attributes></element><element><id>Relation</id><coordinates><x>235</x><y>1005</y><w>1050</w><h>780</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1550;10;2080;10;2080;1230;10;1230;10;1540</additional_attributes></element><element><id>UMLClass</id><coordinates><x>510</x><y>0</y><w>50</w><h>15</h></coordinates><panel_attributes>ArrayAdapter</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>620</x><y>10</y><w>280</w><h>1005</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1990;540;1990</additional_attributes></element><element><id>Relation</id><coordinates><x>615</x><y>10</y><w>285</w><h>1095</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2170;550;2170</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1135</y><w>100</w><h>25</h></coordinates><panel_attributes>ui::entrant::EntrantEventsAdapter
 --
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>728</x><y>14</y><w>532</w><h>1596</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2260;740;2260</additional_attributes></element><element><id>Relation</id><coordinates><x>1379</x><y>1603</y><w>168</w><h>896</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>520</x><y>10</y><w>380</w><h>1140</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2260;740;2260</additional_attributes></element><element><id>Relation</id><coordinates><x>985</x><y>1145</y><w>410</w><h>640</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 m2=0..*
-</panel_attributes><additional_attributes>10;10;220;10;220;750;70;750;70;1260</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1645</y><w>203</w><h>56</h></coordinates><panel_attributes>ui::entrant::EntrantEventsFragment
+</panel_attributes><additional_attributes>10;10;800;10;800;1170;70;1170;70;1260</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1175</y><w>145</w><h>40</h></coordinates><panel_attributes>ui::entrant::EntrantEventsFragment
 --
 -query: DatabaseInfLoadQuery&lt;EventAssociation&gt;
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>854</x><y>14</y><w>406</w><h>1666</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2360;560;2360</additional_attributes></element><element><id>Relation</id><coordinates><x>1442</x><y>1673</y><w>756</w><h>1533</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;20;1050;10;1050;2170</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1722</y><w>168</w><h>70</h></coordinates><panel_attributes>ui::entrant::EntrantFacilityPageFragment
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>610</x><y>10</y><w>290</w><h>1190</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2360;560;2360</additional_attributes></element><element><id>Relation</id><coordinates><x>1030</x><y>1195</y><w>540</w><h>1095</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;20;1050;10;1050;2170</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1230</y><w>120</w><h>50</h></coordinates><panel_attributes>ui::entrant::EntrantFacilityPageFragment
 --
 -facility: Facility
 --
 +onCreateView()
 +onDestroyView()
-+onMapReady()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>847</x><y>14</y><w>413</w><h>1736</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2370;450;2370;450;2460;570;2460</additional_attributes></element><element><id>Relation</id><coordinates><x>154</x><y>1757</y><w>1372</w><h>742</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1800;10;1940;10;1940;500;10;500;10;1040</additional_attributes></element><element><id>Relation</id><coordinates><x>1085</x><y>1722</y><w>448</w><h>777</h></coordinates><panel_attributes>lt=-&gt;
-m2=1</panel_attributes><additional_attributes>470;10;620;10;620;560;10;560;10;1090</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1806</y><w>168</w><h>35</h></coordinates><panel_attributes>ui::entrant::EntrantNotificationsAdapter
++onMapReady()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>605</x><y>10</y><w>295</w><h>1240</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2370;450;2370;450;2460;570;2460</additional_attributes></element><element><id>Relation</id><coordinates><x>110</x><y>1255</y><w>1130</w><h>530</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1800;10;2240;10;2240;640;10;640;10;1040</additional_attributes></element><element><id>Relation</id><coordinates><x>775</x><y>1230</y><w>570</w><h>555</h></coordinates><panel_attributes>lt=-&gt;
+m2=1</panel_attributes><additional_attributes>470;10;1120;10;1120;900;10;900;10;1090</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1290</y><w>120</w><h>25</h></coordinates><panel_attributes>ui::entrant::EntrantNotificationsAdapter
 --
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>854</x><y>1820</y><w>665</w><h>679</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>800;10;930;10;930;400;10;400;10;950</additional_attributes></element><element><id>Relation</id><coordinates><x>721</x><y>14</y><w>539</w><h>1813</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2270;580;2270;580;2570;750;2570</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1862</y><w>182</w><h>56</h></coordinates><panel_attributes>ui::entrant::EntrantNotificationsFragment
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>610</x><y>1300</y><w>720</w><h>485</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>800;10;1420;10;1420;730;10;730;10;950</additional_attributes></element><element><id>Relation</id><coordinates><x>515</x><y>10</y><w>385</w><h>1295</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2270;580;2270;580;2570;750;2570</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1330</y><w>130</w><h>40</h></coordinates><panel_attributes>ui::entrant::EntrantNotificationsFragment
 --
 -query: DatabaseInfLoadQuery&lt;Notification&gt;
 --
 +onCreateView()
-+onDestoryView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1421</x><y>1876</y><w>763</w><h>1330</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1060;10;1060;1880</additional_attributes></element><element><id>Relation</id><coordinates><x>840</x><y>14</y><w>420</w><h>1911</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2710;580;2710</additional_attributes></element><element><id>Relation</id><coordinates><x>1099</x><y>1666</y><w>441</w><h>833</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..*</panel_attributes><additional_attributes>500;10;610;10;610;650;10;650;10;1170</additional_attributes></element><element><id>Relation</id><coordinates><x>833</x><y>1890</y><w>679</w><h>609</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..*</panel_attributes><additional_attributes>850;10;950;10;950;290;10;290;10;850</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1932</y><w>189</w><h>77</h></coordinates><panel_attributes>ui::entrant::EntrantProfileFragment
++onDestoryView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1015</x><y>1340</y><w>545</w><h>950</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1060;10;1060;1880</additional_attributes></element><element><id>Relation</id><coordinates><x>600</x><y>10</y><w>300</w><h>1365</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2710;580;2710</additional_attributes></element><element><id>Relation</id><coordinates><x>785</x><y>1190</y><w>565</w><h>595</h></coordinates><panel_attributes>lt=-&gt;
+m2=0..*</panel_attributes><additional_attributes>500;10;1110;10;1110;990;10;990;10;1170</additional_attributes></element><element><id>Relation</id><coordinates><x>595</x><y>1350</y><w>730</w><h>435</h></coordinates><panel_attributes>lt=-&gt;
+m2=0..*</panel_attributes><additional_attributes>850;10;1440;10;1440;620;10;620;10;850</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1380</y><w>135</w><h>55</h></coordinates><panel_attributes>ui::entrant::EntrantProfileFragment
 --
 -user: User
 --
 +onCreateView()
 +onDestroyView()
 +onUpdate(inst: DatabaseInstace, updatType)
--updateValues()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>833</x><y>14</y><w>427</w><h>1995</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2830;590;2830</additional_attributes></element><element><id>Relation</id><coordinates><x>315</x><y>1953</y><w>1190</w><h>546</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1600;10;1680;10;1680;190;10;180;10;760</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>2023</y><w>147</w><h>42</h></coordinates><panel_attributes>ui::entrant::EntrantQrFragment
+-updateValues()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>595</x><y>10</y><w>305</w><h>1425</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2830;590;2830</additional_attributes></element><element><id>Relation</id><coordinates><x>225</x><y>1395</y><w>1055</w><h>390</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1600;10;2090;10;2090;440;10;440;10;760</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>1445</y><w>105</w><h>30</h></coordinates><panel_attributes>ui::entrant::EntrantQrFragment
 --
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>826</x><y>14</y><w>434</w><h>2044</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2900;600;2900</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1491</y><w>231</w><h>280</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>590</x><y>10</y><w>310</w><h>1460</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;2900;600;2900</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1065</y><w>165</w><h>200</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;370;70;370;70;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1680</y><w>231</w><h>105</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;370;70;370;70;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1200</y><w>165</w><h>75</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;120;80;120;80;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1750</y><w>231</w><h>49</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;120;80;120;80;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1250</y><w>165</w><h>35</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;40;90;40;90;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1785</y><w>231</w><h>133</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;40;90;40;90;10;310;10</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1275</y><w>165</w><h>95</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;10;90;10;90;160;310;160</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1799</y><w>231</w><h>189</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;90;10;90;160;310;160</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1285</y><w>165</w><h>135</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=1..*</panel_attributes><additional_attributes>10;10;80;10;80;240;310;240</additional_attributes></element><element><id>Relation</id><coordinates><x>1029</x><y>1813</y><w>231</w><h>238</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=1..*</panel_attributes><additional_attributes>10;10;80;10;80;240;310;240</additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>1295</y><w>165</w><h>170</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;10;70;10;70;310;310;310</additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>1820</y><w>49</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>1603</y><w>49</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>630</x><y>875</y><w>336</w><h>539</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;750;110;750;110;10;460;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1302</y><w>210</w><h>35</h></coordinates><panel_attributes>ui::organizer::OrganizerAssociatedEntrantsAdapter
+m2=0..*</panel_attributes><additional_attributes>10;10;70;10;70;310;310;310</additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>1300</y><w>35</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>1145</y><w>35</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>450</x><y>625</y><w>240</w><h>385</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;750;110;750;110;10;460;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>930</y><w>150</w><h>25</h></coordinates><panel_attributes>ui::organizer::OrganizerAssociatedEntrantsAdapter
 --
 --
-+getView(position:Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>735</x><y>14</y><w>525</w><h>1323</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1870;730;1870</additional_attributes></element><element><id>Relation</id><coordinates><x>1449</x><y>1316</y><w>126</w><h>1183</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>10;10;160;10;160;1200;30;1200;30;1670</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1029</y><w>196</w><h>98</h></coordinates><panel_attributes>ui::organizer::OrganizerCreateEventFragment
++getView(position:Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>525</x><y>10</y><w>375</w><h>945</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1870;730;1870</additional_attributes></element><element><id>Relation</id><coordinates><x>1035</x><y>940</y><w>370</w><h>845</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;720;10;720;1600;30;1600;30;1670</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>735</y><w>140</w><h>70</h></coordinates><panel_attributes>ui::organizer::OrganizerCreateEventFragment
 --
 -image: Uri
 --
@@ -486,7 +486,7 @@ m2=0..*</panel_attributes><additional_attributes>10;10;160;10;160;1200;30;1200;3
 -choosePhoto()
 -setImage(image: Uri)
 -submitData()
--onDestroyView</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>1141</y><w>203</w><h>147</h></coordinates><panel_attributes>ui::organizer::OrganizerEventFragment
+-onDestroyView</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>815</y><w>145</w><h>105</h></coordinates><panel_attributes>ui::organizer::OrganizerEventFragment
 --
 -query: DatabaseInfLoadQuery&lt;EventAssociation&gt;
 -event: Event
@@ -500,15 +500,15 @@ m2=0..*</panel_attributes><additional_attributes>10;10;160;10;160;1200;30;1200;3
 -posterUpdatedSuccess()
 -updateView()
 -setLotteryPopupView()
--entrantUnselected()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>1253</y><w>49</w><h>77</h></coordinates><panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
-m1=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1442</x><y>1253</y><w>140</w><h>1246</h></coordinates><panel_attributes>lt=-&gt;
-m2=0..*</panel_attributes><additional_attributes>10;10;180;10;180;1300;70;1300;70;1760</additional_attributes></element><element><id>Relation</id><coordinates><x>1134</x><y>1225</y><w>455</w><h>1274</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>450;10;630;10;630;1350;10;1350;10;1800</additional_attributes></element><element><id>Relation</id><coordinates><x>1442</x><y>1204</y><w>770</w><h>2002</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1070;10;1070;2840</additional_attributes></element><element><id>Relation</id><coordinates><x>875</x><y>14</y><w>385</w><h>1239</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1750;530;1750</additional_attributes></element><element><id>Relation</id><coordinates><x>882</x><y>14</y><w>378</w><h>1113</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1570;520;1570</additional_attributes></element><element><id>Relation</id><coordinates><x>1106</x><y>903</y><w>154</w><h>329</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+-entrantUnselected()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>895</y><w>35</w><h>55</h></coordinates><panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1030</x><y>895</y><w>380</w><h>890</h></coordinates><panel_attributes>lt=-&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;740;10;740;1700;70;1700;70;1760</additional_attributes></element><element><id>Relation</id><coordinates><x>810</x><y>875</y><w>550</w><h>910</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>450;10;1080;10;1080;1640;10;1640;10;1800</additional_attributes></element><element><id>Relation</id><coordinates><x>1030</x><y>860</y><w>550</w><h>1430</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1070;10;1070;2840</additional_attributes></element><element><id>Relation</id><coordinates><x>625</x><y>10</y><w>275</w><h>885</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1750;530;1750</additional_attributes></element><element><id>Relation</id><coordinates><x>630</x><y>10</y><w>270</w><h>795</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1570;520;1570</additional_attributes></element><element><id>Relation</id><coordinates><x>790</x><y>645</y><w>110</w><h>235</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..*
-m1=1</panel_attributes><additional_attributes>10;10;50;10;50;440;200;440</additional_attributes></element><element><id>Relation</id><coordinates><x>1106</x><y>889</y><w>154</w><h>210</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>10;10;50;10;50;440;200;440</additional_attributes></element><element><id>Relation</id><coordinates><x>790</x><y>635</y><w>110</w><h>150</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..*
-m1=1</panel_attributes><additional_attributes>10;10;60;10;60;270;200;270</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>882</y><w>189</w><h>140</h></coordinates><panel_attributes>ui::organizer::OrganizerEditFacilityFragment
+m1=1</panel_attributes><additional_attributes>10;10;60;10;60;270;200;270</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>630</y><w>135</w><h>100</h></coordinates><panel_attributes>ui::organizer::OrganizerEditFacilityFragment
 --
 -facility: Facility
 -image: Uri
@@ -521,14 +521,14 @@ m1=1</panel_attributes><additional_attributes>10;10;60;10;60;270;200;270</additi
 -setImage(image: Uri)
 -choosePhoto()
 -onUpdateInstance()
--submitData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>847</y><w>168</w><h>28</h></coordinates><panel_attributes>ui::organizer::OrganizerEventsAdapter
+-submitData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>605</y><w>120</w><h>20</h></coordinates><panel_attributes>ui::organizer::OrganizerEventsAdapter
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>777</y><w>168</w><h>56</h></coordinates><panel_attributes>ui::organizer::OrganizerEventsFragment
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>555</y><w>120</w><h>40</h></coordinates><panel_attributes>ui::organizer::OrganizerEventsFragment
 --
 -query: DatabaseInfLoadQuery&lt;Event&gt;
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>630</y><w>168</w><h>133</h></coordinates><panel_attributes>ui::organizer::OrganizerFacilityFragment
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>450</y><w>120</w><h>95</h></coordinates><panel_attributes>ui::organizer::OrganizerFacilityFragment
 --
 -facility: Facility
 -map: GoogleMap
@@ -541,19 +541,19 @@ m1=1</panel_attributes><additional_attributes>10;10;60;10;60;270;200;270</additi
 +onUpdate(inst: DatabaseInstance)
 -updateValues()
 -updateMapPoints()
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1106</x><y>875</y><w>154</w><h>147</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>790</x><y>625</y><w>110</w><h>105</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..*
-m1=1</panel_attributes><additional_attributes>10;10;70;10;70;180;200;180</additional_attributes></element><element><id>Relation</id><coordinates><x>1148</x><y>1078</y><w>448</w><h>1421</h></coordinates><panel_attributes>lt=-&gt;
-m2=1</panel_attributes><additional_attributes>420;10;620;10;620;1570;10;1570;10;2010</additional_attributes></element><element><id>Relation</id><coordinates><x>168</x><y>945</y><w>1435</w><h>1554</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1810;10;2030;10;2030;1770;10;1770;10;2200</additional_attributes></element><element><id>Relation</id><coordinates><x>889</x><y>14</y><w>371</w><h>980</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1380;510;1380</additional_attributes></element><element><id>Relation</id><coordinates><x>1162</x><y>854</y><w>448</w><h>1645</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>360;10;620;10;620;1910;10;1910;10;2330</additional_attributes></element><element><id>Relation</id><coordinates><x>742</x><y>14</y><w>518</w><h>868</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1010;650;1010;650;1220;720;1220</additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>812</y><w>49</w><h>63</h></coordinates><panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
-m1=1</panel_attributes><additional_attributes>50;60;10;60;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1407</x><y>798</y><w>819</w><h>2408</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1140;10;1140;3420</additional_attributes></element><element><id>Relation</id><coordinates><x>896</x><y>14</y><w>364</w><h>791</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1000;440;1000;440;1110;500;1110</additional_attributes></element><element><id>Relation</id><coordinates><x>182</x><y>714</y><w>1435</w><h>1785</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1760;10;2030;10;2030;2120;10;2120;10;2530</additional_attributes></element><element><id>Relation</id><coordinates><x>903</x><y>14</y><w>357</w><h>707</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;990;490;990</additional_attributes></element><element><id>Relation</id><coordinates><x>1106</x><y>798</y><w>154</w><h>91</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>10;10;70;10;70;180;200;180</additional_attributes></element><element><id>Relation</id><coordinates><x>820</x><y>770</y><w>545</w><h>1015</h></coordinates><panel_attributes>lt=-&gt;
+m2=1</panel_attributes><additional_attributes>420;10;1070;10;1070;1860;10;1860;10;2010</additional_attributes></element><element><id>Relation</id><coordinates><x>120</x><y>675</y><w>1125</w><h>1110</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1810;10;2230;10;2230;1810;10;1810;10;2200</additional_attributes></element><element><id>Relation</id><coordinates><x>635</x><y>10</y><w>265</w><h>700</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1380;510;1380</additional_attributes></element><element><id>Relation</id><coordinates><x>830</x><y>610</y><w>540</w><h>1175</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>360;10;1060;10;1060;2190;10;2190;10;2330</additional_attributes></element><element><id>Relation</id><coordinates><x>530</x><y>10</y><w>370</w><h>620</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1010;650;1010;650;1220;720;1220</additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>580</y><w>35</w><h>45</h></coordinates><panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>50;60;10;60;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1005</x><y>570</y><w>585</w><h>1720</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1140;10;1140;3420</additional_attributes></element><element><id>Relation</id><coordinates><x>640</x><y>10</y><w>260</w><h>565</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;1000;440;1000;440;1110;500;1110</additional_attributes></element><element><id>Relation</id><coordinates><x>130</x><y>510</y><w>1120</w><h>1275</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1760;10;2220;10;2220;2150;10;2150;10;2530</additional_attributes></element><element><id>Relation</id><coordinates><x>645</x><y>10</y><w>255</w><h>505</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;990;490;990</additional_attributes></element><element><id>Relation</id><coordinates><x>790</x><y>570</y><w>110</w><h>65</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..*
-m1=1</panel_attributes><additional_attributes>10;100;70;100;70;10;200;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1106</x><y>728</y><w>154</w><h>147</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>10;100;70;100;70;10;200;10</additional_attributes></element><element><id>Relation</id><coordinates><x>790</x><y>520</y><w>110</w><h>105</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=1..*
-m1=1</panel_attributes><additional_attributes>10;180;60;180;60;10;200;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>406</x><y>1694</y><w>189</w><h>140</h></coordinates><panel_attributes>ui::signup::SignupFacilitySecondaryFragment
+m1=1</panel_attributes><additional_attributes>10;180;60;180;60;10;200;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>290</x><y>1210</y><w>135</w><h>100</h></coordinates><panel_attributes>ui::signup::SignupFacilitySecondaryFragment
 --
 -image: Uri
 -marker: Marker
@@ -568,83 +568,83 @@ m1=1</panel_attributes><additional_attributes>10;180;60;180;60;10;200;10</additi
 -choosePhoto()
 -setImage(image: Uri)
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>140</x><y>1750</y><w>280</w><h>749</h></coordinates><panel_attributes>lt=&lt;-
-m1=1</panel_attributes><additional_attributes>10;1050;10;10;380;10</additional_attributes></element><element><id>Relation</id><coordinates><x>301</x><y>1778</y><w>119</w><h>721</h></coordinates><panel_attributes>lt=&lt;-
-m1=1</panel_attributes><additional_attributes>10;1010;10;10;150;10</additional_attributes></element><element><id>Relation</id><coordinates><x>588</x><y>1694</y><w>490</w><h>56</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>100</x><y>1250</y><w>200</w><h>535</h></coordinates><panel_attributes>lt=&lt;-
+m1=1</panel_attributes><additional_attributes>10;1050;10;10;380;10</additional_attributes></element><element><id>Relation</id><coordinates><x>215</x><y>1270</y><w>85</w><h>515</h></coordinates><panel_attributes>lt=&lt;-
+m1=1</panel_attributes><additional_attributes>10;1010;10;10;150;10</additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>1210</y><w>350</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..1</panel_attributes><additional_attributes>640;40;680;40;680;10;270;10;270;50;10;50</additional_attributes></element><element><id>Relation</id><coordinates><x>588</x><y>14</y><w>252</w><h>1778</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>340;10;340;2520;10;2520</additional_attributes></element><element><id>Relation</id><coordinates><x>630</x><y>259</y><w>329</w><h>1141</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1610;90;1610;90;10;450;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>560</y><w>154</w><h>56</h></coordinates><panel_attributes>ui::admin::AdminProfilesFragment
+m2=0..1</panel_attributes><additional_attributes>640;40;680;40;680;10;270;10;270;50;10;50</additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>10</y><w>180</w><h>1270</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>340;10;340;2520;10;2520</additional_attributes></element><element><id>Relation</id><coordinates><x>450</x><y>185</y><w>235</w><h>815</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;1610;90;1610;90;10;450;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>400</y><w>110</w><h>40</h></coordinates><panel_attributes>ui::admin::AdminProfilesFragment
 --
 -query: DatabaseInfLoadQuery&lt;User&gt;
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>511</y><w>147</w><h>35</h></coordinates><panel_attributes>ui::admin::AdminProfilesAdapter
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>365</y><w>105</w><h>25</h></coordinates><panel_attributes>ui::admin::AdminProfilesAdapter
 --
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>518</y><w>49</w><h>70</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1393</x><y>581</y><w>847</w><h>2625</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1180;10;1180;3730</additional_attributes></element><element><id>Relation</id><coordinates><x>343</x><y>525</y><w>1281</w><h>1974</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>1500;10;1810;10;1810;2400;10;2400;10;2800</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>448</y><w>154</w><h>56</h></coordinates><panel_attributes>ui::admin::AdminImagesFragment
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>370</y><w>35</w><h>50</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>50;80;10;80;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>995</x><y>415</y><w>605</w><h>1875</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1180;10;1180;3730</additional_attributes></element><element><id>Relation</id><coordinates><x>245</x><y>375</y><w>1045</w><h>1410</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>1500;10;2070;10;2070;2500;10;2500;10;2800</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>320</y><w>110</w><h>40</h></coordinates><panel_attributes>ui::admin::AdminImagesFragment
 --
 -query: DatabaseInfLoadQuery&lt;Image&gt;
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>399</y><w>147</w><h>35</h></coordinates><panel_attributes>ui::admin::AdminImagesAdapter
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>285</y><w>105</w><h>25</h></coordinates><panel_attributes>ui::admin::AdminImagesAdapter
 --
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>413</y><w>49</w><h>63</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>50;70;10;70;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1393</x><y>476</y><w>861</w><h>2730</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1200;10;1200;3880</additional_attributes></element><element><id>Relation</id><coordinates><x>539</x><y>413</y><w>1092</w><h>2086</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>1220;10;1540;10;1540;2570;10;2570;10;2960</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>336</y><w>161</w><h>56</h></coordinates><panel_attributes>ui::admin::AdminEventsFragment
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>295</y><w>35</w><h>45</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>50;70;10;70;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>995</x><y>340</y><w>615</w><h>1950</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1200;10;1200;3880</additional_attributes></element><element><id>Relation</id><coordinates><x>385</x><y>295</y><w>925</w><h>1490</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>1220;10;1830;10;1830;2700;10;2700;10;2960</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>240</y><w>115</w><h>40</h></coordinates><panel_attributes>ui::admin::AdminEventsFragment
 --
 -query: DatabaseInfLoadQuery&lt;Event&gt;
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>287</y><w>147</w><h>35</h></coordinates><panel_attributes>ui::admin::AdminEventsAdapter
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>205</y><w>105</w><h>25</h></coordinates><panel_attributes>ui::admin::AdminEventsAdapter
 --
 --
-+getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1211</x><y>308</y><w>49</w><h>56</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>50;60;10;60;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1400</x><y>364</y><w>868</w><h>2842</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>10;10;1210;10;1210;4040</additional_attributes></element><element><id>Relation</id><coordinates><x>1176</x><y>301</y><w>462</w><h>2198</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..*</panel_attributes><additional_attributes>310;10;640;10;640;2740;10;2740;10;3120</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>287</y><w>140</w><h>322</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
++getView(position: Integer)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>865</x><y>220</y><w>35</w><h>40</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>50;60;10;60;10;10;50;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1000</x><y>260</y><w>620</w><h>2030</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>10;10;1210;10;1210;4040</additional_attributes></element><element><id>Relation</id><coordinates><x>840</x><y>215</y><w>535</w><h>1570</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..*</panel_attributes><additional_attributes>310;10;1050;10;1050;2990;10;2990;10;3120</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>205</y><w>100</w><h>230</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=1..*</panel_attributes><additional_attributes>10;10;50;10;50;430;180;430</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>273</y><w>140</w><h>231</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=1..*</panel_attributes><additional_attributes>10;10;50;10;50;430;180;430</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>195</y><w>100</w><h>165</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;10;60;10;60;300;180;300</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>259</y><w>140</w><h>133</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m2=0..*</panel_attributes><additional_attributes>10;10;60;10;60;300;180;300</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>185</y><w>100</w><h>95</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m1=1
-m2=0..*</panel_attributes><additional_attributes>10;10;70;10;70;160;180;160</additional_attributes></element><element><id>Relation</id><coordinates><x>756</x><y>14</y><w>504</w><h>406</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;560;700;560</additional_attributes></element><element><id>Relation</id><coordinates><x>749</x><y>14</y><w>511</w><h>518</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;720;710;720</additional_attributes></element><element><id>Relation</id><coordinates><x>763</x><y>14</y><w>497</w><h>336</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;460;620;460;620;410;690;410</additional_attributes></element><element><id>Relation</id><coordinates><x>910</x><y>14</y><w>350</w><h>609</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;850;480;850</additional_attributes></element><element><id>Relation</id><coordinates><x>917</x><y>14</y><w>343</w><h>497</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;690;470;690</additional_attributes></element><element><id>Relation</id><coordinates><x>924</x><y>14</y><w>336</w><h>385</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;530;460;530</additional_attributes></element><element><id>Relation</id><coordinates><x>210</x><y>2625</y><w>1120</w><h>1022</h></coordinates><panel_attributes>lt=&lt;-
+m2=0..*</panel_attributes><additional_attributes>10;10;70;10;70;160;180;160</additional_attributes></element><element><id>Relation</id><coordinates><x>540</x><y>10</y><w>360</w><h>290</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;560;700;560</additional_attributes></element><element><id>Relation</id><coordinates><x>535</x><y>10</y><w>365</w><h>370</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;720;710;720</additional_attributes></element><element><id>Relation</id><coordinates><x>545</x><y>10</y><w>355</w><h>240</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;460;620;460;620;410;690;410</additional_attributes></element><element><id>Relation</id><coordinates><x>650</x><y>10</y><w>250</w><h>435</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;850;480;850</additional_attributes></element><element><id>Relation</id><coordinates><x>655</x><y>10</y><w>245</w><h>355</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;690;470;690</additional_attributes></element><element><id>Relation</id><coordinates><x>660</x><y>10</y><w>240</w><h>275</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;530;460;530</additional_attributes></element><element><id>Relation</id><coordinates><x>150</x><y>1875</y><w>800</w><h>730</h></coordinates><panel_attributes>lt=&lt;-
 m1=0..*
-</panel_attributes><additional_attributes>10;10;10;1190;1580;1190;1580;1440</additional_attributes></element><element><id>Relation</id><coordinates><x>357</x><y>2723</y><w>994</w><h>924</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..*</panel_attributes><additional_attributes>10;10;10;1010;1400;1010;1400;1300</additional_attributes></element><element><id>Relation</id><coordinates><x>630</x><y>2688</y><w>742</w><h>959</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..*</panel_attributes><additional_attributes>10;10;10;990;1040;990;1040;1350</additional_attributes></element><element><id>Relation</id><coordinates><x>868</x><y>2597</y><w>525</w><h>1050</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..*</panel_attributes><additional_attributes>10;10;10;1080;730;1080;730;1480</additional_attributes></element><element><id>Relation</id><coordinates><x>1253</x><y>2807</y><w>161</w><h>840</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..*</panel_attributes><additional_attributes>10;10;10;750;210;750;210;1180</additional_attributes></element><element><id>Relation</id><coordinates><x>1414</x><y>2597</y><w>70</w><h>1050</h></coordinates><panel_attributes>lt=&lt;-
-m1=0..*</panel_attributes><additional_attributes>60;10;60;1190;10;1190;10;1480</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>231</y><w>140</w><h>42</h></coordinates><panel_attributes>ui::admin::AdminEventFragment
+</panel_attributes><additional_attributes>10;10;10;1190;1580;1190;1580;1440</additional_attributes></element><element><id>Relation</id><coordinates><x>255</x><y>1945</y><w>710</w><h>660</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..*</panel_attributes><additional_attributes>10;10;10;1010;1400;1010;1400;1300</additional_attributes></element><element><id>Relation</id><coordinates><x>450</x><y>1920</y><w>530</w><h>685</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..*</panel_attributes><additional_attributes>10;10;10;990;1040;990;1040;1350</additional_attributes></element><element><id>Relation</id><coordinates><x>620</x><y>1855</y><w>375</w><h>750</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..*</panel_attributes><additional_attributes>10;10;10;1080;730;1080;730;1480</additional_attributes></element><element><id>Relation</id><coordinates><x>895</x><y>2005</y><w>115</w><h>600</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..*</panel_attributes><additional_attributes>10;10;10;750;210;750;210;1180</additional_attributes></element><element><id>Relation</id><coordinates><x>1010</x><y>1855</y><w>50</w><h>750</h></coordinates><panel_attributes>lt=&lt;-
+m1=0..*</panel_attributes><additional_attributes>60;10;60;1190;10;1190;10;1480</additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>165</y><w>100</w><h>30</h></coordinates><panel_attributes>ui::admin::AdminEventFragment
 --
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>105</y><w>140</w><h>56</h></coordinates><panel_attributes>ui::admin::AdminFacilityFragment
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>75</y><w>100</w><h>40</h></coordinates><panel_attributes>ui::admin::AdminFacilityFragment
 --
 --
 +onCreateView()
 +onDestroyView()
-+onMapReady()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1246</x><y>175</y><w>140</w><h>42</h></coordinates><panel_attributes>ui::admin::AdminProfileFragment
++onMapReady()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>890</x><y>125</y><w>100</w><h>30</h></coordinates><panel_attributes>ui::admin::AdminProfileFragment
 --
 --
 +onCreateView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>245</y><w>140</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>175</y><w>100</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..n*
-m1=1</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>196</y><w>140</w><h>63</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>140</y><w>100</w><h>45</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..n*
-m1=1</panel_attributes><additional_attributes>10;60;70;60;70;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1120</x><y>133</y><w>140</w><h>112</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
+m1=1</panel_attributes><additional_attributes>10;60;70;60;70;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>95</y><w>100</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;&gt;&gt;&gt;
 m2=0..n*
-m1=1</panel_attributes><additional_attributes>10;130;60;130;60;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>931</x><y>14</y><w>329</w><h>238</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;250;380;250;380;320;450;320</additional_attributes></element><element><id>Relation</id><coordinates><x>938</x><y>14</y><w>322</w><h>182</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;240;440;240</additional_attributes></element><element><id>Relation</id><coordinates><x>945</x><y>14</y><w>315</w><h>126</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;160;430;160</additional_attributes></element><element><id>Relation</id><coordinates><x>196</x><y>238</y><w>1456</w><h>2261</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>1700;10;2060;10;2060;2850;10;2850;10;3210</additional_attributes></element><element><id>Relation</id><coordinates><x>1197</x><y>259</y><w>448</w><h>2240</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>270;10;620;10;620;2810;10;2810;10;3180</additional_attributes></element><element><id>Relation</id><coordinates><x>217</x><y>196</y><w>1442</w><h>2303</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1670;10;2040;10;2040;2920;10;2920;10;3270</additional_attributes></element><element><id>Relation</id><coordinates><x>364</x><y>140</y><w>1302</w><h>2359</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=1</panel_attributes><additional_attributes>1460;10;1840;10;1840;3010;10;3010;10;3350</additional_attributes></element><element><id>Relation</id><coordinates><x>231</x><y>119</y><w>1442</w><h>2380</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
-m2=0..1</panel_attributes><additional_attributes>1650;10;2040;10;2040;3050;10;3050;10;3380</additional_attributes></element><element><id>UMLClass</id><coordinates><x>462</x><y>1862</y><w>70</w><h>21</h></coordinates><panel_attributes>CaptureActivity</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>420</x><y>1904</y><w>147</w><h>42</h></coordinates><panel_attributes>ui::entrant::QrCaptureActivity
+m1=1</panel_attributes><additional_attributes>10;130;60;130;60;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>665</x><y>10</y><w>235</w><h>170</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;250;380;250;380;320;450;320</additional_attributes></element><element><id>Relation</id><coordinates><x>670</x><y>10</y><w>230</w><h>130</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;240;440;240</additional_attributes></element><element><id>Relation</id><coordinates><x>675</x><y>10</y><w>225</w><h>90</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;160;430;160</additional_attributes></element><element><id>Relation</id><coordinates><x>140</x><y>170</y><w>1115</w><h>1615</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>1700;10;2210;10;2210;2840;10;2840;10;3210</additional_attributes></element><element><id>Relation</id><coordinates><x>855</x><y>185</y><w>525</w><h>1600</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>270;10;1030;10;1030;3060;10;3060;10;3180</additional_attributes></element><element><id>Relation</id><coordinates><x>155</x><y>140</y><w>1105</w><h>1645</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1670;10;2190;10;2190;2910;10;2910;10;3270</additional_attributes></element><element><id>Relation</id><coordinates><x>260</x><y>100</y><w>1035</w><h>1685</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=1</panel_attributes><additional_attributes>1460;10;2050;10;2050;3060;10;3060;10;3350</additional_attributes></element><element><id>Relation</id><coordinates><x>165</x><y>85</y><w>1100</w><h>1700</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
+m2=0..1</panel_attributes><additional_attributes>1650;10;2180;10;2180;3030;10;3030;10;3380</additional_attributes></element><element><id>UMLClass</id><coordinates><x>330</x><y>1330</y><w>50</w><h>15</h></coordinates><panel_attributes>CaptureActivity</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>1360</y><w>105</w><h>30</h></coordinates><panel_attributes>ui::entrant::QrCaptureActivity
 --
 --
 +onCreaeteView()
-+onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>490</x><y>1876</y><w>21</w><h>42</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;40</additional_attributes></element><element><id>Relation</id><coordinates><x>490</x><y>1939</y><w>770</w><h>133</h></coordinates><panel_attributes>lt=&lt;-
++onDestroyView()</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>350</x><y>1340</y><w>15</w><h>30</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;10;40</additional_attributes></element><element><id>Relation</id><coordinates><x>350</x><y>1385</y><w>550</w><h>95</h></coordinates><panel_attributes>lt=&lt;-
 m1=0..*</panel_attributes><additional_attributes>10;10;10;170;1080;170</additional_attributes></element></diagram>
