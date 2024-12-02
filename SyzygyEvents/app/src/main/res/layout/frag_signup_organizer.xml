@@ -81,7 +81,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="top|start"
                 android:inputType="text|textLongMessage|textAutoCorrect|textCapSentences|textMultiLine"
-                android:lines="7"
+                android:lines="4"
                 android:maxLength="200"
                 android:scrollbars="vertical"
                 android:textAlignment="gravity" />

@@ -124,7 +124,7 @@ public class OrganizerCreateEventFragment extends Fragment {
             Image.formatDefaultImage(Database.Collections.EVENTS, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
             binding.eventCreateRemovePosterButton.setVisibility(View.GONE);
         } else {
-            binding.eventCreateEditPosterButton.setText(R.string.change_poster_button);
+            binding.eventCreateEditPosterButton.setText("Change");
             Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
             binding.eventCreateRemovePosterButton.setVisibility(View.VISIBLE);
         }
