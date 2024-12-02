@@ -71,7 +71,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         binding.editFacilityEditImage.setOnClickListener(view -> choosePhoto());
         binding.editFacilityRemoveImage.setOnClickListener(view -> setImage(null));
         Image.getFormatedAssociatedImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
-        binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.INVISIBLE : View.VISIBLE);
+        binding.editFacilityRemoveImage.setVisibility(facility.getImage() == null ? View.GONE : View.VISIBLE);
         binding.editFacilityEditImage.setText(facility.getImage() != null ? R.string.change_image_button : R.string.add_image_button);
         binding.editFacilityDescription.setText(facility.getDescription());
         binding.editFacilityName.setText(facility.getName());
@@ -164,7 +164,7 @@ public class OrganizerEditFacilityFragment extends Fragment  implements OnMapRea
         if(image == null){
             Image.formatDefaultImage(facility, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);
             binding.editFacilityEditImage.setText(R.string.add_image_button);
-            binding.editFacilityRemoveImage.setVisibility(View.INVISIBLE);
+            binding.editFacilityRemoveImage.setVisibility(View.GONE);
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.facilityImage);;
             binding.editFacilityEditImage.setText(R.string.change_image_button);

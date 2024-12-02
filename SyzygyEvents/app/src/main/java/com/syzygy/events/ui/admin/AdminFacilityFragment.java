@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -61,7 +62,7 @@ public class AdminFacilityFragment extends Fragment implements OnMapReadyCallbac
             binding.adminRemoveFacilityButton.setOnClickListener(v -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove this facility?")
+                        .setMessage("Are you sure you want to remove this facility? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -92,6 +93,7 @@ public class AdminFacilityFragment extends Fragment implements OnMapReadyCallbac
         map.addMarker(new MarkerOptions()
                 .draggable(false)
                 .position(facility.getLatLngLocation()));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(facility.getLatLngLocation(), 9));
     }
 
 

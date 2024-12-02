@@ -84,9 +84,9 @@ public class SignupActivity extends SyzygyActivity {
         binding.signupBioLayout.setError(null);
 
 
-        String name = binding.signupName.getText().toString().replaceAll("\\s+", " ");
+        String name = binding.signupName.getText().toString().replaceAll("\\s+", " ").trim();
         String phone = binding.signupPhone.getText().toString();
-        String email = binding.signupEmail.getText().toString();
+        String email = binding.signupEmail.getText().toString().trim();
         String bio = binding.signupBio.getText().toString().replaceAll("\\s+", " ");
         Boolean admin = binding.signupAdminNotificationsCheckbox.isChecked();
         Boolean org = binding.signupOrgNotificationsCheckbox.isChecked();

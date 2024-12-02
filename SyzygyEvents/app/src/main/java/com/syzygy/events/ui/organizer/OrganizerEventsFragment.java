@@ -41,6 +41,7 @@ public class OrganizerEventsFragment extends Fragment {
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();
+            binding.emptyListText.setVisibility(binding.organizerEventsList.getCount()<1 ? View.VISIBLE : View.GONE);
         });
 
         binding.organizerEventsList.setAdapter(a);

@@ -122,7 +122,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         if (image == null) {
             binding.eventCreateEditPosterButton.setText(R.string.add_poster_button);
             Image.formatDefaultImage(Database.Collections.EVENTS, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);
-            binding.eventCreateRemovePosterButton.setVisibility(View.INVISIBLE);
+            binding.eventCreateRemovePosterButton.setVisibility(View.GONE);
         } else {
             binding.eventCreateEditPosterButton.setText(R.string.change_poster_button);
             Image.formatImage(Picasso.get().load(uri), Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventCreatePosterImg);

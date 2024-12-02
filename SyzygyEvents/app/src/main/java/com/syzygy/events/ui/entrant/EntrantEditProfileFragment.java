@@ -79,9 +79,9 @@ public class EntrantEditProfileFragment extends Fragment {
         binding.entrantEditEmailLayout.setError(null);
         binding.entrantEditBioLayout.setError(null);
 
-        String name = binding.entrantEditName.getText().toString().replaceAll("\\s+", " ");
+        String name = binding.entrantEditName.getText().toString().replaceAll("\\s+", " ").trim();
         String phone = binding.entrantEditPhone.getText().toString();
-        String email = binding.entrantEditEmail.getText().toString();
+        String email = binding.entrantEditEmail.getText().toString().trim();
         String bio = binding.entrantEditBio.getText().toString().replaceAll("\\s+", " ");
         Boolean admin = binding.adminNotificationsCheckbox.isChecked();
         Boolean org = binding.orgNotificationsCheckbox.isChecked();

@@ -17,6 +17,7 @@
 
 
     <color name="grey_100">#FFD4D4D4</color>
+    <color name="grey_200">#FFCACACA</color>
     <color name="highlight_01">#ffefefef</color>
 
 </resources>

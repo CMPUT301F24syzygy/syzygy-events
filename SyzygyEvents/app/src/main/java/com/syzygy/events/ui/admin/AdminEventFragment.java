@@ -95,7 +95,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.adminRemoveQrButton.setOnClickListener(view -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove the qr code?")
+                        .setMessage("Are you sure you want to remove the hash? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -110,7 +110,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.adminRemoveEventButton.setOnClickListener(view -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove this event?")
+                        .setMessage("Are you sure you want to remove this event? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -162,6 +162,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.eventQrImg.setImageBitmap(bitmap);
             binding.copyQrButton.setVisibility(View.VISIBLE);
         } else {
+            binding.eventQrImg.setImageBitmap(null);
             binding.copyQrButton.setVisibility(View.GONE);
             binding.adminRemoveQrButton.setVisibility(View.GONE);
         }

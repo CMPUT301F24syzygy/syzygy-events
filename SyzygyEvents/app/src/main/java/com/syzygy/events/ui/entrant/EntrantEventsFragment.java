@@ -41,6 +41,7 @@ public class EntrantEventsFragment extends Fragment {
 
         query.refreshData((query1, success) -> {
             a.notifyDataSetChanged();
+            binding.emptyListText.setVisibility(binding.entrantEventsList.getCount()<1 ? View.VISIBLE : View.GONE);
         });
 
         binding.entrantEventsList.setAdapter(a);

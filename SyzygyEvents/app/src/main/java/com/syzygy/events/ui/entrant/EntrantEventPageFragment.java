@@ -64,6 +64,9 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
             event = instance;
             event.addListener(this);
             //Set up fields
+            if (getContext() == null || binding == null) {
+                return;
+            }
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$%3.2f", event.getPrice()));
             String start = app.formatTimestamp(event.getStartDate());
@@ -156,6 +159,9 @@ public class EntrantEventPageFragment extends Fragment implements Database.Updat
      * Called whenever the user changes their status or the event gets updated
      */
     private void updateView() {
+        if (getContext() == null || binding == null) {
+            return;
+        }
 
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
         Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
