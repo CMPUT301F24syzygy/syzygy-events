@@ -204,12 +204,18 @@ public class Database implements EventListener<DocumentSnapshot> {
         instance.getDocumentReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(!task.isSuccessful()) return; // TODO error
+                if(!task.isSuccessful()) {
+                    throwE(new IllegalStateException("Failed to get document from database"));
+                    return;
+                }
                 DocumentSnapshot doc = task.getResult();
-                if(!doc.exists()) return; //TODO error
+                if(!doc.exists()) {
+                    throwE(new IllegalStateException("Document no longer exists in database"));
+                    return;
+                }
                 instance.updateDataFromDatabase(task.getResult().getData(), s ->{
                     if(!s){
-                        return; // TODO error
+                        throwE(new IllegalStateException("Failed to update instance from database"));
                     }
                 });
             }
@@ -229,8 +235,9 @@ public class Database implements EventListener<DocumentSnapshot> {
         instance.getDocumentReference().get().addOnCompleteListener(task -> {
             if(!task.isSuccessful()) {
                 Log.println(Log.DEBUG, "failedGet", instance.getDocumentID());
+                throwE(new IllegalStateException("Failed to get document from database"));
                 onComplete.onInitialization(null, false);
-                return; // TODO error
+                return;
             }
             Log.println(Log.DEBUG, "successGet", instance.getDocumentID());
             DocumentSnapshot doc = task.getResult();
@@ -249,7 +256,11 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @see DatabaseInstance#initializeData(Map, boolean, InitializationListener)
      */
     <T extends DatabaseInstance<T>> void initializeFromDatabase(@Observes DatabaseInstance<T> instance, DocumentSnapshot snapshot, InitializationListener<T> onComplete) throws IllegalStateException, IllegalArgumentException{
-        if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
+        if(!Objects.equals(snapshot.getId(), instance.getDocumentID())) {
+            throwE(new IllegalArgumentException("Snapshot id does not match instance id: "+snapshot.getId()+"|"+instance.getDocumentID()));
+            onComplete.onInitialization(null, false);
+            return;
+        }
         instance.initializeData(snapshot.getData(), snapshot.exists(), onComplete);
     }
 
@@ -580,7 +591,9 @@ public class Database implements EventListener<DocumentSnapshot> {
                 instance.initializeData(convertIDMapToNames(data), true, (instance1, success) -> {
                     if(success)
                         addToDatabase(instance);
-                    //TODO error
+                    else{
+                        throwE(new IllegalStateException("Failed to initialize instance"));
+                    }
                 });
             }
         });
@@ -637,6 +650,10 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param listener Called on completion. true if the deletion was successful
      */
     public void deleteFile(String fileName, Consumer<Boolean> listener){
+        if(fileName == null || fileName.isEmpty()){
+            listener.accept(false);
+            return;
+        }
         StorageReference ref = storage.child(fileName);
         ref.delete().addOnCompleteListener(runnable -> {
             listener.accept(runnable.isSuccessful());
@@ -672,7 +689,6 @@ public class Database implements EventListener<DocumentSnapshot> {
         for(Consumer<RuntimeException> l : errorListeners){
             l.accept(ex);
         }
-        throw ex;
     }
 
     /**
@@ -681,6 +697,14 @@ public class Database implements EventListener<DocumentSnapshot> {
      */
     public void addErrorListener(Consumer<RuntimeException> listener){
         this.errorListeners.add(listener);
+    }
+
+    /**
+     * Removes an error listener.
+     * @param listener The listener
+     */
+    public void removeErrorListener(Consumer<RuntimeException> listener){
+        this.errorListeners.remove(listener);
     }
 
     /**

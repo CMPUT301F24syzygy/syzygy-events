@@ -171,7 +171,10 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          * @param statusID The resId of the new status
          */
         public void setStatus(int statusID){
-            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            if(dissolved) {
+                db.throwE(new IllegalStateException("Invalid list"));
+                return;
+            }
             String status = db.constants.getString(statusID);
             result.forEach(e -> e.setStatus(status));
         }
@@ -236,7 +239,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          */
         @Database.Stirred
         public void setStatus(int statusID, String notificationSubject, String notificationBody, boolean notificationAttachEvent, boolean notificationFromOrganizer, Database.Querrier.DataListener<T, NotificationResult> listener){
-            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            if(dissolved) {
+                db.throwE(new IllegalStateException("Invalid list"));
+                listener.onCompletion(null, null, false);
+                return;
+            }
             String status = db.constants.getString(statusID);
             notify(
                     e -> e.setStatus(status),
@@ -262,7 +269,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          */
         @Database.Stirred
         public void notify(String subject, String body, boolean attachEvent, boolean fromOrganizer, boolean ignoresOptOut, Database.Querrier.DataListener<T, NotificationResult> listener){
-            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            if(dissolved) {
+                db.throwE(new IllegalStateException("Invalid list"));
+                listener.onCompletion(null, null, false);
+                return;
+            }
             notify(e -> {}, subject, body, attachEvent, fromOrganizer, ignoresOptOut, listener);
         }
 
@@ -279,7 +290,11 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
          */
         @Database.Stirred
         public void notify(@Database.Observes Consumer<EventAssociation> consumer, String subject, String body, boolean attachEvent, boolean fromOrganizer, boolean ignoresOptOut, Database.Querrier.DataListener<T, NotificationResult> listener){
-            if(dissolved) db.throwE(new IllegalStateException("Invalid list"));
+            if(dissolved) {
+                db.throwE(new IllegalStateException("Invalid list"));
+                listener.onCompletion(null, null, false);
+                return;
+            }
             List<Notification> failedNotifications = new ArrayList<>();
             List<Notification> successNotifications = new ArrayList<>();
 

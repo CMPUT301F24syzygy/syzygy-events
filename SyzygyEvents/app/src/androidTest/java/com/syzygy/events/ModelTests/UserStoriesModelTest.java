@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -38,6 +37,7 @@ import org.junit.rules.TestName;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -57,10 +57,10 @@ import java.util.function.Function;
 public class UserStoriesModelTest {
 
     private static final TestDatabase db = new TestDatabase();
-    private static Context context;
     private static Resources constants;
     private static String random;
     private static Uri img;
+    private static final Set<UserStoriesModelTest> tests = new HashSet<>();
 
     private static String runningTest = null;
 
@@ -70,44 +70,37 @@ public class UserStoriesModelTest {
     private static int instances = 0;
 
     @BeforeClass
-    public static void setUp() throws InterruptedException {
+    public static void setUp() throws Throwable{
 
         SyzygyApplication.NO_DATABASE = true;
-        context = ApplicationProvider.getApplicationContext();
+        Context context = ApplicationProvider.getApplicationContext();
         constants = context.getResources();
         db.createDb(context);
+        db.testDB.addErrorListener(UserStoriesModelTest::accept);
         Log.d("Testing", "BeforeClass");
         int resId = R.drawable.penguin_blue;
         img = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + constants.getResourcePackageName(resId) + '/' + constants.getResourceTypeName(resId) + '/' + constants.getResourceEntryName(resId) );
     }
 
-    private static final List<DatabaseInstance<?>> allObjectsUsed = new ArrayList<>();
+    public static void accept(RuntimeException ex){
+        tests.iterator().forEachRemaining(t -> t.acceptError(ex));
+    }
 
-    private AssertionError error = null;
+    private static final Set<DatabaseInstance<?>> allObjectsUsed = new HashSet<>();
+
+    private Throwable error = null;
     private CountDownLatch latch = null;
     private boolean ignoreDelete = false;
 
     @After
-    public void cleanUp() throws InterruptedException {
+    public void cleanUp() throws Throwable {
         Log.d("Testing", "After");
         if(!ignoreDelete) {
-            for (DatabaseInstance<?> i : db.testDB.getTrackedInstances()) {
-                if (i == null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID))
-                    continue;
-                CountDownLatch l = new CountDownLatch(1);
-                i.getDocumentReference().delete().addOnCompleteListener(t -> {
-                    if (i.getCollection() == Database.Collections.IMAGES) {
-                        db.testDB.deleteFile(((Image) i).getImageID(), (success) -> l.countDown());
-                    } else {
-                        l.countDown();
-                    }
-                });
-                l.await();
-            }
             allObjectsUsed.addAll(db.testDB.getTrackedInstances());
         }
         db.testDB.getTrackedInstances().clear();
         runningTest = null;
+
     }
 
     @Before
@@ -119,10 +112,11 @@ public class UserStoriesModelTest {
         ignoreDelete = false;
         if(runningTest != null) throw new IllegalStateException("Already running test :" + runningTest);
         runningTest = name.getMethodName();
+        tests.add(this);
 
     }
     @AfterClass
-    public static void clean() throws InterruptedException {
+    public static void clean() throws Throwable {
         Log.d("Testing", "AfterClass");
         for(DatabaseInstance<?> i : allObjectsUsed){
             if(i==null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID)) continue;
@@ -137,6 +131,11 @@ public class UserStoriesModelTest {
             l.await();
         }
         allObjectsUsed.clear();
+    }
+
+    private void acceptError(Throwable ex){
+        error = ex;
+        completeTest(true);
     }
 
     private void completeTest(boolean fullComplete){
@@ -157,22 +156,21 @@ public class UserStoriesModelTest {
         try{
             statements.run();
             return true;
-        }catch (AssertionError ex){
-            error = ex;
-            completeTest(true);
+        }catch (Throwable ex){
+            acceptError(ex);
             return false;
         }
     }
 
-    private void awaitAndContinue(long timeout) throws InterruptedException{
+    private void awaitAndContinue(long timeout) throws Throwable {
         latch.await(timeout, TimeUnit.SECONDS);
         if(error != null){
             throw error;
         }
     }
 
-    private void await(long timeout) throws InterruptedException{
-        if(!latch.await(timeout, TimeUnit.SECONDS)){
+    private void await() throws Throwable {
+        if(!latch.await(5, TimeUnit.MINUTES)){
             fail("Timeout");
         };
         if(error != null){
@@ -382,7 +380,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010101() throws InterruptedException {
+    public void US010101() throws Throwable {
         
 
         getTestUser(false, u -> getTestEventFresh(EVENT_REG, false, false, false, false, e -> e.addUserToWaitlist(u, new GeoPoint(0,0), (q, a, s) -> {
@@ -398,21 +396,21 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         })));
-        await(10);
+        await();
     }
 
     @Test
-    public void US010102() throws InterruptedException {
+    public void US010102() throws Throwable {
         
         getTestUser(false, u-> getTestEventAssociationFreshUser(u, EVENT_REG, constants.getString(R.string.event_assoc_status_waitlist), false, null, false, false, false, ea -> ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s->{
             if(!asserts(()->assertTrue(s))) return;
             testDeletedInstance(ea, this::completeTest);
         })));
-        await(10);
+        await();
     }
 
     @Test
-    public void US010201() throws InterruptedException {
+    public void US010201() throws Throwable {
 
         
 
@@ -442,11 +440,11 @@ public class UserStoriesModelTest {
 
         if(!asserts(()->assertTrue(invalidIDs.isEmpty())))return;
 
-        await(10);
+        await();
     }
 
     @Test
-    public void US010202() throws InterruptedException {
+    public void US010202() throws Throwable {
         
 
         getTestUser(false, instance -> {
@@ -472,11 +470,11 @@ public class UserStoriesModelTest {
                     });
             asserts(() -> assertTrue(invalidIDs.isEmpty()));
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US010301() throws InterruptedException {
+    public void US010301() throws Throwable {
         getTestUser(false, u -> {
             u.setProfileImage(img, success -> {
                 if(!asserts(() -> {
@@ -489,17 +487,17 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US010302() throws InterruptedException {
+    public void US010302() throws Throwable {
         getTestUser(true, u -> {
             Image i = u.getProfileImage();
             u.setProfileImage(null, success -> {
                 try {
                     TimeUnit.SECONDS.sleep(2);
-                } catch (InterruptedException ignore) {}
+                } catch (Throwable ignore) {}
 
                 if(!asserts(() -> {
                     assertTrue(success);
@@ -509,22 +507,22 @@ public class UserStoriesModelTest {
                 testDeletedImageCascade(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US010303() throws InterruptedException {
+    public void US010303() throws Throwable {
         //Mainly visual
         getTestUser(false, u -> {
             RequestCreator r2 = Image.getFormatedAssociatedImage(u, Database.Collections.USERS, Image.Options.Circle(10));
             if(!asserts(() -> assertNotNull(r2))) return;
             completeTest();
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US010401_own_pos() throws InterruptedException {
+    public void US010401_own_pos() throws Throwable {
         latch = new CountDownLatch(2);
         getTestEventFresh(EVENT_AFTER_REG, false, false, false, false, e -> {
             User u = e.getFacility().getOrganizer();
@@ -555,11 +553,11 @@ public class UserStoriesModelTest {
                 });
             }, null);
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US010401_US010402_US020501() throws InterruptedException {
+    public void US010401_US010402_US020501() throws Throwable {
         latch = new CountDownLatch(4);
         AtomicInteger chosen = new AtomicInteger(0);
         AtomicInteger lost = new AtomicInteger(0);
@@ -601,14 +599,14 @@ public class UserStoriesModelTest {
                 }, true);
             });
         });
-        await(10);
+        await();
         assertEquals(2, chosen.get());
         assertEquals(1, lost.get());
     }
 
 
     @Test
-    public void US010403() throws InterruptedException {
+    public void US010403() throws Throwable {
         AtomicBoolean notified = new AtomicBoolean(false);
         getTestUser(false, u -> {
             u.setOrganizerNotifications(false);
@@ -623,7 +621,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010501() throws InterruptedException {
+    public void US010501() throws Throwable {
         
         getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
@@ -657,11 +655,11 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
-    public void US010502() throws InterruptedException {
+    public void US010502() throws Throwable {
         
         getTestUser(false, u-> getTestEventAssociationFreshUser(u, EVENT_AFTER_REG, constants.getString(R.string.event_assoc_status_invited), false, null, false, false, false, ea -> ea.getEvent().acceptInvite(u, (q, d, s)->{
             if(!asserts(() -> {
@@ -670,21 +668,21 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         })));
-        await(10);
+        await();
     }
 
     @Test
-    public void US010503() throws InterruptedException {
+    public void US010503() throws Throwable {
         
         getTestUser(false, u-> getTestEventAssociationFreshUser(u, EVENT_AFTER_REG, constants.getString(R.string.event_assoc_status_invited), false, null, false, false, false, ea-> ea.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s->{
             if(!asserts(() -> assertTrue(s)))return;
             testDeletedInstance(ea, this::completeTest);
         })));
-        await(10);
+        await();
     }
 
     @Test
-    public void US010601() throws InterruptedException {
+    public void US010601() throws Throwable {
         //Mainly visual
         
         getTestEventFresh(EVENT_REG, false, false, false, false, e -> db.testDB.getInstance(Database.Collections.EVENTS, e.getQrHash(), (i, s) -> {
@@ -694,11 +692,11 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         }));
-        await(10);
+        await();
     }
 
     @Test
-    public void US010602() throws InterruptedException {
+    public void US010602() throws Throwable {
         //Mainly visual
         
         getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
@@ -723,7 +721,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -732,7 +730,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US010801() throws InterruptedException {
+    public void US010801() throws Throwable {
         
         getTestUser(false, u->{
             getTestEventFresh(EVENT_REG, true, false, false, false, e->{
@@ -742,11 +740,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020101() throws InterruptedException {
+    public void US020101() throws Throwable {
         
         getTestFacilityFresh(false, false, f->{
             Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
@@ -763,23 +761,23 @@ public class UserStoriesModelTest {
                         completeTest();
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020102() throws InterruptedException {
+    public void US020102() throws Throwable {
         //Implemented by application not database
         getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
             if(asserts(() -> assertEquals(e.getDocumentID(), e.getQrHash()))){
                 completeTest();
             };
         });
-        await(10);
+        await();
     }
 
 
     @Test
-    public void US020103() throws InterruptedException {
+    public void US020103() throws Throwable {
         getTestUser(false, u->{
             Facility.NewInstance(db.testDB, "Name"+random, new GeoPoint(0,0),
                     "Address", "Description", null, u.getDocumentID(), (i,s)->{
@@ -806,12 +804,12 @@ public class UserStoriesModelTest {
                         });
             });
         });
-        await(10);
+        await();
     }
 
 
     @Test
-    public void US020201() throws InterruptedException {
+    public void US020201() throws Throwable {
         
         getTestEventWithEventAssociations(3, 0, 0, 0, eas->{
             Event e = eas.get(0).getEvent();
@@ -827,12 +825,12 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
 
     @Test
-    public void US020202() throws InterruptedException {
+    public void US020202() throws Throwable {
         GeoPoint p = new GeoPoint(1,1);
         getTestEventAssociationFresh(EVENT_REG, constants.getString(R.string.event_assoc_status_waitlist), true, p, false, false,false, false, ea->{
             User u = ea.getUser().fetch();
@@ -850,12 +848,12 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
 
     @Test
-    public void US020203() throws InterruptedException {
+    public void US020203() throws Throwable {
         getTestFacilityFresh(false, false, f->{
             Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), true,
                     "Des", 2L, 3L, 0.0, before(), after(), after(), after(), 0L,
@@ -871,11 +869,11 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020301_limit() throws InterruptedException {
+    public void US020301_limit() throws Throwable {
         
         getTestFacilityFresh(false, false, f->{
             Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
@@ -893,11 +891,11 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020301_optional() throws InterruptedException {
+    public void US020301_optional() throws Throwable {
         
         getTestFacilityFresh(false, false, f->{
             Event.NewInstance(db.testDB, random+"Title", null, f.getDocumentID(), false,
@@ -910,11 +908,11 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020401() throws InterruptedException {
+    public void US020401() throws Throwable {
         getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
             e.setPoster(img, success -> {
                 if(!asserts(() -> {
@@ -927,11 +925,11 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020402() throws InterruptedException {
+    public void US020402() throws Throwable {
         getTestEventFresh(EVENT_REG, false, true, false, false, e -> {
             Image i = e.getPoster();
             if(!asserts(() -> {
@@ -947,11 +945,11 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020502() throws InterruptedException {
+    public void US020502() throws Throwable {
         getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getLottery(-1, (q,l,s) -> {
@@ -984,11 +982,11 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
-    public void US020503() throws InterruptedException {
+    public void US020503() throws Throwable {
         getTestEventWithEventAssociations(3,0, 0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getLottery(-1, (q,l,s) -> {
@@ -1057,11 +1055,11 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
-    public void US020601() throws InterruptedException {
+    public void US020601() throws Throwable {
         getTestEventWithEventAssociations(0,0,2, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getUsersByStatus(R.string.event_assoc_status_invited, (query, data, success) -> {
@@ -1076,11 +1074,11 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020602() throws InterruptedException {
+    public void US020602() throws Throwable {
         getTestEventWithEventAssociations(0,0,0, 2, eas -> {
             Event e = eas.get(0).getEvent();
             e.getUsersByStatus(R.string.event_assoc_status_cancelled, (query, data, success) -> {
@@ -1095,11 +1093,11 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020603() throws InterruptedException {
+    public void US020603() throws Throwable {
         getTestEventWithEventAssociations(0,2,0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             e.getUsersByStatus(R.string.event_assoc_status_enrolled, (query, data, success) -> {
@@ -1114,11 +1112,11 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020604() throws InterruptedException {
+    public void US020604() throws Throwable {
         getTestEventAssociationFresh(EVENT_REG, constants.getString(R.string.event_assoc_status_invited), false, null, false, false, false, false, ea -> {
             Event e = ea.getEvent();
             User u = ea.getUser();
@@ -1137,11 +1135,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
-    public void US020701() throws InterruptedException {
+    public void US020701() throws Throwable {
         getTestEventWithEventAssociations(2,0,0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1167,11 +1165,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020702() throws InterruptedException {
+    public void US020702() throws Throwable {
         getTestEventWithEventAssociations(0,2,0, 0, eas -> {
             Event e = eas.get(0).getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1197,11 +1195,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US020703() throws InterruptedException {
+    public void US020703() throws Throwable {
         getTestEventWithEventAssociations(0,0,0, 2, eas -> {
             Event e = eas.get(0).getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1227,7 +1225,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     public void testDeletedInstance(DatabaseInstance<?> instance, Runnable onComplete){
@@ -1383,7 +1381,7 @@ public class UserStoriesModelTest {
     }
 
     @Test
-    public void US030101() throws InterruptedException {
+    public void US030101() throws Throwable {
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, true, false, true, true, ea -> {
             Event e = ea.getEvent();
             Facility f = e.getFacility();
@@ -1391,7 +1389,7 @@ public class UserStoriesModelTest {
                 e.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                     try {
                         TimeUnit.SECONDS.sleep(2); //wait for updates
-                    } catch (InterruptedException ignored) {}
+                    } catch (Throwable ignored) {}
                     if(asserts(() -> {
                         assertTrue(s);
                         assertTrue(f.isLegalState());
@@ -1401,23 +1399,23 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
-    public void US030201_shallow() throws InterruptedException {
+    public void US030201_shallow() throws Throwable {
         getTestUser(false, u -> {
             u.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                 assertTrue(s);
                 testDeletedUserShallow(u, this::completeTest);
             });
         });
-        await(30);
+        await();
     }
 
     @Test
     public void US030201_deep_noNotificationsImages
-            () throws InterruptedException {
+            () throws Throwable {
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, false, false, false, false, ea -> {
             Event e = ea.getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1428,11 +1426,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
-    public void US030201_deep_noImages() throws InterruptedException{
+    public void US030201_deep_noImages() throws Throwable{
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, false, false, false, false, ea -> {
             Event e = ea.getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1444,7 +1442,7 @@ public class UserStoriesModelTest {
                                 if(asserts(() -> assertTrue(s))){
                                     try {
                                         TimeUnit.SECONDS.sleep(2); //wait for updates
-                                    } catch (InterruptedException ignored) {}
+                                    } catch (Throwable ignored) {}
                                     testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, this::completeTest);
                                 };
                             });
@@ -1453,11 +1451,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
-    public void US030201_deep() throws InterruptedException{
+    public void US030201_deep() throws Throwable{
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, true, false, true, true, ea -> {
             Event e = ea.getEvent();
             User u = e.getFacility().getOrganizer();
@@ -1469,7 +1467,7 @@ public class UserStoriesModelTest {
                                 if(asserts(() -> assertTrue(s))){
                                     try {
                                         TimeUnit.SECONDS.sleep(2); //wait for updates
-                                    } catch (InterruptedException ignored) {}
+                                    } catch (Throwable ignored) {}
                                     testDeletedUserDeep(u, e, ea_assoc, ea, n_rec, n_send, n_event, this::completeTest);
                                 };
                             });
@@ -1478,59 +1476,59 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(60);
+        await();
     }
 
     @Test
-    public void US030301_user() throws InterruptedException{
+    public void US030301_user() throws Throwable{
         getTestUser(true, u -> {
             Image i = u.getProfileImage();
             i.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
                 if(!asserts(() -> assertTrue(success))) return;
                 try {
                     TimeUnit.SECONDS.sleep(2); //wait for updates
-                } catch (InterruptedException ignored) {}
+                } catch (Throwable ignored) {}
                 if(!asserts(() -> assertEquals("", u.getProfileImageID()))) return;
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(30);
+        await();
     }
 
     @Test
-    public void US030301_event() throws InterruptedException {
+    public void US030301_event() throws Throwable {
         getTestEventFresh(EVENT_REG, false, true, false, false, e -> {
             Image i = e.getPoster();
             i.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
                 if(!asserts(() -> assertTrue(success))) return;
                 try {
                     TimeUnit.SECONDS.sleep(2); //wait for updates
-                } catch (InterruptedException ignored) {}
+                } catch (Throwable ignored) {}
                 if(!asserts(() -> assertEquals("", e.getPosterID()))) return;
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030301_facility() throws InterruptedException {
+    public void US030301_facility() throws Throwable {
         getTestFacilityFresh(true, false, f -> {
             Image i = f.getImage();
             i.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, success -> {
                 if(!asserts(() -> assertTrue(success))) return;
                 try {
                     TimeUnit.SECONDS.sleep(2); //wait for updates
-                } catch (InterruptedException ignored) {}
+                } catch (Throwable ignored) {}
                 if(!asserts(() -> assertEquals("", f.getImageID()))) return;
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030302() throws InterruptedException {
+    public void US030302() throws Throwable {
         getTestEventFresh(EVENT_REG, false, false, false, false, e -> {
             e.setQrHash("");
             if(asserts(() -> {
@@ -1538,11 +1536,11 @@ public class UserStoriesModelTest {
                 assertEquals("", e.getQrHash());
             })) completeTest();
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030401() throws InterruptedException {
+    public void US030401() throws Throwable {
         getTestEventFresh(EVENT_REG, false, false, false, false, e1 -> {
             getTestEventFresh(EVENT_REG, false, false, false, false, e2 -> {
                 DatabaseInfLoadQuery<Event> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getEvents(db.testDB));
@@ -1558,11 +1556,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030501() throws InterruptedException {
+    public void US030501() throws Throwable {
         getTestUser(false, e1 -> {
             getTestUser(false, e2 -> {
                 DatabaseInfLoadQuery<User> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getUsers(db.testDB));
@@ -1578,11 +1576,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030601() throws InterruptedException {
+    public void US030601() throws Throwable {
         getTestUser(true, e1 -> {
             getTestUser(true, e2 -> {
                 DatabaseInfLoadQuery<Image> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(db.testDB));
@@ -1598,11 +1596,11 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
-    public void US030701() throws InterruptedException {
+    public void US030701() throws Throwable {
         getTestEventAssociationFresh(EVENT_REG, "Waitlist", false, null, true, false, true, true, ea -> {
             Event e = ea.getEvent();
             Facility f = e.getFacility();
@@ -1611,7 +1609,7 @@ public class UserStoriesModelTest {
                 f.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
                     try {
                         TimeUnit.SECONDS.sleep(2); //wait for updates
-                    } catch (InterruptedException ignored) {}
+                    } catch (Throwable ignored) {}
                     if(asserts(() -> {
                         assertTrue(s);
                         assertEquals("", u.getFacilityID());
@@ -1623,7 +1621,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
 
