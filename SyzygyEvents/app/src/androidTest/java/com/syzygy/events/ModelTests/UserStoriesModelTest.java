@@ -86,15 +86,21 @@ public class UserStoriesModelTest {
     private boolean ignoreDelete = false;
 
     @After
-    public void cleanUp(){
-        Log.i("Testing", "After");
-        if(!ignoreDelete){
-            for(DatabaseInstance<?> i : db.testDB.getTrackedInstances()){
-                if(i==null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID)) continue;
-                i.getDocumentReference().delete();
-                if(i.getCollection() == Database.Collections.IMAGES){
-                    db.testDB.deleteFile(((Image)i).getImageID(), (success) -> {});
-                }
+    public void cleanUp() throws InterruptedException {
+        Log.d("Testing", "After");
+        if(!ignoreDelete) {
+            for (DatabaseInstance<?> i : db.testDB.getTrackedInstances()) {
+                if (i == null || Objects.equals(i.getDocumentID(), SyzygyApplication.SYSTEM_ACCOUNT_ID))
+                    continue;
+                CountDownLatch l = new CountDownLatch(1);
+                i.getDocumentReference().delete().addOnCompleteListener(t -> {
+                    if (i.getCollection() == Database.Collections.IMAGES) {
+                        db.testDB.deleteFile(((Image) i).getImageID(), (success) -> l.countDown());
+                    } else {
+                        l.countDown();
+                    }
+                });
+                l.await();
             }
             allObjectsUsed.addAll(db.testDB.getTrackedInstances());
         }
@@ -1571,6 +1577,7 @@ public class UserStoriesModelTest {
 
     @Test
     public void US030601() throws InterruptedException {
+        ignoreDelete = true;
         getTestUser(true, e1 -> {
             getTestUser(true, e2 -> {
                 DatabaseInfLoadQuery<Image> q = new DatabaseInfLoadQuery<>(DatabaseQuery.getImages(db.testDB));
