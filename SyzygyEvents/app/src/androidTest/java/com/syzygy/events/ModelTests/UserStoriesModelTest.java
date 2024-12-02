@@ -62,7 +62,7 @@ public class UserStoriesModelTest {
     private static String random;
     private static Uri img;
 
-    private static boolean runningTest = false;
+    private static String runningTest = null;
 
     @Rule
     public TestName name = new TestName();
@@ -107,7 +107,7 @@ public class UserStoriesModelTest {
             allObjectsUsed.addAll(db.testDB.getTrackedInstances());
         }
         db.testDB.getTrackedInstances().clear();
-        runningTest = false;
+        runningTest = null;
     }
 
     @Before
@@ -117,8 +117,8 @@ public class UserStoriesModelTest {
         error = null;
         latch = new CountDownLatch(1);
         ignoreDelete = false;
-        if(runningTest) throw new IllegalStateException("Already running test :" + name.getMethodName());
-        runningTest = true;
+        if(runningTest != null) throw new IllegalStateException("Already running test :" + runningTest);
+        runningTest = name.getMethodName();
 
     }
     @AfterClass
