@@ -61,7 +61,19 @@
         android:layout_marginStart="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:id="@+id/notification_unread_mark"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_foreground" />
+        app:srcCompat="@drawable/circle_foreground"
+        app:tint="@color/grey_purple_200"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,6 +12,7 @@
         android:layout_height="120dp"
         android:layout_marginStart="18dp"
         android:layout_marginTop="20dp"
+        android:layout_marginBottom="6dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

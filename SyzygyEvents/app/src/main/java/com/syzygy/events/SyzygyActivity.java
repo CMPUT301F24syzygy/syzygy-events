@@ -28,6 +28,7 @@ import com.syzygy.events.ui.AdminActivity;
 import com.syzygy.events.ui.EntrantActivity;
 import com.syzygy.events.ui.InitActivity;
 import com.syzygy.events.ui.OrganizerActivity;
+import com.syzygy.events.ui.SignupActivity;
 
 /**
  * An abstract class for all activities related to syzugy-events.
@@ -66,7 +67,7 @@ public abstract class SyzygyActivity extends AppCompatActivity implements Databa
                     .create();
             app.clearUser();
             dialog.setOnDismissListener(d -> {
-                app.switchToActivity(InitActivity.class);
+                app.switchToActivity(SignupActivity.class);
             });
             dialog.show();
         }

@@ -65,6 +65,9 @@ public class EntrantNotificationsFragment extends Fragment {
                         .create();
                 dialog.show();
 
+                notification.setIsRead(true);
+                a.notifyDataSetChanged();
+
                 TextView subject = dialog.findViewById(R.id.popup_notification_subject_text);
                 subject.setText(notification.getSubject());
 
@@ -110,7 +113,6 @@ public class EntrantNotificationsFragment extends Fragment {
                     });
                 }
 
-                notification.setIsRead(true);
                 dialog.setOnDismissListener(d -> {
                     query.refreshData((query1, success) -> {
                         a.notifyDataSetChanged();
