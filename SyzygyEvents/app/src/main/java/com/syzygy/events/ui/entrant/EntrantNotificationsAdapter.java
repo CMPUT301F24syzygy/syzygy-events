@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.syzygy.events.R;
+import com.syzygy.events.database.Database;
 import com.syzygy.events.database.Image;
 import com.syzygy.events.database.Notification;
 
@@ -58,14 +59,15 @@ public class EntrantNotificationsAdapter extends ArrayAdapter<Notification> {
         }
         body.setText(preview + " ...");
 
+        TextView sender = view.findViewById(R.id.notification_item_sender_text);
+        ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
         if(notification.getSender() != null){
-            TextView sender = view.findViewById(R.id.notification_item_sender_text);
             sender.setText(notification.getSender().getName());
-            ImageView image = view.findViewById(R.id.notification_item_sender_profile_img);
             Image.getFormatedAssociatedImage(notification.getSender(), Image.Options.Circle(200)).into(image);
         }
         else {
-            ///
+            sender.setText("-");
+            Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(image);
         }
 
         TextView sent_date = view.findViewById(R.id.notification_item_sent_date_text);
