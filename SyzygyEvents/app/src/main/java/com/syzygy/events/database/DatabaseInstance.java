@@ -465,9 +465,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             db.<W>getInstance(prop.meta.loadsCollection, newID, (i, s) -> {
                 if(!s){
                     Log.println(Log.DEBUG, "modPropLoadFail", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
-                    setPropertyValue(prop.meta.propertyNameID, "", $ -> {
-                        onComplete.accept(false);
-                    });
+                    onComplete.accept(false);
                     return;
                 }
                 Log.println(Log.DEBUG, "modPropLoadSuccess", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
