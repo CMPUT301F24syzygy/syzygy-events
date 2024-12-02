@@ -311,6 +311,7 @@ public class OrganizerEventFragment extends Fragment implements Database.UpdateL
             binding.facilityEventQrImg.setImageBitmap(bitmap);
             binding.copyQrButton.setVisibility(View.VISIBLE);
         } else {
+            binding.facilityEventQrImg.setImageBitmap(null);
             binding.copyQrButton.setVisibility(View.GONE);
         }
 

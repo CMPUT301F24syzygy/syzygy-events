@@ -162,6 +162,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.eventQrImg.setImageBitmap(bitmap);
             binding.copyQrButton.setVisibility(View.VISIBLE);
         } else {
+            binding.eventQrImg.setImageBitmap(null);
             binding.copyQrButton.setVisibility(View.GONE);
             binding.adminRemoveQrButton.setVisibility(View.GONE);
         }

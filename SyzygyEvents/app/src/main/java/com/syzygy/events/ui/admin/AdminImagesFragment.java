@@ -70,9 +70,9 @@ public class AdminImagesFragment extends Fragment {
                         .setMessage("Are you sure you want to remove this image? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onClick(DialogInterface d, int which) {
+                                dialog.dismiss();
                                 img.deleteInstance(DatabaseInstance.DeletionType.HARD_DELETE, s -> {
-                                    dialog.dismiss();
                                     query.refreshData((query1, success) -> {
                                         a.notifyDataSetChanged();
                                         binding.adminImagesList.setAdapter(a);
