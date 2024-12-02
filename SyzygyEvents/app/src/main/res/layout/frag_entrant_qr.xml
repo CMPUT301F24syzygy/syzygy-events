@@ -7,12 +7,26 @@
     android:paddingBottom="?attr/actionBarSize"
     tools:context=".ui.entrant.EntrantQrFragment">
 
+    <ImageView
+        android:id="@+id/notification_unread_mark"
+        android:layout_width="450dp"
+        android:layout_height="450dp"
+        android:layout_marginTop="64dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/frame_foreground"
+        app:tint="@color/grey_purple_200"
+        />
+
     <Button
         android:id="@+id/scan_qr_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button_scan_qr"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.95" />
 </androidx.constraintlayout.widget.ConstraintLayout>
