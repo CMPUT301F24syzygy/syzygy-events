@@ -729,7 +729,7 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
     static final PropertyField<?, ?>[] fields = {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_title, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<String, Image>(R.string.database_event_posterID, o -> o instanceof String, true, true, Database.Collections.IMAGES, true, true),
-            new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.FACILITIES, false, false),
+            new PropertyField<String, Facility>(R.string.database_event_facilityID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.FACILITIES, false, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_event_geo, o -> o instanceof Boolean, false),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_event_description, o -> o instanceof String, true),
             new PropertyField<Long, PropertyField.NullInstance>(R.string.database_event_capacity, o -> o instanceof Long && (Long)o > 0, false),

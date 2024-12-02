@@ -98,9 +98,9 @@ public class Notification extends DatabaseInstance<Notification> {
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_not_body, o -> o instanceof String && !((String) o).isBlank(), false),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_not_time, o -> o instanceof Timestamp, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_read, o -> o instanceof Boolean, true),
-            new PropertyField<String, Event>(R.string.database_not_eventID, o -> o instanceof String, false, true, Database.Collections.EVENTS, true, false),
-            new PropertyField<String, User>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
-            new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String, false, true, Database.Collections.USERS, true, false),
+            new PropertyField<String, Event>(R.string.database_not_eventID, o -> o instanceof String, true, true, Database.Collections.EVENTS, true, false),
+            new PropertyField<String, User>(R.string.database_not_receiverID, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.USERS, false, false),
+            new PropertyField<String, User>(R.string.database_not_senderID, o -> o instanceof String, true, true, Database.Collections.USERS, true, false),
             new PropertyField<Boolean, PropertyField.NullInstance>(R.string.database_not_ignoreOptOut, o -> o instanceof Boolean, false)
     };
 

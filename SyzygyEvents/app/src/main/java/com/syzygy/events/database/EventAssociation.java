@@ -99,8 +99,8 @@ public class EventAssociation extends DatabaseInstance<EventAssociation>{
      * The list of the fields defined for a User
      */
     static final PropertyField<?, ?>[] fields = {
-            new PropertyField<String, User>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.USERS, false, false),
-            new PropertyField<String, Event>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), false, true, Database.Collections.EVENTS, false, false),
+            new PropertyField<String, User>(R.string.database_assoc_user, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.USERS, false, false),
+            new PropertyField<String, Event>(R.string.database_assoc_event, o -> o instanceof String && !((String) o).isBlank(), true, true, Database.Collections.EVENTS, false, false),
             new PropertyField<GeoPoint, PropertyField.NullInstance>(R.string.database_assoc_geo, o -> o instanceof GeoPoint || o == null, true),
             new PropertyField<String, PropertyField.NullInstance>(R.string.database_assoc_status, o -> o instanceof String && !((String) o).isBlank(), true),
             new PropertyField<Timestamp, PropertyField.NullInstance>(R.string.database_assoc_time, o -> o instanceof Timestamp, false)
