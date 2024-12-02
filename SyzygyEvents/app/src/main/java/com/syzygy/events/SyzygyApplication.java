@@ -21,7 +21,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.ImageView;
 
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -391,7 +390,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
             PendingIntent pIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE);
 
             NotificationCompat.Builder b = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.t100)
+                    .setSmallIcon(R.drawable.syzygy_icon)
                     //.setLargeIcon(img)
                     .setContentTitle(n.getSubject())
                     .setContentText(n.getBody())
