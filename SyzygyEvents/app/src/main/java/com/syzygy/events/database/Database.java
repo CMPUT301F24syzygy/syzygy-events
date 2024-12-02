@@ -650,6 +650,10 @@ public class Database implements EventListener<DocumentSnapshot> {
      * @param listener Called on completion. true if the deletion was successful
      */
     public void deleteFile(String fileName, Consumer<Boolean> listener){
+        if(fileName == null || fileName.isEmpty()){
+            listener.accept(false);
+            return;
+        }
         StorageReference ref = storage.child(fileName);
         ref.delete().addOnCompleteListener(runnable -> {
             listener.accept(runnable.isSuccessful());
