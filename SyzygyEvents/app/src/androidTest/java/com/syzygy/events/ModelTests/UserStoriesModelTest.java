@@ -87,7 +87,7 @@ public class UserStoriesModelTest {
         tests.iterator().forEachRemaining(t -> t.acceptError(ex));
     }
 
-    private static final List<DatabaseInstance<?>> allObjectsUsed = new ArrayList<>();
+    private static final Set<DatabaseInstance<?>> allObjectsUsed = new HashSet<>();
 
     private Throwable error = null;
     private CountDownLatch latch = null;
