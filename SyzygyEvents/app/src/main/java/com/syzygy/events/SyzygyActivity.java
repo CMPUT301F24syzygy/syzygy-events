@@ -108,6 +108,7 @@ public abstract class SyzygyActivity extends AppCompatActivity implements Databa
      */
     public void navigateUp() {
         navController.navigateUp();
+        Log.println(Log.DEBUG, "NAV", "navigateUp(reg)");
     }
 
     /**
@@ -116,6 +117,7 @@ public abstract class SyzygyActivity extends AppCompatActivity implements Databa
      */
     public void navigateUp(String error) {
         navigateUp();
+        Log.println(Log.DEBUG, "NAV", "navigateUp(error)");
         showErrorDialog(error);
     }
 

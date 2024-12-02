@@ -348,6 +348,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      * @param to The new activity
      */
     public void switchToActivity(Class<? extends Activity> to){
+        Log.println(Log.DEBUG, "NAV", "switchToActivity");
         if(NO_DATABASE)return;
         Intent i = new Intent(currentActivity, to);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
