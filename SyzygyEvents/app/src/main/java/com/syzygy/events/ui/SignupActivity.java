@@ -67,10 +67,12 @@ public class SignupActivity extends SyzygyActivity {
         image = uri;
         if(image == null){
             Image.formatDefaultImage(Database.Collections.USERS, Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupImageImg);
-            binding.signupRemoveImageButton.setVisibility(View.INVISIBLE);
+            binding.signupRemoveImageButton.setVisibility(View.GONE);
+            binding.signupEditImageButton.setText(getString(R.string.add_image_button));
         }else{
             Image.formatImage(Picasso.get().load(uri), Image.Options.Circle(Image.Options.Sizes.MEDIUM)).into(binding.signupImageImg);;
             binding.signupRemoveImageButton.setVisibility(View.VISIBLE);
+            binding.signupEditImageButton.setText(getString(R.string.change_image_button));
         }
     }
 
