@@ -95,7 +95,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             binding.adminRemoveQrButton.setOnClickListener(view -> {
                 Dialog confirmRemoveDialog = new AlertDialog.Builder(getContext())
                         .setTitle("Confirm")
-                        .setMessage("Are you sure you want to remove the qr code? This action cannot be undone.")
+                        .setMessage("Are you sure you want to remove the hash? This action cannot be undone.")
                         .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
