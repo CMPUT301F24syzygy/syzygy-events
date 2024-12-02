@@ -523,7 +523,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
 
     @Database.MustStir
     public static DatabaseQuery<User> getUsers(Database db){
-        Filter f = Filter.notEqualTo(FieldPath.documentId(), SyzygyApplication.SYSTEM_ACCOUNT_ID); //TODO - does this work
+        Filter f = Filter.notEqualTo(FieldPath.documentId(), SyzygyApplication.SYSTEM_ACCOUNT_ID);
         Database.Collections c = Database.Collections.USERS;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_user_createdTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, null);
@@ -539,7 +539,7 @@ public class DatabaseQuery <T extends DatabaseInstance<T>> implements Database.U
 
     @Database.MustStir
     public static DatabaseQuery<Image> getImages(Database db){
-        Filter f = Filter.and(); //TODO - does this work
+        Filter f = Filter.notEqualTo(db.constants.getString(R.string.database_img_locID), SyzygyApplication.SYSTEM_ACCOUNT_ID);
         Database.Collections c = Database.Collections.IMAGES;
         Query q = c.getCollection(db).where(f).orderBy(db.constants.getString(R.string.database_img_uploadTime), Query.Direction.DESCENDING);
         return new DatabaseQuery<>(db, q, c, null);
