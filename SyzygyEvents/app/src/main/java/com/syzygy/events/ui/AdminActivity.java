@@ -104,28 +104,49 @@ public class AdminActivity extends SyzygyActivity {
         return true;
     }
 
+    /**
+     * Gets the id of the currently selected event
+     */
     public String getEventID() {
         return selectedEventID;
     }
 
+    /**
+     * Gets the id of the currently selected facility
+     */
     public String getFacilityID() {
         return selectedFacilityID;
     }
 
+    /**
+     * Gets the id of the currently selected user
+     */
     public String getUserID() {
         return selectedUserID;
     }
 
+    /**
+     * Selects the given event and navigates to the fragment
+     * @param id The id of the instance
+     */
     public void openEvent(String id) {
         selectedEventID = id;
         navController.navigate(R.id.nav_admin_event_secondary);
     }
 
+    /**
+     * Selects the given facility and navigates to the fragment
+     * @param id The id of the instance
+     */
     public void openFacility(String id) {
         selectedFacilityID = id;
         navController.navigate(R.id.nav_admin_facility_secondary);
     }
 
+    /**
+     * Selects the given user and navigates to the fragment
+     * @param id The id of the instance
+     */
     public void openProfile(String id) {
         selectedUserID = id;
         navController.navigate(R.id.nav_admin_profile_secondary);

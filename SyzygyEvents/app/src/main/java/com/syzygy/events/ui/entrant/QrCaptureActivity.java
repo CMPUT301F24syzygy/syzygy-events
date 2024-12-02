@@ -7,6 +7,9 @@ import android.widget.Toolbar;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.syzygy.events.R;
 
+/**
+ * The activity thats created to get the result of a qr code capture
+ */
 public class QrCaptureActivity extends com.journeyapps.barcodescanner.CaptureActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

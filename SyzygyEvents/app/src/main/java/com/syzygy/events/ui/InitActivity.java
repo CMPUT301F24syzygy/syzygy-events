@@ -25,6 +25,9 @@ public class InitActivity extends SyzygyActivity {
 
     }
 
+    /**
+     * Opens the entrant view
+     */
     public void openEntrant(View v) {
         Intent intent = new Intent(InitActivity.this, EntrantActivity.class);
         startActivity(intent);
