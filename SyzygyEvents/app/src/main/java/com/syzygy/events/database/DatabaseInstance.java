@@ -451,7 +451,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @SuppressWarnings("unchecked")
     @Database.StirsDeep(what="Previous Instance")
     private <W extends DatabaseInstance<W>> void exchangeInstance(PropertyWrapper<?,?> p, @Database.Dilutes String newID, Consumer<Boolean> onComplete) throws IllegalArgumentException, ClassCastException{
-        if(!p.meta.loads) db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
+        if(!p.meta.loads) {
+            db.throwE(new IllegalArgumentException("Invalid property : " + p.meta.propertyNameID));
+            onComplete.accept(false);
+            return;
+        }
         InstancePropertyWrapper<W> prop = (InstancePropertyWrapper<W>) p;
 
         if(Objects.equals(newID, prop.value)) {
@@ -480,7 +484,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         }else {
             Log.println(Log.DEBUG, "modPropNulling", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
             if (!prop.meta.loadsNullable)
+            {
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + db.constants.getString(prop.meta.propertyNameID) + " - " + newID));
+                onComplete.accept(false);
+                return;
+            }
             if(prop.instance != null){
                 prop.instance.dissolve(this);
             }
@@ -496,17 +504,21 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @param prop The property to edit
      * @param newInstance The new Instance
      * @param <W> The type of the instance
+     * @return If success full
      * @throws IllegalArgumentException If the property is not an instance property
      * @throws ClassCastException If the type does not match the properties type
      */
     @Database.AutoStir
     @Database.StirsDeep(what="Previous Instance")
-    private <W extends DatabaseInstance<W>> void exchangeInstance(InstancePropertyWrapper<W> prop, @Database.Dilutes W newInstance) throws ClassCastException{
+    private <W extends DatabaseInstance<W>> boolean exchangeInstance(InstancePropertyWrapper<W> prop, @Database.Dilutes W newInstance) throws ClassCastException{
         if(Objects.equals(newInstance, prop.instance)){
-            return;
+            return true;
         }
         if (!prop.meta.loadsNullable && newInstance == null)
+        {
             db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + prop.meta.propertyNameID));
+            return false;
+        }
         if(newInstance!=null)newInstance.fetch(this);
         if(prop.instance != null){
             prop.instance.dissolve();
@@ -514,6 +526,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
         prop.instance = newInstance;
         prop.value = newInstance == null?"":newInstance.getDocumentID();
+        return true;
     }
 
     /**
@@ -538,7 +551,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
 
         for(Map.Entry<String,Object> ent : data.entrySet()){
             PropertyWrapper<?,?> prop = properties.get(ent.getKey());
-            if(prop == null) db.throwE(new IllegalArgumentException("Invalid property"));
+            if(prop == null){
+                db.throwE(new IllegalArgumentException("Invalid property"));
+                onComplete.accept(false);
+                return diff;
+            }
             Log.println(Log.DEBUG, "modProp", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
             if(Objects.equals(prop.value, ent.getValue())) {
                 Log.println(Log.DEBUG, "modEqual", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
@@ -548,7 +565,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             if(prop.meta.loads){
                 if(ent.getValue() instanceof DatabaseInstance){
                     Log.println(Log.DEBUG, "modPropLoadsI", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
-                    exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance)ent.getValue());
+                    if(!exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance)ent.getValue())){
+                        onComplete.accept(false);
+                        return diff;
+                    };
                 }else{
                     Log.println(Log.DEBUG, "modPropLoadsId", getDocumentID() + " " + ent.getKey() + " " + String.valueOf(ent.getValue()));
                     loadIds.add(new Pair<>(prop, String.valueOf(ent.getValue())));
@@ -603,9 +623,21 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null) db.throwE(new IllegalArgumentException("Invalid property: " + name));
-        if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
-        if(!isPropertyValid(prop, newValue)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString()));
+        if(prop==null){
+            db.throwE(new IllegalArgumentException("Invalid property: " + name));
+            onComplete.accept(false);
+            return false;
+        }
+        if(!prop.meta.canEdit){
+            db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
+            onComplete.accept(false);
+            return false;
+        }
+        if(!isPropertyValid(prop, newValue)){
+            db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + newValue.toString()));
+            onComplete.accept(false);
+            return false;
+        }
         if(Objects.equals(prop.value, newValue)) {
             onComplete.accept(true);
             return false;
@@ -617,7 +649,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             return true;
         }
         if(newValue instanceof DatabaseInstance) {
-            exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance) newValue);
+            if(!exchangeInstance((InstancePropertyWrapper)prop, (DatabaseInstance) newValue)){
+                onComplete.accept(false);
+                return false;
+            };
             processUpdate();
             onComplete.accept(true);
             return true;
@@ -640,30 +675,47 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * Edits the value of an instance property to the new instance. Fetches a reference to the new instance
      * @param resID The res id of the property name
      * @param instance the instance to make the new value. This function will retrieve its own reference
-     * @return if the property was changed
+     * @return if the property was changed (null if error)
      * @throws IllegalArgumentException if the property does not exist or if the property cannot be edited or the new value is invalid or the property is not an instance property
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      * @throws ClassCastException if the instance type does not match the properties type
      */
     @SuppressWarnings("unchecked")
     @Database.StirsDeep(what="The previous instance")
-    public final <W extends DatabaseInstance<W>> boolean setPropertyInstance(int resID, @Nullable @Database.Dilutes W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
+    public final <W extends DatabaseInstance<W>> Boolean setPropertyInstance(int resID, @Nullable @Database.Dilutes W instance) throws IllegalArgumentException, ClassCastException, IllegalStateException{
         assertNotIllegalState();
         String name = db.constants.getString(resID);
         Log.println(Log.DEBUG, "setPropertyStart", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null || !prop.meta.loads) db.throwE(new IllegalArgumentException("Invalid property: " + name));
-        if(!prop.meta.canEdit) db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
-        if(instance == null && !prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("Cannot set to null: " + name));
-        if(instance != null && !instance.isLegalState()) db.throwE(new IllegalArgumentException("Instance is in illegal state " + name));
+        if(prop==null || !prop.meta.loads){
+            db.throwE(new IllegalArgumentException("Invalid property: " + name));
+            return null;
+        }
+        if(!prop.meta.canEdit){
+            db.throwE(new IllegalArgumentException("Invalid property - cannot edit: " + name));
+            return null;
+        }
+        if(instance == null && !prop.meta.loadsNullable){
+            db.throwE(new IllegalArgumentException("Cannot set to null: " + name));
+            return null;
+        }
+        if(instance != null && !instance.isLegalState()){
+            db.throwE(new IllegalArgumentException("Instance is in illegal state " + name));
+            return null;
+        }
         String id = instance == null? "": instance.getDocumentID();
-        if(!isPropertyValid(prop, id)) db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + instance.toString()));
+        if(!isPropertyValid(prop, id)){
+            db.throwE(new IllegalArgumentException("Invalid value for " + name + ": " + instance.toString()));
+            return null;
+        }
         InstancePropertyWrapper<W> iprop = (InstancePropertyWrapper<W>) prop;
         if(Objects.equals(iprop.instance, instance)) {
             Log.println(Log.DEBUG, "setPropertyEqual", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
             return false;
         }
-        exchangeInstance(iprop, instance);
+        if(!exchangeInstance(iprop, instance)){
+            return null;
+        };
         processUpdate();
         Log.println(Log.DEBUG, "setPropertyEnd", getDocumentID() + " " + getCollection() + " " + name + " : " + (instance == null ? "" : (instance.getDocumentID() + " " + instance.getCollection())));
         return true;
@@ -680,7 +732,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final Object getPropertyValue(int resID) throws IllegalArgumentException, ClassCastException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = (PropertyWrapper<?, ?>) properties.get(name);
-        if(prop==null) db.throwE(new IllegalArgumentException("Invalid property: " + name));
+        if(prop==null){
+            db.throwE(new IllegalArgumentException("Invalid property: " + name));
+            return null;
+        }
         return prop.value;
     }
 
@@ -708,7 +763,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     public final Object getPropertyInstance(int resID) throws IllegalArgumentException{
         String name = db.constants.getString(resID);
         PropertyWrapper<?,?> prop = properties.get(name);
-        if(prop==null) db.throwE(new IllegalArgumentException("Invalid property: " + name));
+        if(prop==null){
+            db.throwE(new IllegalArgumentException("Invalid property: " + name));
+            return null;
+        }
         return prop.iS().instance;
     }
 
@@ -842,7 +900,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.AutoStir(when="Error or not exists")
     @Database.Stirred
     final void initializeData(@Database.Dilutes Map<String, Object> data, boolean exists, Database.InitializationListener<T> onComplete) throws IllegalStateException{
-        if(isInitialized || isInitializing) db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
+        if(isInitialized || isInitializing){
+            db.throwE(new IllegalStateException("This instance has already been initialized: " + toString()));
+            onComplete.onInitialization(null, false);
+            return;
+        }
         Log.println(Log.DEBUG, "initData", getDocumentID()+" "+exists);
         if(!exists){
             Log.println(Log.DEBUG, "initDataFail", getDocumentID());
@@ -898,7 +960,11 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         assert prop != null;
         InstancePropertyWrapper<X> iprop = (InstancePropertyWrapper<X>) prop.iS();
         if(iprop.value.isBlank()){
-            if(!prop.meta.loadsNullable) db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID));
+            if(!prop.meta.loadsNullable){
+                db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: "+ prop.meta.propertyNameID));
+                listener.onInitialization(null, false);
+                return;
+            }
             subInitialize(listener, count+1);
             return;
         }
@@ -1000,10 +1066,14 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
         int id = getCollection().getAssociatedImagePropertyId();
         if(id == Database.Collections.IS_ITS_OWN_ASSOCIATED_IMAGE || id == Database.Collections.DOES_NOT_HAVE_ASSOCIATED_IMAGE || !isPropertyEditable(id)){
             db.throwE(new UnsupportedOperationException("This instance does not have an editable associated image"));
+            onComplete.accept(false);
             return;
         }
         db.replaceImage(image, getAssociatedImage(), getAssociatedImageLocName(), getCollection(), getDocumentID(), (newImage, returnSuccess) -> {
-            setPropertyInstance(getCollection().getAssociatedImagePropertyId(), newImage);
+            if(setPropertyInstance(getCollection().getAssociatedImagePropertyId(), newImage) == null){
+                returnSuccess.accept(null, false);
+                return;
+            };
             returnSuccess.accept(null, true);
         }, (_null, success) -> onComplete.accept(success));
     }

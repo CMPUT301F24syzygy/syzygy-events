@@ -159,7 +159,7 @@ public class User extends DatabaseInstance<User> {
      * @param val The new instance
      */
     @Database.StirsDeep(what = "The previous Image")
-    public boolean setFacility(@Nullable @Database.Dilutes Facility val){
+    public Boolean setFacility(@Nullable @Database.Dilutes Facility val){
         //Success will be called before return so no need
         return setPropertyInstance(R.string.database_user_facilityID, val);
     }

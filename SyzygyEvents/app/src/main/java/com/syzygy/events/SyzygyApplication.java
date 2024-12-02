@@ -373,7 +373,7 @@ public class SyzygyApplication extends Application implements Consumer<RuntimeEx
      */
     @Override
     public void accept(RuntimeException e) {
-        //TODO
+        currentActivity.showErrorDialog(e.getMessage());
     }
 
     private static final String CHANNEL_ID = "Syzygy";

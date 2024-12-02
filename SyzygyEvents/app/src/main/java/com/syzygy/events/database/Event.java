@@ -221,8 +221,16 @@ public class Event extends DatabaseInstance<Event> implements Database.Querrier<
         @Database.Stirred
         @Database.AutoStir
         public void execute(DataListener<Event, EventAssociation.NotificationResult> listener, boolean notifyRejected) throws IllegalStateException{
-            if(dissolved) db.throwE(new IllegalStateException("This lottery result was cancelled"));
-            if(executed) db.throwE(new IllegalStateException("This lottery result has already been executed"));
+            if(dissolved){
+                db.throwE(new IllegalStateException("This lottery result was cancelled"));
+                listener.onCompletion(Event.this, null, false);
+                return;
+            }
+            if(executed) {
+                db.throwE(new IllegalStateException("This lottery result has already been executed"));
+                listener.onCompletion(Event.this, null, false);
+                return;
+            }
             executed = true;
             if(notifyRejected) {
                 notChosen.rejectUsersFromLottery((query, data, success) -> {
