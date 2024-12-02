@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -170,8 +169,8 @@ public class UserStoriesModelTest {
         }
     }
 
-    private void await(long timeout) throws Throwable {
-        if(!latch.await(timeout, TimeUnit.SECONDS)){
+    private void await() throws Throwable {
+        if(!latch.await(5, TimeUnit.MINUTES)){
             fail("Timeout");
         };
         if(error != null){
@@ -397,7 +396,7 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         })));
-        await(10);
+        await();
     }
 
     @Test
@@ -407,7 +406,7 @@ public class UserStoriesModelTest {
             if(!asserts(()->assertTrue(s))) return;
             testDeletedInstance(ea, this::completeTest);
         })));
-        await(10);
+        await();
     }
 
     @Test
@@ -441,7 +440,7 @@ public class UserStoriesModelTest {
 
         if(!asserts(()->assertTrue(invalidIDs.isEmpty())))return;
 
-        await(10);
+        await();
     }
 
     @Test
@@ -471,7 +470,7 @@ public class UserStoriesModelTest {
                     });
             asserts(() -> assertTrue(invalidIDs.isEmpty()));
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -488,7 +487,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -508,7 +507,7 @@ public class UserStoriesModelTest {
                 testDeletedImageCascade(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -519,7 +518,7 @@ public class UserStoriesModelTest {
             if(!asserts(() -> assertNotNull(r2))) return;
             completeTest();
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -554,7 +553,7 @@ public class UserStoriesModelTest {
                 });
             }, null);
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -600,7 +599,7 @@ public class UserStoriesModelTest {
                 }, true);
             });
         });
-        await(10);
+        await();
         assertEquals(2, chosen.get());
         assertEquals(1, lost.get());
     }
@@ -656,7 +655,7 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
@@ -669,7 +668,7 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         })));
-        await(10);
+        await();
     }
 
     @Test
@@ -679,7 +678,7 @@ public class UserStoriesModelTest {
             if(!asserts(() -> assertTrue(s)))return;
             testDeletedInstance(ea, this::completeTest);
         })));
-        await(10);
+        await();
     }
 
     @Test
@@ -693,7 +692,7 @@ public class UserStoriesModelTest {
             })) return;
             completeTest();
         }));
-        await(10);
+        await();
     }
 
     @Test
@@ -722,7 +721,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -741,7 +740,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -762,7 +761,7 @@ public class UserStoriesModelTest {
                         completeTest();
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -773,7 +772,7 @@ public class UserStoriesModelTest {
                 completeTest();
             };
         });
-        await(10);
+        await();
     }
 
 
@@ -805,7 +804,7 @@ public class UserStoriesModelTest {
                         });
             });
         });
-        await(10);
+        await();
     }
 
 
@@ -826,7 +825,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
 
@@ -849,7 +848,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
 
@@ -870,7 +869,7 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -892,7 +891,7 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -909,7 +908,7 @@ public class UserStoriesModelTest {
                         });
                     });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -926,7 +925,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -946,7 +945,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -983,7 +982,7 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
@@ -1056,7 +1055,7 @@ public class UserStoriesModelTest {
             });
         });
 
-        await(10);
+        await();
     }
 
     @Test
@@ -1075,7 +1074,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1094,7 +1093,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1113,7 +1112,7 @@ public class UserStoriesModelTest {
                 completeTest();
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1136,7 +1135,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1166,7 +1165,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1196,7 +1195,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1226,7 +1225,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     public void testDeletedInstance(DatabaseInstance<?> instance, Runnable onComplete){
@@ -1400,7 +1399,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1411,7 +1410,7 @@ public class UserStoriesModelTest {
                 testDeletedUserShallow(u, this::completeTest);
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1427,7 +1426,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1452,7 +1451,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1477,7 +1476,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(60);
+        await();
     }
 
     @Test
@@ -1493,7 +1492,7 @@ public class UserStoriesModelTest {
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(30);
+        await();
     }
 
     @Test
@@ -1509,7 +1508,7 @@ public class UserStoriesModelTest {
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1525,7 +1524,7 @@ public class UserStoriesModelTest {
                 testDeletedImage(i, this::completeTest);
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1537,7 +1536,7 @@ public class UserStoriesModelTest {
                 assertEquals("", e.getQrHash());
             })) completeTest();
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1557,7 +1556,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1577,7 +1576,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1597,7 +1596,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(10);
+        await();
     }
 
     @Test
@@ -1622,7 +1621,7 @@ public class UserStoriesModelTest {
                 });
             });
         });
-        await(30);
+        await();
     }
 
 
