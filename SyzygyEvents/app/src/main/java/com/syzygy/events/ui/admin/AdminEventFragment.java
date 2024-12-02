@@ -204,6 +204,7 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
     @Override
     public <T extends DatabaseInstance<T>> void onUpdate(DatabaseInstance<T> instance, Type type) {
         if (!event.isLegalState()) {
+            event.removeListener(this);
             ((AdminActivity) getActivity()).navigateUp("The event you were viewing no longer exists.");
             return;
         }

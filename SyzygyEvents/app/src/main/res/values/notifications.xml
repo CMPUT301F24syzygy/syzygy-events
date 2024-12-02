@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="notification_lottery_notChosen_subject">Better Luck Next Time</string>
-    <string name="notification_lottery_notChosen_body">You were not selected for the event.\n\nYou will remain in the waitlist so that you may have another chance to be chosen if a selected user declines their invitation.\n\nIf you wish to leave waitlist, you may do so from the event page.</string>
+    <string name="notification_lottery_notChosen_subject">Better Luck Next Time!</string>
+    <string name="notification_lottery_notChosen_body">You were not selected for the event.\n\nYou will remain in the waitlist so that you may have another chance to be chosen if a selected user declines their invitation.\n\nIf you wish to leave the waitlist, you may do so from the event page.</string>
     <string name="notification_lottery_chosen_subject">You\'ve been selected!!</string>
     <string name="notification_lottery_chosen_body">Congrats!!\n\nYou have selected to participate in the event.\n\nPlease go to the event page below to accept or decline you\'re invitation.</string>
     <string name="notification_cancelled_subject">You were removed</string>
