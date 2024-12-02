@@ -57,6 +57,9 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
             event = instance;
             event.addListener(this);
             //Set up fields
+            if (getContext() == null || binding == null) {
+                return;
+            }
             binding.eventTitle.setText(event.getTitle());
             binding.eventPriceText.setText(String.format(Locale.getDefault(), "$%3.2f", event.getPrice()));
             String start = app.formatTimestamp(event.getStartDate());
@@ -143,6 +146,10 @@ public class AdminEventFragment extends Fragment implements Database.UpdateListe
 
 
     private void updateView() {
+
+        if (getContext() == null || binding == null) {
+            return;
+        }
 
         Image.getFormatedAssociatedImage(event, Image.Options.Square(Image.Options.Sizes.MEDIUM)).into(binding.eventImg);
         SyzygyApplication app = (SyzygyApplication) getActivity().getApplication();
