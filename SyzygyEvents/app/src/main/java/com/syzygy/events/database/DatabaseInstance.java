@@ -167,7 +167,6 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
      * @throws IllegalStateException if the instance is in an illegal state {@link DatabaseInstance#assertNotIllegalState()}
      */
     public final void addListener(@Nullable Database.UpdateListener listener) throws IllegalStateException{
-        assertNotIllegalState();
         if(listener == null) return;
         updateListeners.add(listener);
     }
@@ -368,12 +367,14 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
     @Database.StirsDeep(what="Property Instances", when="Instance is deleted and Property is not nullable")
     @Override
     public <S extends DatabaseInstance<S>> void onUpdate(@Database.Observes DatabaseInstance<S> instance, Type type) {
+        Log.d("onUpdate", instance.getDatabaseID() + " " + getDatabaseID() + " " + type);
         if(!isLegalState()) return;
+        if(!instance.isInitialized) return;
         switch (type){
             case UPDATE:
-            case SUBUPDATE:
                 notifyUpdate(Type.SUBUPDATE);
                 break;
+            case SUBUPDATE:
             case DEREFERENCED:
             case INIT:
                 break;
@@ -471,9 +472,10 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
                 }
                 Log.println(Log.DEBUG, "modPropLoadSuccess", getDocumentID() + " " + db.constants.getString(prop.meta.propertyNameID) + " " + String.valueOf(newID));
                 if(prop.instance != null){
-                    prop.instance.dissolve();
+                    prop.instance.dissolve(this);
                 }
                 prop.instance = i;
+                i.addListener(this);
                 prop.value = newID;
                 onComplete.accept(true);
             });
@@ -482,7 +484,7 @@ public abstract class DatabaseInstance<T extends DatabaseInstance<T>> implements
             if (!prop.meta.loadsNullable)
                 db.throwE(new IllegalArgumentException("The value is null but the property is not nullable: " + db.constants.getString(prop.meta.propertyNameID) + " - " + newID));
             if(prop.instance != null){
-                prop.instance.dissolve();
+                prop.instance.dissolve(this);
             }
             prop.instance = null;
             prop.value = newID;
