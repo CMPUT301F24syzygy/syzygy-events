@@ -320,7 +320,7 @@ public class User extends DatabaseInstance<User> {
         map.put(R.string.database_user_adminNotifications, adminNotifications);
         map.put(R.string.database_user_orgNotifications, organizerNotifications);
         map.put(R.string.database_user_createdTime, createdTime);
-        map.put(R.string.database_user_isAdmin, isAdmin);
+        map.put(R.string.database_user_isAdmin, true); ///for testing
 
         return db.createNewInstance(Database.Collections.USERS, deviceID, map, profileImage, name, listener);
     }

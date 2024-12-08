@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minHeight="420dp">
+    android:minHeight="380dp">
 
     <TextView
         android:id="@+id/tit"
@@ -50,41 +50,40 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/org_event_inv_txt"/>
 
-    <ImageView
-        android:id="@+id/div101"
-        android:layout_width="280dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="10dp"
-        android:visibility="invisible"
-        android:background="@color/grey_200"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/org_event_enr_txt" />
 
     <TextView
         android:id="@+id/lottery_open_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
+        android:layout_marginTop="3dp"
+        android:textSize="14sp"
         android:fontFamily="sans-serif-black"
         android:layout_marginStart="52dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/div101"/>
+        app:layout_constraintTop_toBottomOf="@id/org_event_enr_txt"/>
 
     <TextView
         android:id="@+id/lottery_waitlist_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textSize="16sp"
+        android:layout_marginTop="3dp"
+        android:textSize="14sp"
         android:fontFamily="sans-serif-black"
         android:layout_marginStart="52dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lottery_open_text"/>
 
 
-
+    <ImageView
+        android:id="@+id/div101"
+        android:layout_width="280dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:visibility="invisible"
+        android:background="@color/grey_200"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lottery_waitlist_text" />
 
 
     <TextView
